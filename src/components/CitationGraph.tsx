@@ -876,10 +876,10 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
         <span className="ml-auto text-slate-400">支持鼠标滚轮缩放、画布平移与拖拽任意节点</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         {/* Interactive Force Canvas */}
         <div
-          className={`overflow-hidden rounded-2xl border xl:col-span-9 ${
+          className={`overflow-hidden rounded-2xl border lg:col-span-9 ${
             darkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-[#F8FAFC]'
           }`}
         >
@@ -1034,7 +1034,7 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
 
         {/* Right Entity Inspector Panel */}
         <div
-          className={`flex flex-col justify-between rounded-2xl border p-5 xl:col-span-3 ${
+          className={`flex flex-col justify-between rounded-2xl border p-5 lg:col-span-3 ${
             darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-200 bg-slate-50/70'
           }`}
         >
