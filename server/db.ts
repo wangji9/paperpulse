@@ -7,6 +7,8 @@ import type {
   EntryType,
   PaperCollectorBadge,
   PaperComment,
+  PaperLikerBadge,
+  PaperReaderTrace,
   ReadingStatus,
   UserProfile,
 } from '../src/types/paper.js';
@@ -17,7 +19,7 @@ import { enrichPaperVisuals, getJournals16SeedPapers } from './seedJournals16.js
 import { CORE_16_JOURNAL_SOURCES } from './liveFetcher.js';
 import { generateSessionToken, hashPassword, pickAvatarColor, verifyPassword } from './auth.js';
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -86,6 +88,44 @@ db.exec(`
     FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS paper_reads (
+    user_id TEXT NOT NULL,
+    paper_id TEXT NOT NULL,
+    visit_count INTEGER NOT NULL DEFAULT 0,
+    total_dwell_seconds INTEGER NOT NULL DEFAULT 0,
+    last_visited_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, paper_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS reading_sessions (
+    user_id TEXT NOT NULL,
+    paper_id TEXT NOT NULL,
+    visit_id TEXT NOT NULL,
+    elapsed_seconds INTEGER NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, paper_id, visit_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS paper_likes (
+    user_id TEXT NOT NULL,
+    paper_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, paper_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS comment_likes (
+    user_id TEXT NOT NULL,
+    comment_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, comment_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS sync_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     synced_at TEXT NOT NULL,
@@ -110,6 +150,9 @@ function ensureColumns(): void {
   if (!cCols.includes('entry_type')) db.exec("ALTER TABLE comments ADD COLUMN entry_type TEXT DEFAULT 'comment';");
   if (!cCols.includes('user_id')) db.exec('ALTER TABLE comments ADD COLUMN user_id TEXT;');
   if (!cCols.includes('username')) db.exec('ALTER TABLE comments ADD COLUMN username TEXT;');
+  if (!cCols.includes('avatar_color')) db.exec('ALTER TABLE comments ADD COLUMN avatar_color TEXT;');
+  if (!cCols.includes('parent_id')) db.exec('ALTER TABLE comments ADD COLUMN parent_id TEXT;');
+  if (!cCols.includes('reply_to_author')) db.exec('ALTER TABLE comments ADD COLUMN reply_to_author TEXT;');
   if (!cCols.includes('user_tags')) db.exec("ALTER TABLE comments ADD COLUMN user_tags TEXT DEFAULT '[]';");
   if (!cCols.includes('updated_at')) db.exec('ALTER TABLE comments ADD COLUMN updated_at TEXT;');
 }
@@ -181,7 +224,7 @@ export function initDatabase(): void {
     for (const row of existingRows) {
       const pid = String(row.id);
       if (!seedIds.has(pid)) {
-        const hydrated = hydratePaper(row, new Map());
+        const hydrated = hydratePaper(row, emptySocialContext());
         upsertPaper(enrichPaperVisuals(hydrated));
       }
     }
@@ -218,15 +261,23 @@ function mapUserRow(row: Record<string, unknown>): UserProfile {
   } catch {
     tags = [];
   }
-  const kbCountRow = db.prepare('SELECT COUNT(*) as c FROM user_kb WHERE user_id = ?').get(String(row.id)) as { c: number };
+  const uid = String(row.id);
+  const kbCountRow = db.prepare('SELECT COUNT(*) as c FROM user_kb WHERE user_id = ?').get(uid) as { c: number };
+  const readStats = db
+    .prepare('SELECT COUNT(*) as papers, COALESCE(SUM(total_dwell_seconds), 0) as secs FROM paper_reads WHERE user_id = ?')
+    .get(uid) as { papers: number; secs: number };
+  const likeRow = db.prepare('SELECT COUNT(*) as c FROM paper_likes WHERE user_id = ?').get(uid) as { c: number };
   return {
-    id: String(row.id),
+    id: uid,
     username: String(row.username),
     displayName: String(row.display_name),
     role: String(row.role) === 'admin' ? 'admin' : 'member',
     avatarColor: String(row.avatar_color || '#4F46E5'),
     userTags: tags,
     kbCount: kbCountRow.c,
+    readPaperCount: readStats.papers,
+    totalReadSeconds: readStats.secs,
+    likeCount: likeRow.c,
     createdAt: String(row.created_at),
   };
 }
@@ -320,6 +371,10 @@ export function deleteUserById(userId: string): boolean {
   if (userId === 'usr-admin') return false;
   db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM user_kb WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM reading_sessions WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM paper_reads WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM paper_likes WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM comment_likes WHERE user_id = ?').run(userId);
   const res = db.prepare('DELETE FROM users WHERE id = ?').run(userId);
   return Number(res.changes) > 0;
 }
@@ -391,6 +446,195 @@ function getCollectorsMap(): Map<string, PaperCollectorBadge[]> {
   return map;
 }
 
+interface SocialHydrationContext {
+  collectorsMap: Map<string, PaperCollectorBadge[]>;
+  likesMap: Map<string, PaperLikerBadge[]>;
+  readsMap: Map<string, Array<{
+    userId: string;
+    username: string;
+    displayName: string;
+    avatarColor: string;
+    userTags: string[];
+    visitCount: number;
+    totalDwellSeconds: number;
+    lastVisitedAt: string;
+  }>>;
+  commentLikesMap: Map<string, PaperLikerBadge[]>;
+  userColorsMap: Map<string, string>;
+}
+
+function emptySocialContext(): SocialHydrationContext {
+  return {
+    collectorsMap: new Map(),
+    likesMap: new Map(),
+    readsMap: new Map(),
+    commentLikesMap: new Map(),
+    userColorsMap: new Map(),
+  };
+}
+
+function getSocialHydrationContext(): SocialHydrationContext {
+  const collectorsMap = getCollectorsMap();
+
+  const likeRows = db
+    .prepare(`
+      SELECT pl.paper_id, pl.user_id, pl.created_at,
+             u.username, u.display_name, u.avatar_color, u.user_tags
+      FROM paper_likes pl
+      JOIN users u ON pl.user_id = u.id
+      ORDER BY pl.created_at DESC
+    `)
+    .all() as Record<string, unknown>[];
+  const likesMap = new Map<string, PaperLikerBadge[]>();
+  for (const r of likeRows) {
+    const pid = String(r.paper_id);
+    let uTags: string[] = [];
+    try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+    const arr = likesMap.get(pid) || [];
+    arr.push({
+      userId: String(r.user_id),
+      username: String(r.username),
+      displayName: String(r.display_name),
+      avatarColor: String(r.avatar_color || '#4F46E5'),
+      userTags: uTags,
+      likedAt: String(r.created_at),
+    });
+    likesMap.set(pid, arr);
+  }
+
+  const readRows = db
+    .prepare(`
+      SELECT pr.paper_id, pr.user_id, pr.visit_count, pr.total_dwell_seconds, pr.last_visited_at,
+             u.username, u.display_name, u.avatar_color, u.user_tags
+      FROM paper_reads pr
+      JOIN users u ON pr.user_id = u.id
+      ORDER BY pr.last_visited_at DESC
+    `)
+    .all() as Record<string, unknown>[];
+  const readsMap: SocialHydrationContext['readsMap'] = new Map();
+  for (const r of readRows) {
+    const pid = String(r.paper_id);
+    let uTags: string[] = [];
+    try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+    const arr = readsMap.get(pid) || [];
+    arr.push({
+      userId: String(r.user_id),
+      username: String(r.username),
+      displayName: String(r.display_name),
+      avatarColor: String(r.avatar_color || '#4F46E5'),
+      userTags: uTags,
+      visitCount: Number(r.visit_count || 0),
+      totalDwellSeconds: Number(r.total_dwell_seconds || 0),
+      lastVisitedAt: String(r.last_visited_at),
+    });
+    readsMap.set(pid, arr);
+  }
+
+  const cLikeRows = db
+    .prepare(`
+      SELECT cl.comment_id, cl.user_id, cl.created_at,
+             u.username, u.display_name, u.avatar_color, u.user_tags
+      FROM comment_likes cl
+      JOIN users u ON cl.user_id = u.id
+      ORDER BY cl.created_at ASC
+    `)
+    .all() as Record<string, unknown>[];
+  const commentLikesMap = new Map<string, PaperLikerBadge[]>();
+  for (const r of cLikeRows) {
+    const cid = String(r.comment_id);
+    let uTags: string[] = [];
+    try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+    const arr = commentLikesMap.get(cid) || [];
+    arr.push({
+      userId: String(r.user_id),
+      username: String(r.username),
+      displayName: String(r.display_name),
+      avatarColor: String(r.avatar_color || '#4F46E5'),
+      userTags: uTags,
+      likedAt: String(r.created_at),
+    });
+    commentLikesMap.set(cid, arr);
+  }
+
+  const userRows = db.prepare('SELECT id, avatar_color FROM users').all() as Array<{ id: string; avatar_color: string }>;
+  const userColorsMap = new Map(userRows.map((u) => [String(u.id), String(u.avatar_color || '#4F46E5')]));
+
+  return { collectorsMap, likesMap, readsMap, commentLikesMap, userColorsMap };
+}
+
+/* ---------- Reading Footprints & Social Likes ---------- */
+export function recordPaperReading(
+  userId: string,
+  paperId: string,
+  params: { incrementVisit?: boolean; addDwellSeconds?: number; visitId?: string; elapsedSeconds?: number }
+): AcademicPaper | null {
+  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+  if (!exists) return null;
+
+  let incVisit = params.incrementVisit === true ? 1 : 0;
+  let addDwell = Number.isFinite(params.addDwellSeconds) ? Math.max(0, Math.min(30, Math.floor(params.addDwellSeconds!))) : 0;
+  if (params.visitId && /^[a-zA-Z0-9-]{8,100}$/.test(params.visitId) && Number.isFinite(params.elapsedSeconds)) {
+    const session = db.prepare('SELECT * FROM reading_sessions WHERE user_id = ? AND paper_id = ? AND visit_id = ?').get(userId, paperId, params.visitId) as { elapsed_seconds: number; started_at: string } | undefined;
+    const requested = Math.max(0, Math.floor(params.elapsedSeconds!));
+    const maxElapsed = session ? Math.floor((Date.now() - Date.parse(session.started_at)) / 1000) + 3 : 3;
+    const cumulative = Math.max(session?.elapsed_seconds || 0, Math.min(requested, maxElapsed));
+    incVisit = session ? 0 : 1;
+    addDwell = cumulative - (session?.elapsed_seconds || 0);
+    db.prepare('INSERT INTO reading_sessions (user_id, paper_id, visit_id, elapsed_seconds, started_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id, paper_id, visit_id) DO UPDATE SET elapsed_seconds = excluded.elapsed_seconds').run(userId, paperId, params.visitId, cumulative, new Date().toISOString());
+  }
+  if (incVisit === 0 && addDwell === 0) return getPaperById(paperId, userId);
+
+  const now = new Date().toISOString();
+  const row = db
+    .prepare('SELECT visit_count, total_dwell_seconds FROM paper_reads WHERE user_id = ? AND paper_id = ?')
+    .get(userId, paperId) as { visit_count: number; total_dwell_seconds: number } | undefined;
+
+  if (row) {
+    db.prepare(
+      'UPDATE paper_reads SET visit_count = ?, total_dwell_seconds = ?, last_visited_at = ? WHERE user_id = ? AND paper_id = ?'
+    ).run(Number(row.visit_count) + incVisit, Number(row.total_dwell_seconds) + addDwell, now, userId, paperId);
+  } else {
+    db.prepare(
+      'INSERT INTO paper_reads (user_id, paper_id, visit_count, total_dwell_seconds, last_visited_at) VALUES (?, ?, ?, ?, ?)'
+    ).run(userId, paperId, Math.max(1, incVisit), addDwell, now);
+  }
+
+  return getPaperById(paperId, userId);
+}
+
+export function togglePaperLike(userId: string, paperId: string): AcademicPaper | null {
+  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+  if (!exists) return null;
+
+  const liked = db.prepare('SELECT 1 FROM paper_likes WHERE user_id = ? AND paper_id = ?').get(userId, paperId);
+  if (liked) {
+    db.prepare('DELETE FROM paper_likes WHERE user_id = ? AND paper_id = ?').run(userId, paperId);
+  } else {
+    const now = new Date().toISOString();
+    db.prepare('INSERT INTO paper_likes (user_id, paper_id, created_at) VALUES (?, ?, ?)').run(userId, paperId, now);
+
+  }
+  return getPaperById(paperId, userId);
+}
+
+export function toggleCommentLike(userId: string, paperId: string, commentId: string): PaperComment | null {
+  const cRow = db.prepare('SELECT * FROM comments WHERE id = ? AND paper_id = ?').get(commentId, paperId) as Record<string, unknown> | undefined;
+  if (!cRow) return null;
+
+  const existing = db.prepare('SELECT 1 FROM comment_likes WHERE user_id = ? AND comment_id = ?').get(userId, commentId);
+  if (existing) {
+    db.prepare('DELETE FROM comment_likes WHERE user_id = ? AND comment_id = ?').run(userId, commentId);
+  } else {
+    db.prepare('INSERT INTO comment_likes (user_id, comment_id, created_at) VALUES (?, ?, ?)').run(
+      userId,
+      commentId,
+      new Date().toISOString()
+    );
+  }
+  const ctx = getSocialHydrationContext();
+  return hydrateCommentRow(cRow, ctx, userId);
+}
+
 /* ---------- Settings ---------- */
 export function getAutoSyncConfig(): AutoSyncConfig {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get() as { value: string } | undefined;
@@ -411,19 +655,35 @@ export function saveAutoSyncConfig(config: AutoSyncConfig): AutoSyncConfig {
 }
 
 /* ---------- Papers & Comments CRUD ---------- */
-function hydrateCommentRow(r: Record<string, unknown>): PaperComment {
+function hydrateCommentRow(
+  r: Record<string, unknown>,
+  ctx?: SocialHydrationContext,
+  currentUserId?: string
+): PaperComment {
   let uTags: string[] = [];
   try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+  const cid = String(r.id);
+  const uid = r.user_id ? String(r.user_id) : undefined;
+  const likes = ctx?.commentLikesMap.get(cid) || [];
+  const avatarColor =
+    (r.avatar_color ? String(r.avatar_color) : undefined) ||
+    (uid && ctx?.userColorsMap.get(uid)) ||
+    pickAvatarColor(String(r.author || 'U'));
   return {
-    id: String(r.id),
+    id: cid,
     paperId: String(r.paper_id),
     entryType: String(r.entry_type) === 'thought' ? 'thought' : 'comment',
-    userId: r.user_id ? String(r.user_id) : undefined,
+    userId: uid,
     username: r.username ? String(r.username) : undefined,
+    avatarColor,
     userTags: uTags,
     author: String(r.author),
     role: String(r.role),
     content: String(r.content),
+    parentId: r.parent_id ? String(r.parent_id) : undefined,
+    replyToAuthor: r.reply_to_author ? String(r.reply_to_author) : undefined,
+    likes,
+    likedByMe: currentUserId ? likes.some((l) => l.userId === currentUserId) : false,
     createdAt: String(r.created_at),
     updatedAt: r.updated_at ? String(r.updated_at) : undefined,
   };
@@ -431,7 +691,7 @@ function hydrateCommentRow(r: Record<string, unknown>): PaperComment {
 
 function hydratePaper(
   row: Record<string, unknown>,
-  collectorsMap: Map<string, PaperCollectorBadge[]>,
+  ctx: SocialHydrationContext,
   currentUserId?: string
 ): AcademicPaper {
   const base = JSON.parse(String(row.payload)) as Omit<AcademicPaper, 'comments'>;
@@ -440,21 +700,117 @@ function hydratePaper(
     .prepare('SELECT * FROM comments WHERE paper_id = ? ORDER BY created_at DESC')
     .all(pid) as Record<string, unknown>[];
 
-  const collectors = collectorsMap.get(pid) || [];
+  const comments = rawComments.map((rc) => hydrateCommentRow(rc, ctx, currentUserId));
+  const collectors = ctx.collectorsMap.get(pid) || [];
+  const likers = ctx.likesMap.get(pid) || [];
+  const rawReads = ctx.readsMap.get(pid) || [];
   const myEntry = currentUserId ? collectors.find((c) => c.userId === currentUserId) : undefined;
+
+  // Build unified traceable readers map across reads, likes, collections, and comments
+  const traceMap = new Map<string, PaperReaderTrace>();
+  for (const rd of rawReads) {
+    traceMap.set(rd.userId, {
+      userId: rd.userId,
+      username: rd.username,
+      displayName: rd.displayName,
+      avatarColor: rd.avatarColor,
+      userTags: rd.userTags,
+      visitCount: rd.visitCount,
+      totalDwellSeconds: rd.totalDwellSeconds,
+      lastVisitedAt: rd.lastVisitedAt,
+      liked: false,
+      collected: false,
+      commentCount: 0,
+    });
+  }
+  for (const lk of likers) {
+    const existing = traceMap.get(lk.userId);
+    if (existing) {
+      existing.liked = true;
+    } else {
+      traceMap.set(lk.userId, {
+        userId: lk.userId,
+        username: lk.username,
+        displayName: lk.displayName,
+        avatarColor: lk.avatarColor,
+        userTags: lk.userTags,
+        visitCount: 0,
+        totalDwellSeconds: 0,
+        lastVisitedAt: lk.likedAt,
+        liked: true,
+        collected: false,
+        commentCount: 0,
+      });
+    }
+  }
+  for (const col of collectors) {
+    const existing = traceMap.get(col.userId);
+    if (existing) {
+      existing.collected = true;
+    } else {
+      traceMap.set(col.userId, {
+        userId: col.userId,
+        username: col.username,
+        displayName: col.displayName,
+        avatarColor: col.avatarColor,
+        userTags: col.userTags,
+        visitCount: 0,
+        totalDwellSeconds: 0,
+        lastVisitedAt: col.addedAt,
+        liked: false,
+        collected: true,
+        commentCount: 0,
+      });
+    }
+  }
+  for (const cm of comments) {
+    if (!cm.userId) continue;
+    const existing = traceMap.get(cm.userId);
+    if (existing) {
+      existing.commentCount += 1;
+    } else {
+      traceMap.set(cm.userId, {
+        userId: cm.userId,
+        username: cm.username || cm.author,
+        displayName: cm.author,
+        avatarColor: cm.avatarColor || '#4F46E5',
+        userTags: cm.userTags || [],
+        visitCount: 0,
+        totalDwellSeconds: 0,
+        lastVisitedAt: cm.createdAt,
+        liked: false,
+        collected: false,
+        commentCount: 1,
+      });
+    }
+  }
+
+  const readers = Array.from(traceMap.values()).sort(
+    (a, b) =>
+      b.totalDwellSeconds + b.visitCount * 15 + (b.liked ? 20 : 0) + (b.collected ? 20 : 0) -
+      (a.totalDwellSeconds + a.visitCount * 15 + (a.liked ? 20 : 0) + (a.collected ? 20 : 0))
+  );
+
+  const totalVisits = readers.reduce((acc, r) => acc + r.visitCount, 0);
+  const totalDwellSeconds = readers.reduce((acc, r) => acc + r.totalDwellSeconds, 0);
 
   return {
     ...base,
     affiliations: Array.isArray(base.affiliations) ? base.affiliations : [],
     openAlexId: row.open_alex_id ? String(row.open_alex_id) : base.openAlexId,
     citedByCount: Number(row.cited_by_count ?? base.citedByCount ?? 0),
-    readingStatus: (myEntry?.readingStatus || (row.reading_status ? String(row.reading_status) : base.readingStatus || 'unread')) as ReadingStatus,
+    readingStatus: (currentUserId ? (myEntry?.readingStatus || 'unread') : (row.reading_status ? String(row.reading_status) : base.readingStatus || 'unread')) as ReadingStatus,
     isBookmarked: myEntry ? true : Boolean(row.is_bookmarked),
     collectors,
+    likers,
+    likedByMe: currentUserId ? likers.some((l) => l.userId === currentUserId) : false,
+    readers,
+    totalVisits,
+    totalDwellSeconds,
     inMyKb: Boolean(myEntry),
     myPersonalTags: myEntry?.personalTags || [],
     myReadingStatus: myEntry?.readingStatus,
-    comments: rawComments.map(hydrateCommentRow),
+    comments,
   };
 }
 
@@ -470,6 +826,7 @@ export interface PaperQueryFilters {
   date?: string;
   scope?: 'pool' | 'my_kb';
   collectedByUserId?: string;
+  interactedByUserId?: string;
 }
 
 export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: string): AcademicPaper[] {
@@ -477,8 +834,8 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
     .prepare('SELECT * FROM papers ORDER BY published_date DESC, synced_at DESC')
     .all() as Record<string, unknown>[];
 
-  const collectorsMap = getCollectorsMap();
-  let papers = rows.map((r) => hydratePaper(r, collectorsMap, currentUserId));
+  const ctx = getSocialHydrationContext();
+  let papers = rows.map((r) => hydratePaper(r, ctx, currentUserId));
 
   if (filters.scope === 'my_kb') {
     if (!currentUserId) return [];
@@ -486,6 +843,9 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
   }
   if (filters.collectedByUserId && filters.collectedByUserId !== 'all') {
     papers = papers.filter((p) => (p.collectors || []).some((c) => c.userId === filters.collectedByUserId));
+  }
+  if (filters.interactedByUserId && filters.interactedByUserId !== 'all') {
+    papers = papers.filter((p) => (p.readers || []).some((r) => r.userId === filters.interactedByUserId));
   }
   if (filters.domain && filters.domain !== 'all') {
     papers = papers.filter((p) => p.domain === filters.domain);
@@ -547,7 +907,7 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
 
 export function getPaperById(id: string, currentUserId?: string): AcademicPaper | null {
   const row = db.prepare('SELECT * FROM papers WHERE id = ?').get(id) as Record<string, unknown> | undefined;
-  return row ? hydratePaper(row, getCollectorsMap(), currentUserId) : null;
+  return row ? hydratePaper(row, getSocialHydrationContext(), currentUserId) : null;
 }
 
 export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
@@ -560,7 +920,19 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
 }
 
 export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
-  const { comments, collectors: _c, inMyKb: _i, myPersonalTags: _mt, myReadingStatus: _ms, ...rest } = paper;
+  const {
+    comments,
+    collectors: _c,
+    likers: _l,
+    likedByMe: _lm,
+    readers: _r,
+    totalVisits: _tv,
+    totalDwellSeconds: _td,
+    inMyKb: _i,
+    myPersonalTags: _mt,
+    myReadingStatus: _ms,
+    ...rest
+  } = paper;
   const existing = db.prepare('SELECT id, payload FROM papers WHERE id = ?').get(paper.id) as { id: string; payload: string } | undefined;
   if (existing) {
     try {
@@ -660,8 +1032,12 @@ export function updatePaperLibraryState(
 }
 
 export function deletePaper(id: string): boolean {
+  db.prepare('DELETE FROM comment_likes WHERE comment_id IN (SELECT id FROM comments WHERE paper_id = ?)').run(id);
   db.prepare('DELETE FROM comments WHERE paper_id = ?').run(id);
   db.prepare('DELETE FROM user_kb WHERE paper_id = ?').run(id);
+  db.prepare('DELETE FROM reading_sessions WHERE paper_id = ?').run(id);
+  db.prepare('DELETE FROM paper_reads WHERE paper_id = ?').run(id);
+  db.prepare('DELETE FROM paper_likes WHERE paper_id = ?').run(id);
   const res = db.prepare('DELETE FROM papers WHERE id = ?').run(id);
   return Number(res.changes) > 0;
 }
@@ -673,34 +1049,42 @@ export function addComment(params: {
   author?: string;
   role?: string;
   content: string;
+  parentId?: string;
+  replyToAuthor?: string;
 }): PaperComment | null {
   const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(params.paperId);
   if (!exists) return null;
+  const parent = params.parentId ? db.prepare('SELECT id, author FROM comments WHERE id = ? AND paper_id = ?').get(params.parentId, params.paperId) as { id: string; author: string } | undefined : undefined;
+  if (params.parentId && !parent) return null;
   const now = new Date().toISOString();
   const id = `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const entryType: EntryType = params.entryType === 'thought' ? 'thought' : 'comment';
   const author = params.user?.displayName || params.author?.trim() || '访客学者';
   const role = params.role?.trim() || (entryType === 'thought' ? '深度思考' : '学术评论');
   const userTags = params.user?.userTags || [];
+  const avatarColor = params.user?.avatarColor || pickAvatarColor(author);
 
   db.prepare(`
-    INSERT INTO comments (id, paper_id, entry_type, user_id, username, user_tags, author, role, content, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO comments (id, paper_id, entry_type, user_id, username, avatar_color, user_tags, author, role, content, parent_id, reply_to_author, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     params.paperId,
     entryType,
     params.user?.id || null,
     params.user?.username || null,
+    avatarColor,
     JSON.stringify(userTags),
     author,
     role,
     params.content.trim(),
+    params.parentId || null,
+    parent?.author || null,
     now
   );
 
   const row = db.prepare('SELECT * FROM comments WHERE id = ?').get(id) as Record<string, unknown>;
-  return hydrateCommentRow(row);
+  return hydrateCommentRow(row, getSocialHydrationContext(), params.user?.id);
 }
 
 export function updateComment(
@@ -713,7 +1097,7 @@ export function updateComment(
   if (!row) return null;
 
   // Permission check: owner, admin, or unowned comment
-  if (row.user_id && requestUser && requestUser.role !== 'admin' && String(row.user_id) !== requestUser.id) {
+  if (!requestUser || (requestUser.role !== 'admin' && String(row.user_id || '') !== requestUser.id)) {
     throw new Error('无权修改他人发布的评论或思考');
   }
 
@@ -723,15 +1107,16 @@ export function updateComment(
     .run(patch.content.trim(), nextType, now, commentId, paperId);
 
   const updated = db.prepare('SELECT * FROM comments WHERE id = ?').get(commentId) as Record<string, unknown>;
-  return hydrateCommentRow(updated);
+  return hydrateCommentRow(updated, getSocialHydrationContext(), requestUser?.id);
 }
 
 export function deleteComment(paperId: string, commentId: string, requestUser?: UserProfile | null): boolean {
   const row = db.prepare('SELECT * FROM comments WHERE id = ? AND paper_id = ?').get(commentId, paperId) as Record<string, unknown> | undefined;
   if (!row) return false;
-  if (row.user_id && requestUser && requestUser.role !== 'admin' && String(row.user_id) !== requestUser.id) {
+  if (!requestUser || (requestUser.role !== 'admin' && String(row.user_id || '') !== requestUser.id)) {
     throw new Error('无权删除他人的评论或思考');
   }
+  db.prepare('DELETE FROM comment_likes WHERE comment_id = ?').run(commentId);
   const res = db.prepare('DELETE FROM comments WHERE id = ? AND paper_id = ?').run(commentId, paperId);
   return Number(res.changes) > 0;
 }

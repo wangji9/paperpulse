@@ -22,6 +22,9 @@ export interface UserProfile {
   avatarColor: string;
   userTags: string[];
   kbCount?: number;
+  readPaperCount?: number;
+  totalReadSeconds?: number;
+  likeCount?: number;
   createdAt: string;
 }
 
@@ -34,6 +37,29 @@ export interface PaperCollectorBadge {
   personalTags: string[];
   readingStatus: ReadingStatus;
   addedAt: string;
+}
+
+export interface PaperLikerBadge {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  userTags: string[];
+  likedAt: string;
+}
+
+export interface PaperReaderTrace {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  userTags: string[];
+  visitCount: number;
+  totalDwellSeconds: number;
+  lastVisitedAt: string;
+  liked: boolean;
+  collected: boolean;
+  commentCount: number;
 }
 
 export interface ArchitectureModule {
@@ -143,9 +169,14 @@ export interface PaperComment {
   userId?: string;
   username?: string;
   author: string;
+  avatarColor?: string;
   userTags?: string[];
   role: string;
   content: string;
+  parentId?: string;
+  replyToAuthor?: string;
+  likes?: PaperLikerBadge[];
+  likedByMe?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -175,6 +206,11 @@ export interface AcademicPaper {
   readingStatus: ReadingStatus;
   isBookmarked: boolean;
   collectors?: PaperCollectorBadge[];
+  likers?: PaperLikerBadge[];
+  likedByMe?: boolean;
+  readers?: PaperReaderTrace[];
+  totalVisits?: number;
+  totalDwellSeconds?: number;
   inMyKb?: boolean;
   myPersonalTags?: string[];
   myReadingStatus?: ReadingStatus;

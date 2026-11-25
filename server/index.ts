@@ -18,10 +18,13 @@ import {
   loginUser,
   logoutSession,
   paperExistsByTitleOrDoi,
+  recordPaperReading,
   recordSyncLog,
   registerUser,
   removeUserKbItem,
   saveAutoSyncConfig,
+  toggleCommentLike,
+  togglePaperLike,
   updateComment,
   updatePaperLibraryState,
   updateUserProfile,
@@ -51,13 +54,24 @@ process.on('uncaughtException', (err) => {
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
-app.use('/paper-assets', express.static(PAPER_ASSETS_DIR));
+
 
 function extractUser(req: express.Request): UserProfile | null {
   const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const cookieToken = /(?:^|;\s*)paperpulse_session=([a-f0-9]+)/.exec(req.headers.cookie || '')?.[1] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : cookieToken;
   return getUserByToken(token);
 }
+
+// Mandatory Login Gate Middleware: unauthenticated callers cannot view platform content
+const requireAuth: express.RequestHandler = (req, res, next) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录您的账户后再查看平台内容', code: 'AUTH_REQUIRED' });
+    return;
+  }
+  next();
+};
 
 let syncInProgress = false;
 
@@ -139,6 +153,7 @@ app.post('/api/auth/register', (req, res) => {
       return;
     }
     const result = registerUser({ username, password, displayName, userTags });
+    res.cookie('paperpulse_session', result.token, { httpOnly: true, sameSite: 'lax', path: '/' });
     res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : '注册失败' });
@@ -153,6 +168,7 @@ app.post('/api/auth/login', (req, res) => {
       return;
     }
     const result = loginUser(username, password);
+    res.cookie('paperpulse_session', result.token, { httpOnly: true, sameSite: 'lax', path: '/' });
     res.json(result);
   } catch (err) {
     res.status(401).json({ error: err instanceof Error ? err.message : '登录失败' });
@@ -161,8 +177,10 @@ app.post('/api/auth/login', (req, res) => {
 
 app.post('/api/auth/logout', (req, res) => {
   const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const cookieToken = /(?:^|;\s*)paperpulse_session=([a-f0-9]+)/.exec(req.headers.cookie || '')?.[1] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : cookieToken;
   if (token) logoutSession(token);
+  res.clearCookie('paperpulse_session', { path: '/' });
   res.json({ ok: true });
 });
 
@@ -170,6 +188,15 @@ app.get('/api/auth/me', (req, res) => {
   const user = extractUser(req);
   res.json({ user });
 });
+
+app.use('/paper-assets', requireAuth, express.static(PAPER_ASSETS_DIR));
+
+// Protect all platform data endpoints behind mandatory account authentication
+app.use('/api/users', requireAuth);
+app.use('/api/kb', requireAuth);
+app.use('/api/papers', requireAuth);
+app.use('/api/sync', requireAuth);
+app.use('/api/auto-sync', requireAuth);
 
 app.get('/api/users', (_req, res) => {
   res.json({ users: listAllUsers() });
@@ -271,14 +298,25 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     service: 'PaperPulse Collaborative Library',
     timestamp: new Date().toISOString(),
-    storage: getDatabaseStats(),
-    autoSync: getAutoSyncConfig(),
   });
 });
 
 app.get('/api/papers', (req, res) => {
   const user = extractUser(req);
-  const { q, domain, topic, journal, datasetType, bookmarked, readingStatus, recentOnly, date, scope, collectedBy } = req.query;
+  const {
+    q,
+    domain,
+    topic,
+    journal,
+    datasetType,
+    bookmarked,
+    readingStatus,
+    recentOnly,
+    date,
+    scope,
+    collectedBy,
+    interactedBy,
+  } = req.query;
   const papers = listPapers(
     {
       q: typeof q === 'string' ? q : undefined,
@@ -292,6 +330,7 @@ app.get('/api/papers', (req, res) => {
       date: typeof date === 'string' ? date : undefined,
       scope: scope === 'my_kb' ? 'my_kb' : 'pool',
       collectedByUserId: typeof collectedBy === 'string' ? collectedBy : undefined,
+      interactedByUserId: typeof interactedBy === 'string' ? interactedBy : undefined,
     },
     user?.id
   );
@@ -559,14 +598,49 @@ app.delete('/api/papers/:id', (req, res) => {
   res.json({ deleted: true, id: req.params.id });
 });
 
-/* ---------- Comments & Thoughts Full CRUD ---------- */
+/* ---------- Social Reading Traces, Likes & Comments CRUD ---------- */
+app.post('/api/papers/:id/read', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  const { incrementVisit, addDwellSeconds, visitId, elapsedSeconds } = (req.body as {
+    visitId?: string; elapsedSeconds?: number;
+    incrementVisit?: boolean;
+    addDwellSeconds?: number;
+  }) || {};
+  const paper = recordPaperReading(user.id, req.params.id, { incrementVisit, addDwellSeconds, visitId, elapsedSeconds });
+  if (!paper) {
+    res.status(404).json({ error: 'Paper not found' });
+    return;
+  }
+  res.json({ paper });
+});
+
+app.post('/api/papers/:id/like', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  const paper = togglePaperLike(user.id, req.params.id);
+  if (!paper) {
+    res.status(404).json({ error: 'Paper not found' });
+    return;
+  }
+  res.json({ paper });
+});
+
 app.post('/api/papers/:id/comments', (req, res) => {
   const user = extractUser(req);
-  const { author, role, content, entryType } = req.body as {
+  const { author, role, content, entryType, parentId, replyToAuthor } = req.body as {
     author?: string;
     role?: string;
     content?: string;
     entryType?: EntryType;
+    parentId?: string;
+    replyToAuthor?: string;
   };
   if (!content || !content.trim()) {
     res.status(400).json({ error: '内容不能为空' });
@@ -579,12 +653,28 @@ app.post('/api/papers/:id/comments', (req, res) => {
     author,
     role,
     content,
+    parentId,
+    replyToAuthor,
   });
   if (!comment) {
     res.status(404).json({ error: 'Paper not found' });
     return;
   }
   res.status(201).json({ comment });
+});
+
+app.post('/api/papers/:id/comments/:commentId/like', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  const comment = toggleCommentLike(user.id, req.params.id, req.params.commentId);
+  if (!comment) {
+    res.status(404).json({ error: '评论不存在' });
+    return;
+  }
+  res.json({ comment });
 });
 
 app.put('/api/papers/:id/comments/:commentId', (req, res) => {
@@ -659,7 +749,7 @@ app.listen(PORT, HOST, () => {
   console.log(`PaperPulse server running at http://${HOST}:${PORT}`);
 
   const cfg = getAutoSyncConfig();
-  if (cfg.enabled) {
+  if (cfg.enabled && process.env.DISABLE_AUTO_SYNC !== '1') {
     const today = new Date().toISOString().slice(0, 10);
     const lastDay = cfg.lastAutoSyncAt ? cfg.lastAutoSyncAt.slice(0, 10) : '';
     if (lastDay !== today) {

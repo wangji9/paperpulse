@@ -31,6 +31,15 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
 }
 
+async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const response = await fetch(input, init);
+  if (response.status === 401 && !String(input).includes('/api/auth/login')) {
+    setAuthToken(null);
+    window.dispatchEvent(new Event('paperpulse-auth-required'));
+  }
+  return response;
+}
+
 export interface PaperFilters {
   q?: string;
   domain?: string;
@@ -43,6 +52,7 @@ export interface PaperFilters {
   date?: string;
   scope?: 'pool' | 'my_kb';
   collectedBy?: string;
+  interactedBy?: string;
 }
 
 export interface StorageStats {
@@ -62,7 +72,7 @@ export async function registerAccount(payload: {
   displayName?: string;
   userTags?: string[];
 }): Promise<{ user: UserProfile; token: string }> {
-  const res = await fetch('/api/auth/register', {
+  const res = await apiFetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -74,7 +84,7 @@ export async function registerAccount(payload: {
 }
 
 export async function loginAccount(username: string, password: string): Promise<{ user: UserProfile; token: string }> {
-  const res = await fetch('/api/auth/login', {
+  const res = await apiFetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
@@ -86,20 +96,20 @@ export async function loginAccount(username: string, password: string): Promise<
 }
 
 export async function logoutAccount(): Promise<void> {
-  await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() }).catch(() => {});
+  await apiFetch('/api/auth/logout', { method: 'POST', headers: authHeaders() }).catch(() => {});
   setAuthToken(null);
 }
 
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   if (!getAuthToken()) return null;
-  const res = await fetch('/api/auth/me', { headers: authHeaders() });
+  const res = await apiFetch('/api/auth/me', { headers: authHeaders() });
   if (!res.ok) return null;
   const data = (await res.json()) as { user: UserProfile | null };
   return data.user;
 }
 
 export async function fetchUsersList(): Promise<UserProfile[]> {
-  const res = await fetch('/api/users', { headers: authHeaders() });
+  const res = await apiFetch('/api/users', { headers: authHeaders() });
   if (!res.ok) return [];
   const data = (await res.json()) as { users: UserProfile[] };
   return data.users;
@@ -112,7 +122,7 @@ export async function createManagedUser(payload: {
   userTags?: string[];
   role?: 'admin' | 'member';
 }): Promise<UserProfile> {
-  const res = await fetch('/api/users', {
+  const res = await apiFetch('/api/users', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -126,7 +136,7 @@ export async function updateUserAccount(
   id: string,
   patch: { displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
 ): Promise<UserProfile> {
-  const res = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/api/users/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(patch),
@@ -137,7 +147,7 @@ export async function updateUserAccount(
 }
 
 export async function deleteUserAccount(id: string): Promise<void> {
-  const res = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/api/users/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: authHeaders(),
   });
@@ -152,7 +162,7 @@ export async function upsertMyKbPaper(
   paperId: string,
   payload: { personalTags?: string[]; readingStatus?: ReadingStatus } = {}
 ): Promise<AcademicPaper> {
-  const res = await fetch(`/api/kb/${encodeURIComponent(paperId)}`, {
+  const res = await apiFetch(`/api/kb/${encodeURIComponent(paperId)}`, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -163,7 +173,7 @@ export async function upsertMyKbPaper(
 }
 
 export async function removeMyKbPaper(paperId: string): Promise<AcademicPaper> {
-  const res = await fetch(`/api/kb/${encodeURIComponent(paperId)}`, {
+  const res = await apiFetch(`/api/kb/${encodeURIComponent(paperId)}`, {
     method: 'DELETE',
     headers: authHeaders(),
   });
@@ -186,8 +196,9 @@ export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicP
   if (filters.date) params.set('date', filters.date);
   if (filters.scope) params.set('scope', filters.scope);
   if (filters.collectedBy && filters.collectedBy !== 'all') params.set('collectedBy', filters.collectedBy);
+  if (filters.interactedBy && filters.interactedBy !== 'all') params.set('interactedBy', filters.interactedBy);
 
-  const res = await fetch(`/api/papers?${params.toString()}`, { headers: authHeaders() });
+  const res = await apiFetch(`/api/papers?${params.toString()}`, { headers: authHeaders() });
   if (!res.ok) throw new Error('获取文献列表失败');
   const data = (await res.json()) as { papers: AcademicPaper[] };
   return data.papers;
@@ -196,7 +207,7 @@ export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicP
 export async function createPaper(
   payload: Partial<AcademicPaper> & { quickAbstract?: string; addToMyKb?: boolean; personalTags?: string[] }
 ): Promise<AcademicPaper> {
-  const res = await fetch('/api/papers', {
+  const res = await apiFetch('/api/papers', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -213,7 +224,7 @@ export async function importPaperByIdentifier(
   identifier: string,
   options: { addToMyKb?: boolean; personalTags?: string[] } = {}
 ): Promise<{ paper: AcademicPaper; alreadyExists: boolean }> {
-  const res = await fetch('/api/papers/import', {
+  const res = await apiFetch('/api/papers/import', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ identifier, ...options }),
@@ -226,7 +237,7 @@ export async function importPaperByIdentifier(
 }
 
 export async function reparsePaper(id: string): Promise<AcademicPaper> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/reparse`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(id)}/reparse`, {
     method: 'POST',
     headers: authHeaders(),
   });
@@ -245,7 +256,7 @@ export async function uploadPaperMedia(
     analysisZh?: string;
   }
 ): Promise<AcademicPaper> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/media`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(id)}/media`, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -256,7 +267,7 @@ export async function uploadPaperMedia(
 }
 
 export async function updatePaper(id: string, payload: Partial<AcademicPaper>): Promise<AcademicPaper> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -270,7 +281,7 @@ export async function updatePaperLibraryState(
   id: string,
   patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }
 ): Promise<AcademicPaper> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/status`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(patch),
@@ -281,19 +292,64 @@ export async function updatePaperLibraryState(
 }
 
 export async function removePaper(id: string): Promise<void> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error('删除失败');
 }
 
-/* ---------- Comments & Thoughts Full CRUD ---------- */
+/* ---------- Social Reading Footprints, Likes & Comments CRUD ---------- */
+export async function recordPaperRead(
+  paperId: string,
+  payload: { incrementVisit?: boolean; addDwellSeconds?: number; visitId?: string; elapsedSeconds?: number }
+): Promise<AcademicPaper> {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/read`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+    keepalive: true,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '记录浏览时长失败');
+  return data.paper;
+}
+
+export async function toggleLikePaper(paperId: string): Promise<AcademicPaper> {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/like`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '点赞操作失败');
+  return data.paper;
+}
+
+export async function toggleLikeComment(paperId: string, commentId: string): Promise<PaperComment> {
+  const res = await apiFetch(
+    `/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}/like`,
+    {
+      method: 'POST',
+      headers: authHeaders(),
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '评论点赞失败');
+  return data.comment;
+}
+
 export async function postComment(
   paperId: string,
-  payload: { content: string; entryType?: EntryType; author?: string; role?: string }
+  payload: {
+    content: string;
+    entryType?: EntryType;
+    author?: string;
+    role?: string;
+    parentId?: string;
+    replyToAuthor?: string;
+  }
 ): Promise<PaperComment> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/comments`, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -308,7 +364,7 @@ export async function editComment(
   commentId: string,
   payload: { content: string; entryType?: EntryType }
 ): Promise<PaperComment> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -319,7 +375,7 @@ export async function editComment(
 }
 
 export async function removeComment(paperId: string, commentId: string): Promise<void> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
     method: 'DELETE',
     headers: authHeaders(),
   });
@@ -336,7 +392,7 @@ export async function syncLiveFeed(query?: string): Promise<{
   addedPapers: AcademicPaper[];
   source: string;
 }> {
-  const res = await fetch('/api/sync', {
+  const res = await apiFetch('/api/sync', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ query }),
@@ -354,13 +410,13 @@ export async function syncLiveFeed(query?: string): Promise<{
 }
 
 export async function fetchAutoSyncStatus(): Promise<{ config: AutoSyncConfig; storage: StorageStats }> {
-  const res = await fetch('/api/auto-sync/config', { headers: authHeaders() });
+  const res = await apiFetch('/api/auto-sync/config', { headers: authHeaders() });
   if (!res.ok) throw new Error('获取自动追踪配置失败');
   return (await res.json()) as { config: AutoSyncConfig; storage: StorageStats };
 }
 
 export async function updateAutoSyncConfig(patch: Partial<AutoSyncConfig>): Promise<AutoSyncConfig> {
-  const res = await fetch('/api/auto-sync/config', {
+  const res = await apiFetch('/api/auto-sync/config', {
     method: 'PUT',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(patch),

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Heart,
   BookmarkCheck,
   BookmarkPlus,
   BookOpenCheck,
@@ -29,9 +30,14 @@ import {
 } from '../lib/constants';
 import { OriginalFiguresSection, OriginalTablesSection } from './visuals/PaperVisuals';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
+import { PaperSocialFootprintPanel, useCardReadingTracker, useModalReadingTracker, formatDurationZh } from './SocialEngagement';
 
 interface PaperFeedCardProps {
   paper: AcademicPaper;
+  onSocialUpdate: (paper: AcademicPaper) => void;
+  onLike: (id: string) => Promise<void>;
+  onLikeComment: (paperId: string, commentId: string) => Promise<void>;
+  trackingEnabled?: boolean;
   currentUser: UserProfile | null;
   darkMode: boolean;
   onOpenDetail: (paper: AcademicPaper) => void;
@@ -44,8 +50,8 @@ interface PaperFeedCardProps {
   ) => Promise<void>;
   onToggleMyKb: (paper: AcademicPaper, personalTags?: string[]) => Promise<void>;
   onUpdateStatus: (id: string, patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }) => void;
-  onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
-  onEditEntry: (paperId: string, commentId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
+  onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }) => Promise<void>;
+  onEditEntry: (paperId: string, commentId: string, payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }) => Promise<void>;
   onDeleteEntry: (paperId: string, commentId: string) => Promise<void>;
   onFilterByCollector?: (userId: string) => void;
 }
@@ -54,6 +60,10 @@ const hasChinese = (s: string) => /[\u4e00-\u9fa5]/.test(s);
 
 export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   paper,
+  onSocialUpdate,
+  onLike,
+  onLikeComment,
+  trackingEnabled = true,
   currentUser,
   darkMode,
   onOpenDetail,
@@ -68,6 +78,9 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   onDeleteEntry,
   onFilterByCollector,
 }) => {
+  const cardRef = useRef<HTMLElement>(null);
+  const [liking, setLiking] = useState(false);
+  useCardReadingTracker(paper.id, cardRef, Boolean(currentUser) && trackingEnabled, onSocialUpdate);
   const [showDiscussion, setShowDiscussion] = useState(false);
   const [showTagEditor, setShowTagEditor] = useState(false);
   const [personalTagInput, setPersonalTagInput] = useState((paper.myPersonalTags || []).join(', '));
@@ -143,7 +156,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   const iconBtn = 'rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800';
 
   return (
-    <article
+    <article ref={cardRef}
       className={`rounded-2xl border p-4 sm:p-6 transition-shadow hover:shadow-md ${
         darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-sm'
       }`}
@@ -381,6 +394,10 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         </div>
       )}
 
+      <PaperSocialFootprintPanel paper={paper} darkMode={darkMode} onFilterByUser={onFilterByCollector} />
+      <button type="button" disabled={liking} aria-pressed={paper.likedByMe} onClick={async () => { setLiking(true); try { await onLike(paper.id); } finally { setLiking(false); } }} className="mt-4 inline-flex items-center gap-2 rounded-full border border-rose-200 px-4 py-2 text-sm text-rose-600 disabled:opacity-50">
+        <Heart className={`h-4 w-4 ${paper.likedByMe ? 'fill-current' : ''}`} />{paper.likedByMe ? '已点赞' : '点赞'} · {paper.likers?.length || 0}
+      </button>
       {/* Actions */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
         <div className="flex flex-wrap items-center gap-2">
@@ -485,6 +502,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             comments={paper.comments}
             currentUser={currentUser}
             darkMode={darkMode}
+            onToggleLike={onLikeComment}
             onAdd={onAddEntry}
             onEdit={onEditEntry}
             onDelete={onDeleteEntry}

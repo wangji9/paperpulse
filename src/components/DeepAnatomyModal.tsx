@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  Heart,
   BookmarkCheck,
   BookmarkPlus,
   Building2,
@@ -24,9 +25,14 @@ import {
 } from './visuals/PaperVisuals';
 import { EgoCitationGraph } from './CitationGraph';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
+import { PaperSocialFootprintPanel, useCardReadingTracker, useModalReadingTracker, formatDurationZh } from './SocialEngagement';
 
 interface DeepAnatomyModalProps {
   paper: AcademicPaper;
+  onSocialUpdate: (paper: AcademicPaper) => void;
+  onLike: (id: string) => Promise<void>;
+  onLikeComment: (paperId: string, commentId: string) => Promise<void>;
+  trackingEnabled?: boolean;
   libraryPapers: AcademicPaper[];
   currentUser: UserProfile | null;
   darkMode: boolean;
@@ -41,8 +47,8 @@ interface DeepAnatomyModalProps {
   onToggleMyKb: (paper: AcademicPaper) => Promise<void>;
   onSelectOtherPaper: (paper: AcademicPaper) => void;
   onImportReference: (identifier: string) => Promise<void>;
-  onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
-  onEditEntry: (paperId: string, commentId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
+  onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }) => Promise<void>;
+  onEditEntry: (paperId: string, commentId: string, payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }) => Promise<void>;
   onDeleteEntry: (paperId: string, commentId: string) => Promise<void>;
 }
 
@@ -68,6 +74,10 @@ const Text: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   paper,
+  onSocialUpdate,
+  onLike,
+  onLikeComment,
+  trackingEnabled = true,
   libraryPapers,
   currentUser,
   darkMode,
@@ -83,6 +93,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   onEditEntry,
   onDeleteEntry,
 }) => {
+  const sessionSeconds = useModalReadingTracker(paper.id, Boolean(currentUser), onSocialUpdate);
   const [activeStep, setActiveStep] = useState('sec-bg');
   const [copiedBib, setCopiedBib] = useState(false);
   const [reparsing, setReparsing] = useState(false);
@@ -151,6 +162,9 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
           darkMode ? 'border-slate-700 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'
         }`}
       >
+        <div className="shrink-0 px-4 py-2 text-sm text-indigo-600">本次有效阅读 {formatDurationZh(sessionSeconds)} · 切到后台暂停计时
+          <button type="button" aria-pressed={paper.likedByMe} onClick={() => void onLike(paper.id)} className="ml-4 inline-flex items-center gap-1 text-rose-600"><Heart className={`h-4 w-4 ${paper.likedByMe ? 'fill-current' : ''}`} />{paper.likedByMe ? '已点赞' : '点赞'} ({paper.likers?.length || 0})</button>
+        </div>
         <div className={`shrink-0 border-b px-4 py-3.5 sm:px-6 sm:py-4 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
@@ -397,12 +411,14 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
 
           <section className={`rounded-2xl border p-4 sm:p-5 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
             <h3 className="mb-3 text-lg font-semibold">深度思考与学术评论</h3>
-            <CommentsAndThoughts
+            <PaperSocialFootprintPanel paper={paper} darkMode={darkMode} defaultShowBubbles />
+          <CommentsAndThoughts
               paperId={paper.id}
               comments={paper.comments}
               currentUser={currentUser}
               darkMode={darkMode}
-              onAdd={onAddEntry}
+              onToggleLike={onLikeComment}
+            onAdd={onAddEntry}
               onEdit={onEditEntry}
               onDelete={onDeleteEntry}
             />

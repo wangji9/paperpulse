@@ -29,6 +29,7 @@ import type {
 } from './types/paper';
 import {
   StorageStats,
+  getAuthToken,
   removePaper as apiDeletePaper,
   editComment,
   fetchAutoSyncStatus,
@@ -46,6 +47,8 @@ import {
   updatePaperLibraryState,
   uploadPaperMedia,
   upsertMyKbPaper,
+  toggleLikePaper,
+  toggleLikeComment,
 } from './lib/api';
 import { TOPIC_META, TRACKED_JOURNALS } from './lib/constants';
 import { PaperFeedCard } from './components/PaperFeedCard';
@@ -53,7 +56,7 @@ import { DeepAnatomyModal } from './components/DeepAnatomyModal';
 import { PaperFormModal } from './components/PaperFormModal';
 import { GlobalCitationGraph } from './components/CitationGraph';
 import { ArchitectureObservatory } from './components/ArchitectureModal';
-import { AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
+import { AuthGateScreen, AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
 import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
 
 type ViewTab = 'pool' | 'my_kb' | 'citations' | 'users' | 'automation';
@@ -65,6 +68,7 @@ export default function App() {
 
   // Auth & Users
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -86,6 +90,7 @@ export default function App() {
   const [recentOnly, setRecentOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [collectedByFilter, setCollectedByFilter] = useState<string>('all');
+  const [interactedByFilter, setInteractedByFilter] = useState<string>('all');
   const [visibleLimit, setVisibleLimit] = useState<number>(8);
 
   // Quick Import Bar
@@ -102,20 +107,51 @@ export default function App() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
+  const handleSocialUpdate = useCallback((updated: AcademicPaper) => {
+    if (!getAuthToken()) return;
+    setPapers(list => list.map(p => p.id === updated.id ? updated : p));
+    setAllPoolPapers(list => list.map(p => p.id === updated.id ? updated : p));
+    setSelectedPaper(p => p?.id === updated.id ? updated : p);
+  }, []);
+
+  const handleLikePaper = async (id: string) => {
+    try { handleSocialUpdate(await toggleLikePaper(id)); }
+    catch (err) { showToast('error', err instanceof Error ? err.message : '点赞失败'); }
+  };
+
+  const handleLikeComment = async (paperId: string, commentId: string) => {
+    try {
+      const comment = await toggleLikeComment(paperId, commentId);
+      const update = (p: AcademicPaper) => p.id === paperId ? { ...p, comments: p.comments.map(c => c.id === commentId ? comment : c) } : p;
+      setPapers(list => list.map(update));
+      setAllPoolPapers(list => list.map(update));
+      setSelectedPaper(p => p ? update(p) : p);
+    } catch (err) { showToast('error', err instanceof Error ? err.message : '点赞失败'); }
+  };
+
   const refreshAuthAndUsers = useCallback(async () => {
     const [me, uList] = await Promise.all([fetchCurrentUser(), fetchUsersList()]);
     setCurrentUser(me);
     setUsersList(uList);
+    setAuthReady(true);
   }, []);
 
   useEffect(() => {
-    void refreshAuthAndUsers();
+    void refreshAuthAndUsers().catch(() => setAuthReady(true));
   }, [refreshAuthAndUsers]);
+
+  useEffect(() => {
+    const reset = () => { setCurrentUser(null); setPapers([]); setAllPoolPapers([]); setSelectedPaper(null); setFormOpen(false); setAuthModalOpen(false); setUsersList([]); };
+    window.addEventListener('paperpulse-auth-required', reset);
+    return () => window.removeEventListener('paperpulse-auth-required', reset);
+  }, []);
 
   const currentScope: 'pool' | 'my_kb' = activeTab === 'my_kb' ? 'my_kb' : 'pool';
 
   const loadData = useCallback(
     async (silent = false) => {
+      if (!currentUser) return;
+      const requestToken = getAuthToken();
       if (!silent) setLoading(true);
       try {
         const [filteredList, fullList, syncInfo, uList] = await Promise.all([
@@ -129,11 +165,13 @@ export default function App() {
             recentOnly,
             scope: currentScope,
             collectedBy: collectedByFilter,
+            interactedBy: interactedByFilter,
           }),
           fetchPapers({ scope: 'pool' }),
           fetchAutoSyncStatus(),
           fetchUsersList(),
         ]);
+        if (requestToken !== getAuthToken()) return;
         setPapers(filteredList);
         setAllPoolPapers(fullList);
         setAutoSyncConfig(syncInfo.config);
@@ -155,6 +193,8 @@ export default function App() {
       recentOnly,
       currentScope,
       collectedByFilter,
+      interactedByFilter,
+      currentUser?.id,
       showToast,
     ]
   );
@@ -313,7 +353,7 @@ export default function App() {
     }
   };
 
-  const handleAddEntry = async (paperId: string, payload: { content: string; entryType: EntryType }) => {
+  const handleAddEntry = async (paperId: string, payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }) => {
     const comment = await postComment(paperId, payload);
     const updater = (list: AcademicPaper[]) =>
       list.map((p) => (p.id === paperId ? { ...p, comments: [comment, ...p.comments] } : p));
@@ -551,6 +591,9 @@ export default function App() {
     </div>
   );
 
+  if (!authReady) return <div className="flex min-h-dvh items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-indigo-600" aria-label="正在验证登录" /></div>;
+  if (!currentUser) return <AuthGateScreen darkMode={darkMode} onToggleDarkMode={() => setDarkMode(v => !v)} onAuthenticated={u => { setCurrentUser(u); setActiveTab('pool'); }} />;
+
   return (
     <div
       className={`${activeTab === 'citations' ? 'lg:h-dvh lg:overflow-hidden ' : ''}${
@@ -737,6 +780,13 @@ export default function App() {
                   onClick={async () => {
                     await logoutAccount();
                     setCurrentUser(null);
+                    setPapers([]);
+                    setAllPoolPapers([]);
+                    setSelectedPaper(null);
+                    setFormOpen(false);
+                    setUsersList([]);
+                    setCollectedByFilter('all');
+                    setInteractedByFilter('all');
                     if (activeTab === 'my_kb') setActiveTab('pool');
                     await loadData(true);
                     showToast('success', '已退出登录');
@@ -813,6 +863,7 @@ export default function App() {
           />
         ) : activeTab === 'users' ? (
           <UserManagementPanel
+            onFilterByInteraction={uid => { setInteractedByFilter(uid); setCollectedByFilter('all'); setActiveTab('pool'); }}
             currentUser={currentUser}
             users={usersList}
             darkMode={darkMode}
@@ -880,6 +931,7 @@ export default function App() {
                 </div>
               )}
 
+              {interactedByFilter !== 'all' && <div className="rounded-xl border border-indigo-200 p-3 text-sm">正在查看 {usersList.find(u => u.id === interactedByFilter)?.displayName} 的互动足迹 <button className="ml-3 text-indigo-600" onClick={() => setInteractedByFilter('all')}>清除筛选</button></div>}
               {/* Quick Auto-Parse Import Bar */}
               <div
                 className={`rounded-2xl border p-4 ${
@@ -928,6 +980,7 @@ export default function App() {
                 </div>
               ) : activeTab === 'my_kb' && currentUser ? (
                 <MyKnowledgeBaseView
+                  onSocialUpdate={handleSocialUpdate} onLike={handleLikePaper} onLikeComment={handleLikeComment} trackingEnabled={!selectedPaper && !formOpen && !authModalOpen}
                   papers={papers}
                   currentUser={currentUser}
                   darkMode={darkMode}
@@ -984,6 +1037,10 @@ export default function App() {
 
                       {list.map((paper) => (
                         <PaperFeedCard
+                          trackingEnabled={!selectedPaper && !formOpen && !authModalOpen}
+                          onSocialUpdate={handleSocialUpdate}
+                          onLike={handleLikePaper}
+                          onLikeComment={handleLikeComment}
                           key={paper.id}
                           paper={paper}
                           currentUser={currentUser}
@@ -1031,6 +1088,10 @@ export default function App() {
       {/* Deep Anatomy & Citation Graph Modal */}
       {selectedPaper && (
         <DeepAnatomyModal
+          key={selectedPaper.id}
+          onSocialUpdate={handleSocialUpdate}
+          onLike={handleLikePaper}
+          onLikeComment={handleLikeComment}
           paper={selectedPaper}
           libraryPapers={allPoolPapers}
           currentUser={currentUser}

@@ -19,6 +19,10 @@ import { PaperFeedCard } from './PaperFeedCard';
 
 interface MyKnowledgeBaseViewProps {
   papers: AcademicPaper[];
+  onSocialUpdate: (paper: AcademicPaper) => void;
+  onLike: (id: string) => Promise<void>;
+  onLikeComment: (paperId: string, commentId: string) => Promise<void>;
+  trackingEnabled: boolean;
   currentUser: UserProfile;
   darkMode: boolean;
   onOpenDetail: (paper: AcademicPaper) => void;
@@ -42,6 +46,7 @@ type KbLayoutMode = 'kanban' | 'matrix' | 'cards';
 
 export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
   papers,
+  onSocialUpdate, onLike, onLikeComment, trackingEnabled,
   currentUser,
   darkMode,
   onOpenDetail,
@@ -521,6 +526,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
         <div className="space-y-4">
           {filteredPapers.map((paper) => (
             <PaperFeedCard
+              onSocialUpdate={onSocialUpdate} onLike={onLike} onLikeComment={onLikeComment} trackingEnabled={trackingEnabled}
               key={paper.id}
               paper={paper}
               currentUser={currentUser}
