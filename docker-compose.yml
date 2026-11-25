@@ -6,6 +6,9 @@ services:
     image: paperpulse-web:latest
     container_name: wangji-paperpulse
     restart: unless-stopped
+    depends_on:
+      translator:
+        condition: service_healthy
     ports:
       - "0.0.0.0:${PAPERPULSE_PORT:-13001}:3000"
     environment:
@@ -13,9 +16,23 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       - TZ=Asia/Shanghai
+      - TRANSLATION_PROVIDER=local
+      - LOCAL_TRANSLATION_URL=http://translator:8080/translate
+      - TRANSLATION_ALLOW_PAID_FALLBACK=0
       - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
     volumes:
       - ./data:/app/data
     dns:
       - 114.114.114.114
       - 223.5.5.5
+
+  translator:
+    build:
+      context: ./translation
+    image: paperpulse-translator:latest
+    container_name: wangji-paperpulse-translator
+    restart: unless-stopped
+    volumes:
+      - ./translation-models:/models:ro
+    expose:
+      - "8080"

@@ -1,3 +1,5 @@
+import { localizePaper } from './localizePaper.js';
+import { startLocalizationQueue } from './localizationQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
 import { fetchOpenConferencePapers } from './conferenceFetcher.js';
 import express from 'express';
@@ -124,8 +126,8 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
         paper.anatomy.paperFigures = media.paperFigures;
         paper.anatomy.paperTables = media.paperTables;
         if (isPaperSuppressed(raw.title, raw.doi)) continue;
-        upsertPaper(paper);
-        addedPapers.push(paper);
+        const localized=upsertPaper(await localizePaper(paper));
+        addedPapers.push(localized);
         if (addedPapers.length >= 5) break;
       }
     }
@@ -439,7 +441,7 @@ app.post('/api/papers', requireAdmin, async (req, res) => {
       comments: [],
     };
 
-    upsertPaper(paper, user?.id);
+    upsertPaper(await localizePaper(paper), user?.id);
     if (user && body.addToMyKb !== false) {
       upsertUserKbItem(user.id, paper.id, { personalTags: body.personalTags || [] });
     }
@@ -482,7 +484,7 @@ app.post('/api/papers/import', requireAdmin, async (req, res) => {
     const media = await extractOriginalPaperMedia(newPaper);
     newPaper.anatomy.paperFigures = media.paperFigures;
     newPaper.anatomy.paperTables = media.paperTables;
-    upsertPaper(newPaper, user?.id);
+    upsertPaper(await localizePaper(newPaper), user?.id);
     if (user && addToMyKb !== false) {
       upsertUserKbItem(user.id, newPaper.id, { personalTags });
     }
@@ -506,7 +508,7 @@ app.post('/api/papers/:id/reparse', requireAdmin, async (req, res) => {
     const media = await extractOriginalPaperMedia(enriched);
     if (media.paperFigures.length > 0) enriched.anatomy.paperFigures = media.paperFigures;
     if (media.paperTables.length > 0) enriched.anatomy.paperTables = media.paperTables;
-    const saved = upsertPaper(enriched, user?.id);
+    const saved = upsertPaper(await localizePaper(enriched), user?.id);
     res.json({ paper: saved });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : '自动解析失败' });
@@ -577,14 +579,14 @@ app.post('/api/papers/:id/media', requireAdmin, async (req, res) => {
         paperTables: curTbls,
       },
     };
-    const saved = upsertPaper(updated, user?.id);
+    const saved = upsertPaper(await localizePaper(updated), user?.id);
     res.json({ paper: saved });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : '上传图表失败' });
   }
 });
 
-app.put('/api/papers/:id', requireAdmin, (req, res) => {
+app.put('/api/papers/:id', requireAdmin, async (req, res) => {
   const user = extractUser(req);
   const existing = getPaperById(String(req.params.id), user?.id);
   if (!existing) {
@@ -601,7 +603,7 @@ app.put('/api/papers/:id', requireAdmin, (req, res) => {
     comments: existing.comments,
   };
 
-  const saved = upsertPaper(updated, user?.id);
+  const saved = upsertPaper(await localizePaper(updated), user?.id);
   res.json({ paper: saved });
 });
 
@@ -776,6 +778,7 @@ if (fs.existsSync(DIST_DIR)) {
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {
+  startLocalizationQueue();
   console.log(`PaperPulse server running at http://${HOST}:${PORT}`);
 
   const cfg = getAutoSyncConfig();

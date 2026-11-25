@@ -17,3 +17,5 @@ Thumbs.db
 
 # Browser verification artifacts
 .playwright-cli/
+
+translation-models/

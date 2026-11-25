@@ -115,6 +115,7 @@ export interface OriginalPaperFigure {
   label: string;
   url: string;
   captionOriginal: string;
+  captionZh?: string;
   analysisZh: string;
   category: 'method' | 'experiment';
 }
@@ -125,6 +126,7 @@ export interface OriginalPaperTable {
   html?: string;
   imageUrl?: string;
   captionOriginal: string;
+  captionZh?: string;
   analysisZh: string;
 }
 
@@ -204,6 +206,7 @@ export interface AcademicPaper {
   url: string;
   sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'conference_live' | 'user_created';
   keywords?: string[];
+  keywordsOriginal?: string[];
   keywordSource?: 'author' | 'extracted' | 'manual';
   pdfUrl?: string;
   codeUrl?: string;

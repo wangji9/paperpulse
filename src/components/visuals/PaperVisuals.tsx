@@ -1,3 +1,4 @@
+import { chineseText, chineseFigureLabel } from '../../lib/chinese';
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Database, ImagePlus, Loader2, Maximize2, Table2, X } from 'lucide-react';
@@ -188,14 +189,14 @@ export const OriginalFiguresSection: React.FC<{
               <div className="group relative overflow-hidden rounded-lg border border-slate-100 bg-white p-2 dark:border-slate-800">
                 <img
                   src={fig.url}
-                  alt={fig.captionOriginal || fig.label}
+                  alt={chineseText(fig.captionZh || fig.captionOriginal)}
                   loading="lazy"
-                  onClick={() => setZoomItem({ src: fig.url, cap: fig.analysisZh || fig.captionOriginal })}
+                  onClick={() => setZoomItem({ src: fig.url, cap: chineseText(fig.analysisZh || fig.captionZh || fig.captionOriginal) })}
                   className="mx-auto max-h-[420px] w-auto cursor-zoom-in object-contain"
                 />
                 <button
                   type="button"
-                  onClick={() => setZoomItem({ src: fig.url, cap: fig.analysisZh || fig.captionOriginal })}
+                  onClick={() => setZoomItem({ src: fig.url, cap: chineseText(fig.analysisZh || fig.captionZh || fig.captionOriginal) })}
                   className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-md bg-slate-900/75 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
                 >
                   <Maximize2 className="h-3.5 w-3.5" /> 放大原图
@@ -206,13 +207,13 @@ export const OriginalFiguresSection: React.FC<{
                 {fig.captionOriginal && (
                   <p className="text-slate-500 dark:text-slate-400">
                     <span className="mr-1.5 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      {fig.label}
+                      {chineseFigureLabel(fig.label)}
                     </span>
-                    {fig.captionOriginal}
+                    {chineseText(fig.captionZh || fig.captionOriginal)}
                   </p>
                 )}
                 {fig.analysisZh && (
-                  <p className="text-slate-800 dark:text-slate-200">{fig.analysisZh}</p>
+                  <p className="text-slate-800 dark:text-slate-200">{chineseText(fig.analysisZh)}</p>
                 )}
               </figcaption>
             </figure>
@@ -303,9 +304,9 @@ export const OriginalTablesSection: React.FC<{
               {tbl.captionOriginal && (
                 <div className="mb-2.5 text-sm text-slate-600 dark:text-slate-300">
                   <span className="mr-1.5 rounded bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    {tbl.label}
+                    {chineseFigureLabel(tbl.label)}
                   </span>
-                  <span>{tbl.captionOriginal}</span>
+                  <span>{chineseText(tbl.captionZh || tbl.captionOriginal)}</span>
                 </div>
               )}
 
@@ -313,9 +314,9 @@ export const OriginalTablesSection: React.FC<{
                 <div className="overflow-hidden rounded-lg border border-slate-100 bg-white p-2 dark:border-slate-800">
                   <img
                     src={tbl.imageUrl}
-                    alt={tbl.captionOriginal || tbl.label}
+                    alt={chineseText(tbl.captionZh || tbl.captionOriginal)}
                     loading="lazy"
-                    onClick={() => setZoomItem({ src: tbl.imageUrl!, cap: tbl.analysisZh || tbl.captionOriginal })}
+                    onClick={() => setZoomItem({ src: tbl.imageUrl!, cap: chineseText(tbl.analysisZh || tbl.captionZh || tbl.captionOriginal) })}
                     className="mx-auto max-h-[420px] w-auto cursor-zoom-in object-contain"
                   />
                 </div>
@@ -327,7 +328,7 @@ export const OriginalTablesSection: React.FC<{
               ) : null}
 
               {tbl.analysisZh && (
-                <p className="mt-2.5 text-sm leading-6 text-slate-800 dark:text-slate-200">{tbl.analysisZh}</p>
+                <p className="mt-2.5 text-sm leading-6 text-slate-800 dark:text-slate-200">{chineseText(tbl.analysisZh)}</p>
               )}
             </div>
           ))}

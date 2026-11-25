@@ -1,3 +1,4 @@
+import { localizePaper } from './localizePaper.js';
 import fs from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -33,5 +34,5 @@ export async function parsePaperEvidence(paper: AcademicPaper, fullText = true):
   }
   if(status==='full_text' && (!result.anatomy.proposedMethod || !result.anatomy.conclusion))warnings.push('已读取PDF正文，但尚未可靠定位全部方法或结论段落；缺失项保留待补全。');
   if (!result.keywords?.length) { result.keywords=extractKeywords(paper.title,paper.abstractOriginal,paper.keywords); result.keywordSource='extracted'; }
-  return { ...result, pdfUrl, localPdfUrl:fs.existsSync(cached)?`/paper-assets/${paper.id.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,64)}/source.pdf`:undefined, parsing: { status, sourceUrl:pdfUrl || paper.htmlUrl || paper.url, pages, updatedAt:new Date().toISOString(), sections:found, warnings } };
+  return localizePaper({ ...result, pdfUrl, localPdfUrl:fs.existsSync(cached)?`/paper-assets/${paper.id.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,64)}/source.pdf`:undefined, parsing: { status, sourceUrl:pdfUrl || paper.htmlUrl || paper.url, pages, updatedAt:new Date().toISOString(), sections:found, warnings } });
 }

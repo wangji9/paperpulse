@@ -1,3 +1,5 @@
+import { localizePaper } from './localizePaper.js';
+import { translateChinese } from './translation.js';
 import { load } from 'cheerio';
 import { createHash } from 'node:crypto';
 import { extractKeywords } from './keywords.js';
@@ -94,52 +96,9 @@ const JOURNAL_NAME_SHORT_MAP: Array<[RegExp, string]> = [
   [/journal of artificial intelligence research/i, 'JAIR'],
 ];
 
-/* ---------- Multi-chunk Translation ---------- */
-function splitIntoChunks(text: string, maxChunk = 450): string[] {
-  const clean = text.replace(/\s+/g, ' ').trim();
-  if (!clean) return [];
-  if (clean.length <= maxChunk) return [clean];
-  const sentences = clean.split(/(?<=[.!?])\s+/);
-  const chunks: string[] = [];
-  let cur = '';
-  for (const s of sentences) {
-    if ((cur + ' ' + s).trim().length > maxChunk) {
-      if (cur) chunks.push(cur.trim());
-      cur = s.slice(0, maxChunk);
-      if (chunks.length >= 2) break;
-    } else {
-      cur = (cur ? `${cur} ${s}` : s).trim();
-    }
-  }
-  if (cur && chunks.length < 3) chunks.push(cur.trim());
-  return chunks.slice(0, 3);
-}
-
-async function translateSingleChunk(chunk: string): Promise<string | null> {
-  if (!chunk) return null;
-  try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?langpair=en|zh-CN&q=${encodeURIComponent(chunk)}`,
-      { signal: AbortSignal.timeout(9000) }
-    );
-    if (!res.ok) return null;
-    const j = (await res.json()) as { responseData?: { translatedText?: string }; quotaFinished?: boolean };
-    const t = j.responseData?.translatedText;
-    if (!t || j.quotaFinished || /MYMEMORY WARNING|QUERY LENGTH|INVALID/i.test(t)) return null;
-    return t;
-  } catch {
-    return null;
-  }
-}
-
-export async function translateToZh(text: string, maxTotalChars = 1100): Promise<string | null> {
-  const trimmed = text.replace(/\s+/g, ' ').trim().slice(0, maxTotalChars);
-  if (!trimmed) return null;
-  if (/[\u4e00-\u9fa5]{8,}/.test(trimmed)) return trimmed;
-  const chunks = splitIntoChunks(trimmed, 440);
-  const translated = await Promise.all(chunks.map(translateSingleChunk));
-  const valid = translated.filter(Boolean) as string[];
-  return valid.length > 0 ? valid.join('') : null;
+/* ---------- Cached Chinese translation ---------- */
+export async function translateToZh(text: string, maxTotalChars = 100000): Promise<string | null> {
+  return translateChinese(text.slice(0,maxTotalChars));
 }
 
 /* ---------- Classification & Technical English Term Extraction ---------- */
@@ -607,7 +566,7 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
     anatomy: s.anatomy,
     comments: [],
   };
-  return applySourceText(paper, raw.abstract);
+  return localizePaper(applySourceText(paper, raw.abstract));
 }
 
 export async function reparseExistingPaper(paper: AcademicPaper): Promise<AcademicPaper> {

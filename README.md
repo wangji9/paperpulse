@@ -35,6 +35,7 @@ npm run build
 
 ## Docker 常驻部署
 ```bash
+python3 translation/install_model.py
 docker compose up -d --build
 docker compose ps
 ```
@@ -69,3 +70,10 @@ docker compose ps
 
 抓取增加经过来源和年份校验的元数据缓存，以及已验证PDF的本地缓存。站点短暂超时仍可解析已经成功获取的原文，避免重复下载；PDF缓存计入文献附件占用，删除文献时一起清理。`server/refreshResearch.ts --cached` 可复用已核验的年度官方元数据缓存进行补充和重试。
 已缓存且验证通过的原文PDF可从文献卡片的「站内原文PDF」在局域网内打开，减少对外部站点可达性的依赖；原始来源链接仍保留。
+
+## 免费中文翻译
+Docker Compose 内置私有的英译中服务：使用 [Argos Translate](https://github.com/argosopentech/argos-translate) 的 en→zh 1.9 开源模型，在服务器 CPU 上通过 CTranslate2 运行。首次安装模型约需下载71MB，模型包经过固定 SHA256 校验，保留包内许可和说明；模型目录不提交 Git。服务只对 Docker 内网开放，不需要密钥，不调用收费云翻译接口，也不受公共免费接口的每日次数限制。
+
+标题、解读正文、图表说明、表格文本及关键词在新论文入库和重新解析时自动翻译。作者、模型缩写、原始摘要、原始图注和原文 PDF 保留以便核对；论文图像里的文字仍是原图。译文以源文本哈希持久化缓存，后台每分钟重试两篇尚未完成翻译的文献。服务暂时不可用时保留原文，不把已有内容替换为“中文内容待补全”。机器翻译可能存在术语偏差，应结合原文核对。
+
+已有文献可执行 `docker compose exec paperpulse npx tsx server/localizeLibrary.ts` 逐篇补译，完成后输出失败及待重试的文献ID。数据库仅合并没有在翻译期间被修改的文本字段，不覆盖评论、阅读或收藏记录，也不恢复已删除文献。本地开发可设置 `LOCAL_TRANSLATION_URL` 指向兼容的私有 `/translate` 接口（POST `{q:string}`，返回 `{translatedText:string}`）。

@@ -12,7 +12,7 @@ test('authenticated social reading is traceable, isolated and durable', async ()
   let logs = '';
   const start = async () => {
     server = spawn(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'server/index.ts'], {
-      env: { ...process.env, DATA_DIR: dir, HOST: '127.0.0.1', PORT: String(port), DISABLE_AUTO_SYNC: '1', BOOTSTRAP_ADMIN_PASSWORD: 'test-admin-password' },
+      env: { ...process.env, DATA_DIR: dir, HOST: '127.0.0.1', PORT: String(port), DISABLE_AUTO_SYNC: '1', DASHSCOPE_API_KEY: '', BOOTSTRAP_ADMIN_PASSWORD: 'test-admin-password' },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     server.stdout.on('data', b => { logs += b; });

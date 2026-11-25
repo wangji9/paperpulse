@@ -1,3 +1,4 @@
+import { localizePaper } from './localizePaper.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PAPER_ASSETS_DIR } from './paperMediaExtractor.js';
@@ -9,10 +10,11 @@ import { getAutoSyncConfig, getDatabaseStats, initDatabase, isPaperSuppressed, l
 
 initDatabase();
 const year=new Date().getUTCFullYear();
+const repairOnly=(process.argv.find(a=>a.startsWith('--repair='))?.slice(9)||'').split(',').filter(Boolean);
 const config=getAutoSyncConfig();
 saveAutoSyncConfig({...config,targetWindow:'current_year',trackedJournals:[...new Set([...config.trackedJournals,'CVPR','ACL','ICML'])]});
 console.log(`Fetching official open proceedings for ${year}…`);
-const fetched=process.argv.includes('--cached')?{papers:readConferenceCache(year),warnings:[]}:await fetchOpenConferencePapers(year,8,['CVPR','ACL','ICML']);
+const fetched=repairOnly.length?{papers:[],warnings:[]}:process.argv.includes('--cached')?{papers:readConferenceCache(year),warnings:[]}:await fetchOpenConferencePapers(year,8,['CVPR','ACL','ICML']);
 for(const warning of fetched.warnings)console.log('Source warning:',warning);
 const added:string[]=[];
 for(let i=0;i<fetched.papers.length && added.length<24;i+=3) {
@@ -28,7 +30,7 @@ for(let i=0;i<fetched.papers.length && added.length<24;i+=3) {
   }
 }
 const all=listPapers();
-const candidates=[...all.filter(p=>p.id==='oa-W4205161126'),...all.filter(p=>p.publishedDate.startsWith(String(year)) && !added.includes(p.id) && (!p.anatomy.proposedMethod || !p.anatomy.conclusion)).slice(0,5),...all.filter(p=>p.sourceOrigin==='conference_live' && p.publishedDate.startsWith(String(year)) && p.parsing?.status!=='full_text')];
+const candidates=repairOnly.length?all.filter(p=>repairOnly.includes(p.id)):[...all.filter(p=>p.id==='oa-W4205161126'),...all.filter(p=>p.publishedDate.startsWith(String(year)) && !added.includes(p.id) && (!p.anatomy.proposedMethod || !p.anatomy.conclusion)).slice(0,5),...all.filter(p=>p.sourceOrigin==='conference_live' && p.publishedDate.startsWith(String(year)) && p.parsing?.status!=='full_text')];
 const repairs=[...new Map(candidates.map(p=>[p.id,p])).values()];
 let full=0,media=0;
 for(let i=0;i<repairs.length;i+=3) {
@@ -41,7 +43,7 @@ for(let i=0;i<repairs.length;i+=3) {
       if(parsed.parsing?.status!=='full_text' && fs.existsSync(path.join(PAPER_ASSETS_DIR,paper.id.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,64),'source.pdf')))parsed=await parsePaperEvidence(parsed,true);
       if(parsed.parsing?.status==='full_text')full++;
       if(assets.paperFigures.length || assets.paperTables.length)media++;
-      upsertPaper(parsed);
+      upsertPaper(await localizePaper(parsed));
       console.log(`Parsed ${paper.journalShort}: ${parsed.parsing?.status}; figures=${assets.paperFigures.length}, tables=${assets.paperTables.length} | ${paper.title}`);
     } catch(e){console.log(`Parse deferred ${paper.id}: ${e instanceof Error?e.message:'unknown error'}`);}
   }));

@@ -1,3 +1,4 @@
+import { chineseText } from '../lib/chinese';
 import React, { useRef, useState } from 'react';
 import {
   Heart,
@@ -91,7 +92,6 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   const { anatomy } = paper;
   const dsMeta = DATASET_SOURCE_META[anatomy.dataset.sourceType] || DATASET_SOURCE_META.unspecified;
   const statusInfo = READING_STATUS_META[paper.readingStatus] || READING_STATUS_META.unread;
-  const showZhTitle = paper.titleZh && paper.titleZh !== paper.title && hasChinese(paper.titleZh);
   const collectors = paper.collectors || [];
   const thoughtCount = paper.comments.filter((c) => c.entryType === 'thought').length;
   const commentCount = paper.comments.filter((c) => c.entryType !== 'thought').length;
@@ -168,7 +168,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
           <span className="rounded-md bg-indigo-600 px-2.5 py-0.5 font-semibold text-white">
             {paper.journalShort}
           </span>
-          <span className="font-medium text-slate-800 dark:text-slate-200">{paper.journal}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200">{paper.journalShort}</span>
           <span className="text-slate-300">|</span>
           <span>{paper.publishedDate}</span>
           {paper.citedByCount > 0 && (
@@ -223,9 +223,9 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         onClick={() => onOpenDetail(paper)}
         className="mt-3 cursor-pointer text-lg font-semibold leading-snug text-slate-900 hover:text-indigo-700 sm:text-xl dark:text-white"
       >
-        {paper.title}
+        {chineseText(paper.titleZh || paper.title)}
       </h2>
-      {showZhTitle && <p className="mt-1 text-base font-medium text-slate-700 dark:text-slate-300">{paper.titleZh}</p>}
+
 
       <PaperKeywords paper={paper} />
       {/* Authors + Clickable DOI */}
@@ -333,7 +333,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             darkMode ? 'bg-slate-800/50 text-slate-200' : 'bg-indigo-50/40 text-slate-800'
           }`}
         >
-          {paper.digestSummary}
+          {chineseText(paper.digestSummary)}
         </div>
       )}
 
@@ -351,7 +351,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
                 <span className="rounded bg-indigo-600 px-1.5 py-0.2 text-xs text-white">{b.num}</span>
                 <span>{b.title}</span>
               </div>
-              <p className="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-300">{b.text}</p>
+              <p className="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-300">{chineseText(b.text)}</p>
             </div>
           ))}
         </div>
@@ -393,7 +393,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         >
           <p>
             <span className="font-semibold text-slate-900 dark:text-white">核心结论：</span>
-            {anatomy.conclusion}
+            {chineseText(anatomy.conclusion)}
           </p>
         </div>
       )}

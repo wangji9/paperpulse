@@ -977,6 +977,18 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
   return (db.prepare('SELECT title FROM papers').all() as Array<{title:string}>).some(p=>key(p.title)===key(title));
 }
 
+// Merge only translated fields that have not been edited since work started.
+// Never re-create a deleted paper or change comments, collections or read records.
+export function commitPaperTranslation(original:AcademicPaper, localized:AcademicPaper):void {
+  const row=db.prepare('SELECT payload FROM papers WHERE id=?').get(original.id) as {payload:string}|undefined;
+  if(!row)return;
+  const current=JSON.parse(row.payload) as AcademicPaper;
+  for(const key of ['titleZh','digestSummary','keywords','keywordsOriginal','tags','anatomy'] as const) {
+    if(JSON.stringify(current[key])===JSON.stringify(original[key]))Object.assign(current,{[key]:localized[key]});
+  }
+  db.prepare('UPDATE papers SET payload=? WHERE id=?').run(JSON.stringify(current),original.id);
+}
+
 export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
   db.prepare('DELETE FROM deleted_papers WHERE lower(title) = lower(?) OR (doi != ? AND lower(doi) = lower(?))').run(paper.title, '', paper.doi || '');
   paper = { ...paper, keywords:paper.keywords?.length?paper.keywords:extractKeywords(paper.title,paper.abstractOriginal), anatomy:{...paper.anatomy,paperTables:(paper.anatomy.paperTables||[]).map(t=>({...t,html:t.html?sanitizePaperTableHtml(t.html):undefined}))} };

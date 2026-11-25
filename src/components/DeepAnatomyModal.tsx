@@ -1,3 +1,4 @@
+import { chineseText } from '../lib/chinese';
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -70,7 +71,7 @@ const Section: React.FC<{ id: string; num: string; title: string; darkMode: bool
 );
 
 const Text: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="whitespace-pre-line text-base leading-7 text-slate-700 dark:text-slate-300">{children}</p>
+  <p className="whitespace-pre-line text-base leading-7 text-slate-700 dark:text-slate-300">{typeof children==='string'?chineseText(children):children}</p>
 );
 
 export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
@@ -145,7 +146,6 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
     }
   };
 
-  const hasZh = /[\u4e00-\u9fa5]/.test(paper.titleZh) && paper.titleZh !== paper.title;
   const btn =
     'inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
 
@@ -188,8 +188,8 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 <span className={`rounded-md border px-2 py-0.5 ${DOMAIN_META[paper.domain].badgeClass}`}>{DOMAIN_META[paper.domain].label}</span>
               </div>
 
-              <h2 className="mt-2 text-lg font-semibold leading-snug text-slate-900 sm:text-xl dark:text-white">{paper.title}</h2>
-              {hasZh && <p className="mt-1 text-base text-slate-600 dark:text-slate-300">{paper.titleZh}</p>}
+              <h2 className="mt-2 text-lg font-semibold leading-snug text-slate-900 sm:text-xl dark:text-white">{chineseText(paper.titleZh || paper.title)}</h2>
+
 
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
                 <span>作者：{paper.authors.join(', ')}</span>

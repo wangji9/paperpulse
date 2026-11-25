@@ -13,3 +13,5 @@ Thumbs.db
 .env.*
 .playwright-cli
 tests
+
+translation-models/

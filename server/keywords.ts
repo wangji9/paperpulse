@@ -1,4 +1,4 @@
-const STOP = new Set('a an the this that these those of and or for to in on with by from as is are was were be been we our their its it using based via towards toward study paper approach method results proposed new model models learning data can not into at through'.split(' '));
+const STOP = new Set('a an the this that these those of and or for to in on with by from as is are was were be been we our their its it using based via towards toward does let how what why when which where study paper approach method results proposed new model models learning data can not into at through'.split(' '));
 export function extractKeywords(title: string, abstract = '', supplied: string[] = []): string[] {
   const output: string[] = [];
   const seen = new Set<string>();

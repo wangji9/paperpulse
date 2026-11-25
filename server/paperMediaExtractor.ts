@@ -530,6 +530,11 @@ export async function extractOriginalPaperMedia(paper: AcademicPaper): Promise<{
   const methodCtx = paper.anatomy.proposedMethod || paper.digestSummary;
   const expCtx = paper.anatomy.experimentalValidation || paper.anatomy.conclusion;
 
+  const cachedPdf=path.join(paperDir,'source.pdf');
+  if(fs.existsSync(cachedPdf)) {
+    const cachedMedia=await extractFromPdfUrl(cachedPdf,paperDir,urlPrefix,methodCtx,expCtx);
+    if(cachedMedia.figures.length && cachedMedia.tables.length)return {paperFigures:cachedMedia.figures,paperTables:cachedMedia.tables};
+  }
   const { arxivId, pdfUrl } = await resolvePaperMediaEndpoints(paper);
 
   let figures: OriginalPaperFigure[] = [];
@@ -550,9 +555,9 @@ export async function extractOriginalPaperMedia(paper: AcademicPaper): Promise<{
   }
 
   // 3. Fallback / Fill missing via PyMuPDF on PDF URL
-  if ((figures.length === 0 || tables.length === 0) && pdfUrl) {
+  if ((figures.length === 0 || tables.length === 0) && (pdfUrl || fs.existsSync(cachedPdf))) {
     const cached=path.join(paperDir,'source.pdf');
-    const pdfRes = await extractFromPdfUrl(fs.existsSync(cached)?cached:pdfUrl, paperDir, urlPrefix, methodCtx, expCtx);
+    const pdfRes = await extractFromPdfUrl(fs.existsSync(cached)?cached:pdfUrl!, paperDir, urlPrefix, methodCtx, expCtx);
     if (figures.length === 0 && pdfRes.figures.length > 0) figures = pdfRes.figures;
     if (tables.length === 0 && pdfRes.tables.length > 0) tables = pdfRes.tables;
   }
