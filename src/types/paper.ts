@@ -12,6 +12,30 @@ export type DatasetSourceType = 'public' | 'self_built' | 'hybrid' | 'unspecifie
 
 export type ReadingStatus = 'unread' | 'reading' | 'mastered';
 
+export type EntryType = 'comment' | 'thought';
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  role: 'admin' | 'member';
+  avatarColor: string;
+  userTags: string[];
+  kbCount?: number;
+  createdAt: string;
+}
+
+export interface PaperCollectorBadge {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  userTags: string[];
+  personalTags: string[];
+  readingStatus: ReadingStatus;
+  addedAt: string;
+}
+
 export interface ArchitectureModule {
   id: string;
   stage: 'input' | 'encoder' | 'core' | 'fusion' | 'output';
@@ -44,7 +68,7 @@ export interface AblationItem {
 }
 
 export interface CitationRefNode {
-  id: string; // OpenAlex ID, DOI, or arXiv ID
+  id: string;
   title: string;
   year: string;
   venue: string;
@@ -90,10 +114,15 @@ export interface PaperAnatomy {
 export interface PaperComment {
   id: string;
   paperId: string;
+  entryType: EntryType;
+  userId?: string;
+  username?: string;
   author: string;
+  userTags?: string[];
   role: string;
   content: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface AcademicPaper {
@@ -108,18 +137,22 @@ export interface AcademicPaper {
   journalRank: string;
   domain: DomainCategory;
   topics: ResearchTopic[];
-  publishedDate: string; // YYYY-MM-DD
-  syncedAt: string; // ISO timestamp
+  publishedDate: string;
+  syncedAt: string;
   doi: string;
   url: string;
   sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'user_created';
   abstractOriginal: string;
   digestSummary: string;
   tags: string[];
-  citedByCount: number; // Real OpenAlex citation count (0 if preprint / unindexed)
-  citations: CitationRefNode[]; // Real upstream references & downstream citing/related papers
+  citedByCount: number;
+  citations: CitationRefNode[];
   readingStatus: ReadingStatus;
   isBookmarked: boolean;
+  collectors?: PaperCollectorBadge[];
+  inMyKb?: boolean;
+  myPersonalTags?: string[];
+  myReadingStatus?: ReadingStatus;
   anatomy: PaperAnatomy;
   comments: PaperComment[];
 }

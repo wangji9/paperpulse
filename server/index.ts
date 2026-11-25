@@ -2,21 +2,31 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AcademicPaper, AutoSyncConfig, ReadingStatus } from '../src/types/paper.js';
+import type { AcademicPaper, AutoSyncConfig, EntryType, ReadingStatus, UserProfile } from '../src/types/paper.js';
 import {
   addComment,
   deleteComment,
   deletePaper,
+  deleteUserById,
   getAutoSyncConfig,
   getDatabaseStats,
   getPaperById,
+  getUserByToken,
   initDatabase,
+  listAllUsers,
   listPapers,
+  loginUser,
+  logoutSession,
   paperExistsByTitleOrDoi,
   recordSyncLog,
+  registerUser,
+  removeUserKbItem,
   saveAutoSyncConfig,
+  updateComment,
   updatePaperLibraryState,
+  updateUserProfile,
   upsertPaper,
+  upsertUserKbItem,
 } from './db.js';
 import {
   buildStructuredAnatomy,
@@ -24,6 +34,8 @@ import {
   fetchYesterdayTodayFromArxiv,
   fetchYesterdayTodayFromOpenAlex,
   rawToAcademicPaper,
+  reparseExistingPaper,
+  translateToZh,
 } from './liveFetcher.js';
 
 initDatabase();
@@ -31,6 +43,12 @@ initDatabase();
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+
+function extractUser(req: express.Request): UserProfile | null {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  return getUserByToken(token);
+}
 
 let syncInProgress = false;
 
@@ -45,7 +63,7 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
       syncedAt: new Date().toISOString(),
       addedCount: 0,
       addedPapers: [],
-      source: 'Sync already in progress',
+      source: '同步进行中',
     };
   }
   syncInProgress = true;
@@ -88,43 +106,189 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
       syncedAt: nowIso,
       addedCount: addedPapers.length,
       addedPapers,
-      source: 'arXiv + OpenAlex 实时学术引擎',
+      source: 'arXiv + OpenAlex',
     };
   } finally {
     syncInProgress = false;
   }
 }
 
-// Health & storage telemetry
+/* ---------- Auth & User Management APIs ---------- */
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { username, password, displayName, userTags } = req.body as {
+      username?: string;
+      password?: string;
+      displayName?: string;
+      userTags?: string[];
+    };
+    if (!username || !password) {
+      res.status(400).json({ error: '请输入用户名和密码' });
+      return;
+    }
+    const result = registerUser({ username, password, displayName, userTags });
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : '注册失败' });
+  }
+});
+
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { username, password } = req.body as { username?: string; password?: string };
+    if (!username || !password) {
+      res.status(400).json({ error: '请输入用户名和密码' });
+      return;
+    }
+    const result = loginUser(username, password);
+    res.json(result);
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : '登录失败' });
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  if (token) logoutSession(token);
+  res.json({ ok: true });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const user = extractUser(req);
+  res.json({ user });
+});
+
+app.get('/api/users', (_req, res) => {
+  res.json({ users: listAllUsers() });
+});
+
+app.post('/api/users', (req, res) => {
+  const actor = extractUser(req);
+  if (!actor || actor.role !== 'admin') {
+    res.status(403).json({ error: '仅管理员可创建管理用户' });
+    return;
+  }
+  try {
+    const { username, password, displayName, userTags, role } = req.body as {
+      username?: string;
+      password?: string;
+      displayName?: string;
+      userTags?: string[];
+      role?: 'admin' | 'member';
+    };
+    if (!username || !password) {
+      res.status(400).json({ error: '请输入用户名和密码' });
+      return;
+    }
+    const created = registerUser({ username, password, displayName, userTags, role });
+    res.status(201).json({ user: created.user });
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : '创建用户失败' });
+  }
+});
+
+app.put('/api/users/:id', (req, res) => {
+  const actor = extractUser(req);
+  if (!actor || (actor.id !== req.params.id && actor.role !== 'admin')) {
+    res.status(403).json({ error: '无权修改该用户信息' });
+    return;
+  }
+  const { displayName, userTags, role, newPassword } = req.body as {
+    displayName?: string;
+    userTags?: string[];
+    role?: 'admin' | 'member';
+    newPassword?: string;
+  };
+  const updated = updateUserProfile(req.params.id, {
+    displayName,
+    userTags,
+    role: actor.role === 'admin' ? role : undefined,
+    newPassword,
+  });
+  if (!updated) {
+    res.status(404).json({ error: '用户不存在' });
+    return;
+  }
+  res.json({ user: updated });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  const actor = extractUser(req);
+  if (!actor || actor.role !== 'admin') {
+    res.status(403).json({ error: '仅管理员可删除用户' });
+    return;
+  }
+  const ok = deleteUserById(req.params.id);
+  if (!ok) {
+    res.status(400).json({ error: '无法删除默认管理员或用户不存在' });
+    return;
+  }
+  res.json({ deleted: true });
+});
+
+/* ---------- Personal Knowledge Base Selection APIs ---------- */
+app.post('/api/kb/:paperId', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录后再将文献加入个人知识库' });
+    return;
+  }
+  const { personalTags, readingStatus } = (req.body as { personalTags?: string[]; readingStatus?: ReadingStatus }) || {};
+  const ok = upsertUserKbItem(user.id, req.params.paperId, { personalTags, readingStatus });
+  if (!ok) {
+    res.status(404).json({ error: '文献不存在' });
+    return;
+  }
+  res.json({ paper: getPaperById(req.params.paperId, user.id) });
+});
+
+app.delete('/api/kb/:paperId', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  removeUserKbItem(user.id, req.params.paperId);
+  res.json({ paper: getPaperById(req.params.paperId, user.id) });
+});
+
+/* ---------- Health & Papers CRUD ---------- */
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
-    service: 'PaperPulse Personal Academic Library',
+    service: 'PaperPulse Collaborative Library',
     timestamp: new Date().toISOString(),
     storage: getDatabaseStats(),
     autoSync: getAutoSyncConfig(),
   });
 });
 
-// List papers with filters
 app.get('/api/papers', (req, res) => {
-  const { q, domain, topic, journal, datasetType, bookmarked, readingStatus, recentOnly, date } = req.query;
-  const papers = listPapers({
-    q: typeof q === 'string' ? q : undefined,
-    domain: typeof domain === 'string' ? domain : undefined,
-    topic: typeof topic === 'string' ? topic : undefined,
-    journal: typeof journal === 'string' ? journal : undefined,
-    datasetType: typeof datasetType === 'string' ? datasetType : undefined,
-    bookmarked: bookmarked === 'true',
-    readingStatus: typeof readingStatus === 'string' ? readingStatus : undefined,
-    recentOnly: recentOnly === 'true',
-    date: typeof date === 'string' ? date : undefined,
-  });
+  const user = extractUser(req);
+  const { q, domain, topic, journal, datasetType, bookmarked, readingStatus, recentOnly, date, scope, collectedBy } = req.query;
+  const papers = listPapers(
+    {
+      q: typeof q === 'string' ? q : undefined,
+      domain: typeof domain === 'string' ? domain : undefined,
+      topic: typeof topic === 'string' ? topic : undefined,
+      journal: typeof journal === 'string' ? journal : undefined,
+      datasetType: typeof datasetType === 'string' ? datasetType : undefined,
+      bookmarked: bookmarked === 'true',
+      readingStatus: typeof readingStatus === 'string' ? readingStatus : undefined,
+      recentOnly: recentOnly === 'true',
+      date: typeof date === 'string' ? date : undefined,
+      scope: scope === 'my_kb' ? 'my_kb' : 'pool',
+      collectedByUserId: typeof collectedBy === 'string' ? collectedBy : undefined,
+    },
+    user?.id
+  );
   res.json({ papers, total: papers.length });
 });
 
 app.get('/api/papers/:id', (req, res) => {
-  const paper = getPaperById(req.params.id);
+  const user = extractUser(req);
+  const paper = getPaperById(req.params.id, user?.id);
   if (!paper) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -132,46 +296,51 @@ app.get('/api/papers/:id', (req, res) => {
   res.json({ paper });
 });
 
-// Create paper manually
-app.post('/api/papers', (req, res) => {
+// Create paper (also auto-parses abstract into Chinese structured anatomy & adds to user's KB if logged in)
+app.post('/api/papers', async (req, res) => {
   try {
-    const body = req.body as Partial<AcademicPaper> & { quickAbstract?: string };
+    const user = extractUser(req);
+    const body = req.body as Partial<AcademicPaper> & { quickAbstract?: string; addToMyKb?: boolean; personalTags?: string[] };
     if (!body.title || !body.title.trim()) {
-      res.status(400).json({ error: 'Title is required' });
+      res.status(400).json({ error: '请输入论文标题' });
       return;
     }
 
     const abstractText = body.abstractOriginal || body.quickAbstract || body.digestSummary || body.title.trim();
-    const generated = buildStructuredAnatomy({
-      title: body.title.trim(),
-      abstract: abstractText,
-      authors: body.authors ?? ['Research Team'],
-      affiliations: body.affiliations ?? ['Research Lab'],
-      journal: body.journal || 'Personal Academic Library',
-      journalShort: body.journalShort || 'Custom',
-      publishedDate: body.publishedDate || new Date().toISOString().slice(0, 10),
-      doi: body.doi || `local-${Date.now()}`,
-      url: body.url || '#',
-      citedByCount: body.citedByCount || 0,
-      citations: body.citations || [],
-      sourceOrigin: 'user_created',
-    });
+    const zhAbs = await translateToZh(abstractText, 1100);
+    const generated = buildStructuredAnatomy(
+      {
+        title: body.title.trim(),
+        abstract: abstractText,
+        authors: body.authors ?? ['未知作者'],
+        affiliations: body.affiliations ?? [],
+        journal: body.journal || 'arXiv',
+        journalShort: body.journalShort || 'Custom',
+        publishedDate: body.publishedDate || new Date().toISOString().slice(0, 10),
+        doi: body.doi || `local-${Date.now()}`,
+        url: body.url || '#',
+        citedByCount: body.citedByCount || 0,
+        citations: body.citations || [],
+        sourceOrigin: 'user_created',
+      },
+      zhAbs
+    );
 
     const paper: AcademicPaper = {
       id: body.id || `paper-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       openAlexId: body.openAlexId,
       title: body.title.trim(),
-      titleZh: body.titleZh?.trim() || body.title.trim(),
-      authors: body.authors?.length ? body.authors : ['Research Team'],
-      affiliations: body.affiliations?.length ? body.affiliations : ['Research Lab'],
-      journal: body.journal?.trim() || 'Personal Academic Library',
+      titleZh: body.titleZh?.trim() || (await translateToZh(body.title.trim(), 300)) || body.title.trim(),
+      authors: body.authors?.length ? body.authors : ['未知作者'],
+      affiliations: body.affiliations?.length ? body.affiliations : [],
+      journal: body.journal?.trim() || 'arXiv',
       journalShort: body.journalShort?.trim() || 'Custom',
       journalRank: body.journalRank?.trim() || '',
       domain: body.domain || generated.domain,
       topics: body.topics?.length ? body.topics : generated.topics,
       publishedDate: body.publishedDate || new Date().toISOString().slice(0, 10),
       syncedAt: new Date().toISOString(),
-      doi: body.doi?.trim() || `local-${Date.now()}`,
+      doi: body.doi?.trim() || '',
       url: body.url?.trim() || '#',
       sourceOrigin: 'user_created',
       abstractOriginal: abstractText,
@@ -180,51 +349,82 @@ app.post('/api/papers', (req, res) => {
       citedByCount: Number(body.citedByCount || 0),
       citations: body.citations ?? [],
       readingStatus: body.readingStatus || 'unread',
-      isBookmarked: body.isBookmarked ?? true,
+      isBookmarked: false,
       anatomy: body.anatomy && body.anatomy.background ? body.anatomy : generated.anatomy,
       comments: [],
     };
 
-    const saved = upsertPaper(paper);
-    res.status(201).json({ paper: saved });
+    upsertPaper(paper, user?.id);
+    if (user && body.addToMyKb !== false) {
+      upsertUserKbItem(user.id, paper.id, { personalTags: body.personalTags || [] });
+    }
+    res.status(201).json({ paper: getPaperById(paper.id, user?.id) });
   } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to create paper' });
+    res.status(500).json({ error: err instanceof Error ? err.message : '创建文献失败' });
   }
 });
 
-// Import by DOI / arXiv ID / OpenAlex ID / Keyword
+// Import by DOI / arXiv ID / OpenAlex ID / Keyword (auto-parses content, affiliations & citations; adds to user's KB if logged in)
 app.post('/api/papers/import', async (req, res) => {
   try {
-    const { identifier } = req.body as { identifier?: string };
+    const user = extractUser(req);
+    const { identifier, addToMyKb, personalTags } = req.body as {
+      identifier?: string;
+      addToMyKb?: boolean;
+      personalTags?: string[];
+    };
     if (!identifier || !identifier.trim()) {
-      res.status(400).json({ error: '请输入 arXiv ID、DOI、OpenAlex ID 或论文标题关键词' });
+      res.status(400).json({ error: '请输入 arXiv 编号、DOI 或论文标题' });
       return;
     }
 
     const raw = await fetchSingleByArxivOrDoi(identifier);
     if (!raw) {
-      res.status(404).json({ error: '未能从 arXiv / OpenAlex 匹配到该文献，请检查编号或改用手动录入' });
+      res.status(404).json({ error: '未能匹配到该文献，请检查编号或改用手动录入' });
       return;
     }
 
     if (paperExistsByTitleOrDoi(raw.title, raw.doi)) {
-      const existing = listPapers({ q: raw.title })[0];
-      res.json({ paper: existing, alreadyExists: true });
+      const existing = listPapers({ q: raw.title }, user?.id)[0];
+      if (existing && user && addToMyKb !== false) {
+        upsertUserKbItem(user.id, existing.id, { personalTags });
+      }
+      res.json({ paper: existing ? getPaperById(existing.id, user?.id) : null, alreadyExists: true });
       return;
     }
 
     const newPaper = await rawToAcademicPaper(raw);
-    const saved = upsertPaper(newPaper);
-    recordSyncLog(raw.sourceOrigin, 1, `导入文献：${raw.title.slice(0, 60)}`);
-    res.status(201).json({ paper: saved, alreadyExists: false });
+    upsertPaper(newPaper, user?.id);
+    if (user && addToMyKb !== false) {
+      upsertUserKbItem(user.id, newPaper.id, { personalTags });
+    }
+    recordSyncLog(raw.sourceOrigin, 1, `导入并自动解析文献：${raw.title.slice(0, 60)}`);
+    res.status(201).json({ paper: getPaperById(newPaper.id, user?.id), alreadyExists: false });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : '导入解析失败' });
   }
 });
 
-// Update existing paper
+// Auto-reparse & enrich paper content, affiliations, and citations
+app.post('/api/papers/:id/reparse', async (req, res) => {
+  try {
+    const user = extractUser(req);
+    const existing = getPaperById(req.params.id, user?.id);
+    if (!existing) {
+      res.status(404).json({ error: 'Paper not found' });
+      return;
+    }
+    const enriched = await reparseExistingPaper(existing);
+    const saved = upsertPaper(enriched, user?.id);
+    res.json({ paper: saved });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : '自动解析失败' });
+  }
+});
+
 app.put('/api/papers/:id', (req, res) => {
-  const existing = getPaperById(req.params.id);
+  const user = extractUser(req);
+  const existing = getPaperById(req.params.id, user?.id);
   if (!existing) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -239,14 +439,14 @@ app.put('/api/papers/:id', (req, res) => {
     comments: existing.comments,
   };
 
-  const saved = upsertPaper(updated);
+  const saved = upsertPaper(updated, user?.id);
   res.json({ paper: saved });
 });
 
-// Update library reading status or bookmark
 app.patch('/api/papers/:id/status', (req, res) => {
+  const user = extractUser(req);
   const { isBookmarked, readingStatus } = req.body as { isBookmarked?: boolean; readingStatus?: ReadingStatus };
-  const updated = updatePaperLibraryState(req.params.id, { isBookmarked, readingStatus });
+  const updated = updatePaperLibraryState(req.params.id, { isBookmarked, readingStatus }, user?.id);
   if (!updated) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -255,6 +455,13 @@ app.patch('/api/papers/:id/status', (req, res) => {
 });
 
 app.delete('/api/papers/:id', (req, res) => {
+  const user = extractUser(req);
+  if (user && user.role !== 'admin') {
+    // Non-admin removes from their own knowledge base instead of deleting from public pool
+    removeUserKbItem(user.id, req.params.id);
+    res.json({ deletedFromKbOnly: true, id: req.params.id });
+    return;
+  }
   const ok = deletePaper(req.params.id);
   if (!ok) {
     res.status(404).json({ error: 'Paper not found' });
@@ -263,14 +470,27 @@ app.delete('/api/papers/:id', (req, res) => {
   res.json({ deleted: true, id: req.params.id });
 });
 
-// Comments / Personal reading notes
+/* ---------- Comments & Thoughts Full CRUD ---------- */
 app.post('/api/papers/:id/comments', (req, res) => {
-  const { author, role, content } = req.body as { author?: string; role?: string; content?: string };
+  const user = extractUser(req);
+  const { author, role, content, entryType } = req.body as {
+    author?: string;
+    role?: string;
+    content?: string;
+    entryType?: EntryType;
+  };
   if (!content || !content.trim()) {
-    res.status(400).json({ error: '笔记内容不能为空' });
+    res.status(400).json({ error: '内容不能为空' });
     return;
   }
-  const comment = addComment(req.params.id, author || '个人笔记', role || '精读批注', content);
+  const comment = addComment({
+    paperId: req.params.id,
+    entryType,
+    user,
+    author,
+    role,
+    content,
+  });
   if (!comment) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -278,16 +498,40 @@ app.post('/api/papers/:id/comments', (req, res) => {
   res.status(201).json({ comment });
 });
 
-app.delete('/api/papers/:id/comments/:commentId', (req, res) => {
-  const ok = deleteComment(req.params.id, req.params.commentId);
-  if (!ok) {
-    res.status(404).json({ error: 'Note not found' });
-    return;
+app.put('/api/papers/:id/comments/:commentId', (req, res) => {
+  try {
+    const user = extractUser(req);
+    const { content, entryType } = req.body as { content?: string; entryType?: EntryType };
+    if (!content || !content.trim()) {
+      res.status(400).json({ error: '内容不能为空' });
+      return;
+    }
+    const updated = updateComment(req.params.id, req.params.commentId, { content, entryType }, user);
+    if (!updated) {
+      res.status(404).json({ error: '条目不存在' });
+      return;
+    }
+    res.json({ comment: updated });
+  } catch (err) {
+    res.status(403).json({ error: err instanceof Error ? err.message : '修改失败' });
   }
-  res.json({ deleted: true });
 });
 
-// Manual & Auto-Daily Sync endpoints
+app.delete('/api/papers/:id/comments/:commentId', (req, res) => {
+  try {
+    const user = extractUser(req);
+    const ok = deleteComment(req.params.id, req.params.commentId, user);
+    if (!ok) {
+      res.status(404).json({ error: '条目不存在' });
+      return;
+    }
+    res.json({ deleted: true });
+  } catch (err) {
+    res.status(403).json({ error: err instanceof Error ? err.message : '删除失败' });
+  }
+});
+
+/* ---------- Auto-Sync ---------- */
 app.post('/api/sync', async (req, res) => {
   const { query } = (req.body as { query?: string }) ?? {};
   try {
@@ -312,30 +556,6 @@ app.put('/api/auto-sync/config', (req, res) => {
   res.json({ config: saved });
 });
 
-// Global Citation Network Endpoint (Real citation edges across library + referenced/citing works)
-app.get('/api/citations/graph', (_req, res) => {
-  const papers = listPapers();
-  res.json({
-    papers: papers.map((p) => ({
-      id: p.id,
-      openAlexId: p.openAlexId,
-      title: p.title,
-      titleZh: p.titleZh,
-      journalShort: p.journalShort,
-      publishedDate: p.publishedDate,
-      domain: p.domain,
-      topics: p.topics,
-      citedByCount: p.citedByCount,
-      doi: p.doi,
-      url: p.url,
-      citations: p.citations,
-    })),
-    storage: getDatabaseStats(),
-    autoSync: getAutoSyncConfig(),
-  });
-});
-
-// Serve built Vite SPA in production
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
@@ -348,7 +568,6 @@ const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {
   console.log(`PaperPulse server running at http://localhost:${PORT}`);
 
-  // Automatic daily background crawler: fetch yesterday/today papers if not synced recently
   const cfg = getAutoSyncConfig();
   if (cfg.enabled) {
     const today = new Date().toISOString().slice(0, 10);

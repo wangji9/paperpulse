@@ -1,7 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Copy, Edit3, ExternalLink, Send, Trash2, X } from 'lucide-react';
-import type { AcademicPaper } from '../types/paper';
+import {
+  BookmarkCheck,
+  BookmarkPlus,
+  Building2,
+  Check,
+  Copy,
+  Edit3,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+  Trash2,
+  X,
+} from 'lucide-react';
+import type { AcademicPaper, EntryType, UserProfile } from '../types/paper';
 import { DOMAIN_META, TOPIC_META, generateBibtex, resolveDoiUrl, resolvePaperOriginalUrl } from '../lib/constants';
 import {
   AblationTable,
@@ -12,18 +24,23 @@ import {
   LogicChainFlow,
 } from './visuals/PaperVisuals';
 import { EgoCitationGraph } from './CitationGraph';
+import { CommentsAndThoughts } from './CommentsAndThoughts';
 
 interface DeepAnatomyModalProps {
   paper: AcademicPaper;
   libraryPapers: AcademicPaper[];
+  currentUser: UserProfile | null;
   darkMode: boolean;
   onClose: () => void;
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
+  onReparse: (id: string) => Promise<void>;
+  onToggleMyKb: (paper: AcademicPaper) => Promise<void>;
   onSelectOtherPaper: (paper: AcademicPaper) => void;
   onImportReference: (identifier: string) => Promise<void>;
-  onAddComment: (paperId: string, author: string, role: string, content: string) => Promise<void>;
-  onDeleteComment: (paperId: string, commentId: string) => Promise<void>;
+  onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
+  onEditEntry: (paperId: string, commentId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
+  onDeleteEntry: (paperId: string, commentId: string) => Promise<void>;
 }
 
 const Section: React.FC<{ id: string; num: string; title: string; darkMode: boolean; children: React.ReactNode }> = ({
@@ -33,7 +50,7 @@ const Section: React.FC<{ id: string; num: string; title: string; darkMode: bool
   darkMode,
   children,
 }) => (
-  <section id={id} className={`scroll-mt-40 rounded-2xl border p-5 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+  <section id={id} className={`scroll-mt-44 rounded-2xl border p-4 sm:p-5 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
     <h3 className="mb-3 flex items-center gap-2.5 border-b border-slate-100 pb-3 text-lg font-semibold text-slate-900 dark:border-slate-800 dark:text-white">
       <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-sm font-medium text-white">{num}</span>
       {title}
@@ -49,19 +66,22 @@ const Text: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   paper,
   libraryPapers,
+  currentUser,
   darkMode,
   onClose,
   onEdit,
   onDelete,
+  onReparse,
+  onToggleMyKb,
   onSelectOtherPaper,
   onImportReference,
-  onAddComment,
-  onDeleteComment,
+  onAddEntry,
+  onEditEntry,
+  onDeleteEntry,
 }) => {
   const [activeStep, setActiveStep] = useState('sec-bg');
   const [copiedBib, setCopiedBib] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [reparsing, setReparsing] = useState(false);
   const { anatomy } = paper;
 
   useEffect(() => {
@@ -104,20 +124,9 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
     }
   };
 
-  const handleNote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!noteText.trim()) return;
-    setSubmitting(true);
-    try {
-      await onAddComment(paper.id, '我', '笔记', noteText.trim());
-      setNoteText('');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const hasZh = /[\u4e00-\u9fa5]/.test(paper.titleZh) && paper.titleZh !== paper.title;
-  const btn = 'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
+  const btn =
+    'inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
 
   return createPortal(
     <div
@@ -125,16 +134,16 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
       aria-modal="true"
       aria-label={paper.title}
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-2 backdrop-blur-sm sm:p-5"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border shadow-2xl ${
+        className={`flex h-full w-full max-w-7xl flex-col overflow-hidden border shadow-2xl sm:h-auto sm:max-h-[94vh] sm:rounded-2xl ${
           darkMode ? 'border-slate-700 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'
         }`}
       >
-        <div className={`shrink-0 border-b px-6 py-4 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-          <div className="flex items-start justify-between gap-4">
+        <div className={`shrink-0 border-b px-4 py-3.5 sm:px-6 sm:py-4 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 <span className="rounded-md bg-slate-800 px-2 py-0.5 font-medium text-white dark:bg-indigo-600">{paper.journalShort}</span>
@@ -154,10 +163,12 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 ))}
                 <span className={`rounded-md border px-2 py-0.5 ${DOMAIN_META[paper.domain].badgeClass}`}>{DOMAIN_META[paper.domain].label}</span>
               </div>
-              <h2 className="mt-2 text-xl font-semibold leading-snug text-slate-900 dark:text-white">{paper.title}</h2>
+
+              <h2 className="mt-2 text-lg font-semibold leading-snug text-slate-900 sm:text-xl dark:text-white">{paper.title}</h2>
               {hasZh && <p className="mt-1 text-base text-slate-600 dark:text-slate-300">{paper.titleZh}</p>}
+
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
-                <span>{paper.authors.join(', ')}</span>
+                <span>作者：{paper.authors.join(', ')}</span>
                 {paper.doi && resolveDoiUrl(paper.doi, paper.url) && (
                   <>
                     <span className="text-slate-300">|</span>
@@ -187,8 +198,44 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                   </>
                 )}
               </div>
+
+              {paper.affiliations && paper.affiliations.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                  <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span>作者单位：{paper.affiliations.join('；')}</span>
+                </div>
+              )}
             </div>
-            <div className="flex shrink-0 items-center gap-1.5">
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => void onToggleMyKb(paper)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium ${
+                  paper.inMyKb
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    : 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300'
+                }`}
+              >
+                {paper.inMyKb ? <BookmarkCheck className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
+                {paper.inMyKb ? '已在知识库' : '加入知识库'}
+              </button>
+              <button
+                type="button"
+                disabled={reparsing}
+                onClick={async () => {
+                  setReparsing(true);
+                  try {
+                    await onReparse(paper.id);
+                  } finally {
+                    setReparsing(false);
+                  }
+                }}
+                className={btn}
+              >
+                {reparsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-indigo-600" />}
+                自动解析
+              </button>
               <button type="button" onClick={handleCopyBib} className={btn}>
                 {copiedBib ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                 引用
@@ -197,13 +244,11 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 <Edit3 className="h-4 w-4" />
                 编辑
               </button>
-              <a href={paper.url} target="_blank" rel="noreferrer" className={btn}>
-                <ExternalLink className="h-4 w-4" />
-                原文
-              </a>
-              <button type="button" onClick={() => onDelete(paper.id)} className={`${btn} text-rose-600`} title="删除">
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {(!currentUser || currentUser.role === 'admin' || paper.inMyKb) && (
+                <button type="button" onClick={() => onDelete(paper.id)} className={`${btn} text-rose-600`} title="删除">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="关闭弹窗"
@@ -218,12 +263,13 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
               </button>
             </div>
           </div>
+
           <div className="mt-3">
             <LogicChainFlow steps={steps} activeStep={activeStep} onSelectStep={jumpTo} darkMode={darkMode} />
           </div>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto p-6">
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
           {visible['sec-bg'] && (
             <Section id="sec-bg" num="01" title="研究背景" darkMode={darkMode}>
               <Text>{anatomy.background}</Text>
@@ -315,38 +361,17 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </Section>
           )}
 
-          <section className={`rounded-2xl border p-5 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-            <h3 className="mb-3 text-lg font-semibold">我的笔记 {paper.comments.length}</h3>
-            <form onSubmit={handleNote} className="flex gap-2">
-              <input
-                type="text"
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="写下阅读笔记"
-                className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800"
-              />
-              <button
-                type="submit"
-                disabled={submitting || !noteText.trim()}
-                className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-              >
-                <Send className="h-4 w-4" />
-                保存
-              </button>
-            </form>
-            <div className="mt-3 space-y-2">
-              {paper.comments.map((c) => (
-                <div key={c.id} className="flex items-start justify-between rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800/50">
-                  <div>
-                    <div className="text-slate-400">{c.createdAt.slice(0, 16).replace('T', ' ')}</div>
-                    <p className="mt-0.5 text-slate-700 dark:text-slate-300">{c.content}</p>
-                  </div>
-                  <button type="button" onClick={() => onDeleteComment(paper.id, c.id)} className="text-slate-400 hover:text-rose-500">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+          <section className={`rounded-2xl border p-4 sm:p-5 ${darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+            <h3 className="mb-3 text-lg font-semibold">深度思考与学术评论</h3>
+            <CommentsAndThoughts
+              paperId={paper.id}
+              comments={paper.comments}
+              currentUser={currentUser}
+              darkMode={darkMode}
+              onAdd={onAddEntry}
+              onEdit={onEditEntry}
+              onDelete={onDeleteEntry}
+            />
           </section>
         </div>
       </div>

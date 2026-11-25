@@ -1,10 +1,19 @@
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../src/types/paper.js';
+import type {
+  AcademicPaper,
+  AutoSyncConfig,
+  EntryType,
+  PaperCollectorBadge,
+  PaperComment,
+  ReadingStatus,
+  UserProfile,
+} from '../src/types/paper.js';
 import { SEED_PAPERS } from './seedData.js';
 import { getBulkSeedPapers } from './seedBulk.js';
 import { getAgentAndJournalSeedPapers } from './seedAgents.js';
+import { generateSessionToken, hashPassword, pickAvatarColor, verifyPassword } from './auth.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -34,10 +43,44 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS comments (
     id TEXT PRIMARY KEY,
     paper_id TEXT NOT NULL,
+    entry_type TEXT DEFAULT 'comment',
+    user_id TEXT,
+    username TEXT,
+    user_tags TEXT DEFAULT '[]',
     author TEXT NOT NULL,
     role TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at TEXT NOT NULL,
+    updated_at TEXT,
+    FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'member',
+    avatar_color TEXT NOT NULL,
+    user_tags TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS sessions (
+    token TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS user_kb (
+    user_id TEXT NOT NULL,
+    paper_id TEXT NOT NULL,
+    personal_tags TEXT NOT NULL DEFAULT '[]',
+    reading_status TEXT NOT NULL DEFAULT 'unread',
+    added_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, paper_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
   );
 
@@ -56,10 +99,17 @@ db.exec(`
 `);
 
 function ensureColumns(): void {
-  const cols = (db.prepare('PRAGMA table_info(papers)').all() as Array<{ name: string }>).map((c) => c.name);
-  if (!cols.includes('open_alex_id')) db.exec('ALTER TABLE papers ADD COLUMN open_alex_id TEXT;');
-  if (!cols.includes('cited_by_count')) db.exec('ALTER TABLE papers ADD COLUMN cited_by_count INTEGER DEFAULT 0;');
-  if (!cols.includes('reading_status')) db.exec("ALTER TABLE papers ADD COLUMN reading_status TEXT DEFAULT 'unread';");
+  const pCols = (db.prepare('PRAGMA table_info(papers)').all() as Array<{ name: string }>).map((c) => c.name);
+  if (!pCols.includes('open_alex_id')) db.exec('ALTER TABLE papers ADD COLUMN open_alex_id TEXT;');
+  if (!pCols.includes('cited_by_count')) db.exec('ALTER TABLE papers ADD COLUMN cited_by_count INTEGER DEFAULT 0;');
+  if (!pCols.includes('reading_status')) db.exec("ALTER TABLE papers ADD COLUMN reading_status TEXT DEFAULT 'unread';");
+
+  const cCols = (db.prepare('PRAGMA table_info(comments)').all() as Array<{ name: string }>).map((c) => c.name);
+  if (!cCols.includes('entry_type')) db.exec("ALTER TABLE comments ADD COLUMN entry_type TEXT DEFAULT 'comment';");
+  if (!cCols.includes('user_id')) db.exec('ALTER TABLE comments ADD COLUMN user_id TEXT;');
+  if (!cCols.includes('username')) db.exec('ALTER TABLE comments ADD COLUMN username TEXT;');
+  if (!cCols.includes('user_tags')) db.exec("ALTER TABLE comments ADD COLUMN user_tags TEXT DEFAULT '[]';");
+  if (!cCols.includes('updated_at')) db.exec('ALTER TABLE comments ADD COLUMN updated_at TEXT;');
 }
 ensureColumns();
 
@@ -74,14 +124,32 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
 };
 
 export function initDatabase(): void {
-  const LIB_VERSION = 'v3.3-multiagent-doi';
+  // Ensure default admin account exists
+  const adminRow = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
+  if (!adminRow) {
+    db.prepare(`
+      INSERT INTO users (id, username, password_hash, display_name, role, avatar_color, user_tags, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'usr-admin',
+      'admin',
+      hashPassword('admin123'),
+      '公共池管理员',
+      'admin',
+      '#4F46E5',
+      JSON.stringify(['文献池维护', '智能制造与AI']),
+      new Date().toISOString()
+    );
+  }
+
+  const LIB_VERSION = 'v4.0-multiuser-affiliations';
   const ver = db.prepare("SELECT value FROM settings WHERE key = 'library_version'").get() as { value: string } | undefined;
   if (!ver || ver.value !== LIB_VERSION) {
     const seeds = [...SEED_PAPERS, ...getBulkSeedPapers(), ...getAgentAndJournalSeedPapers()];
     for (const paper of seeds) {
       upsertPaper(paper);
     }
-    recordSyncLog('文献库扩充', seeds.length, `新增多智能体、人智协作与多期刊核心文献，累计核心库 ${seeds.length} 篇`);
+    recordSyncLog('公共文献池更新', seeds.length, `同步补全作者机构单位并维护公共文献池 ${seeds.length} 篇核心文献`);
     db.prepare("INSERT INTO settings (key, value) VALUES ('library_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(LIB_VERSION);
   }
 
@@ -91,6 +159,188 @@ export function initDatabase(): void {
   }
 }
 
+/* ---------- User & Auth Operations ---------- */
+function mapUserRow(row: Record<string, unknown>): UserProfile {
+  let tags: string[] = [];
+  try {
+    tags = JSON.parse(String(row.user_tags || '[]'));
+  } catch {
+    tags = [];
+  }
+  const kbCountRow = db.prepare('SELECT COUNT(*) as c FROM user_kb WHERE user_id = ?').get(String(row.id)) as { c: number };
+  return {
+    id: String(row.id),
+    username: String(row.username),
+    displayName: String(row.display_name),
+    role: String(row.role) === 'admin' ? 'admin' : 'member',
+    avatarColor: String(row.avatar_color || '#4F46E5'),
+    userTags: tags,
+    kbCount: kbCountRow.c,
+    createdAt: String(row.created_at),
+  };
+}
+
+export function registerUser(params: {
+  username: string;
+  password: string;
+  displayName?: string;
+  userTags?: string[];
+  role?: 'admin' | 'member';
+}): { user: UserProfile; token: string } {
+  const uname = params.username.trim();
+  if (!uname || uname.length < 2) throw new Error('用户名至少需要 2 个字符');
+  if (!params.password || params.password.length < 4) throw new Error('密码至少需要 4 个字符');
+
+  const existing = db.prepare('SELECT id FROM users WHERE lower(username) = lower(?)').get(uname);
+  if (existing) throw new Error('该用户名已被注册');
+
+  const id = `usr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const displayName = (params.displayName || uname).trim();
+  const tags = (params.userTags || []).map((t) => t.trim()).filter(Boolean);
+  const createdAt = new Date().toISOString();
+
+  db.prepare(`
+    INSERT INTO users (id, username, password_hash, display_name, role, avatar_color, user_tags, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    uname,
+    hashPassword(params.password),
+    displayName,
+    params.role === 'admin' ? 'admin' : 'member',
+    pickAvatarColor(uname),
+    JSON.stringify(tags),
+    createdAt
+  );
+
+  const token = generateSessionToken();
+  db.prepare('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)').run(token, id, createdAt);
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as Record<string, unknown>;
+  return { user: mapUserRow(row), token };
+}
+
+export function loginUser(username: string, password: string): { user: UserProfile; token: string } {
+  const row = db.prepare('SELECT * FROM users WHERE lower(username) = lower(?)').get(username.trim()) as Record<string, unknown> | undefined;
+  if (!row || !verifyPassword(password, String(row.password_hash))) {
+    throw new Error('用户名或密码错误');
+  }
+  const token = generateSessionToken();
+  db.prepare('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)').run(token, String(row.id), new Date().toISOString());
+  return { user: mapUserRow(row), token };
+}
+
+export function logoutSession(token: string): void {
+  db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+}
+
+export function getUserByToken(token?: string | null): UserProfile | null {
+  if (!token) return null;
+  const row = db
+    .prepare('SELECT u.* FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ?')
+    .get(token) as Record<string, unknown> | undefined;
+  return row ? mapUserRow(row) : null;
+}
+
+export function listAllUsers(): UserProfile[] {
+  const rows = db.prepare('SELECT * FROM users ORDER BY created_at ASC').all() as Record<string, unknown>[];
+  return rows.map(mapUserRow);
+}
+
+export function updateUserProfile(
+  userId: string,
+  patch: { displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
+): UserProfile | null {
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as Record<string, unknown> | undefined;
+  if (!row) return null;
+
+  const nextName = patch.displayName?.trim() || String(row.display_name);
+  const nextTags = patch.userTags !== undefined ? JSON.stringify(patch.userTags.map((t) => t.trim()).filter(Boolean)) : String(row.user_tags);
+  const nextRole = patch.role ?? String(row.role);
+  const nextHash = patch.newPassword && patch.newPassword.length >= 4 ? hashPassword(patch.newPassword) : String(row.password_hash);
+
+  db.prepare('UPDATE users SET display_name = ?, user_tags = ?, role = ?, password_hash = ? WHERE id = ?')
+    .run(nextName, nextTags, nextRole, nextHash, userId);
+
+  const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as Record<string, unknown>;
+  return mapUserRow(updated);
+}
+
+export function deleteUserById(userId: string): boolean {
+  if (userId === 'usr-admin') return false;
+  db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM user_kb WHERE user_id = ?').run(userId);
+  const res = db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+  return Number(res.changes) > 0;
+}
+
+/* ---------- User Personal Knowledge Base (user_kb) ---------- */
+export function upsertUserKbItem(
+  userId: string,
+  paperId: string,
+  patch: { personalTags?: string[]; readingStatus?: ReadingStatus } = {}
+): boolean {
+  const paperExists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+  if (!paperExists) return false;
+
+  const existing = db.prepare('SELECT * FROM user_kb WHERE user_id = ? AND paper_id = ?').get(userId, paperId) as Record<string, unknown> | undefined;
+  if (existing) {
+    const nextTags =
+      patch.personalTags !== undefined
+        ? JSON.stringify(patch.personalTags.map((t) => t.trim()).filter(Boolean))
+        : String(existing.personal_tags || '[]');
+    const nextStatus = patch.readingStatus ?? String(existing.reading_status || 'unread');
+    db.prepare('UPDATE user_kb SET personal_tags = ?, reading_status = ? WHERE user_id = ? AND paper_id = ?')
+      .run(nextTags, nextStatus, userId, paperId);
+  } else {
+    const tags = JSON.stringify((patch.personalTags || []).map((t) => t.trim()).filter(Boolean));
+    const status = patch.readingStatus || 'unread';
+    db.prepare('INSERT INTO user_kb (user_id, paper_id, personal_tags, reading_status, added_at) VALUES (?, ?, ?, ?, ?)')
+      .run(userId, paperId, tags, status, new Date().toISOString());
+  }
+  return true;
+}
+
+export function removeUserKbItem(userId: string, paperId: string): boolean {
+  const res = db.prepare('DELETE FROM user_kb WHERE user_id = ? AND paper_id = ?').run(userId, paperId);
+  return Number(res.changes) > 0;
+}
+
+function getCollectorsMap(): Map<string, PaperCollectorBadge[]> {
+  const rows = db
+    .prepare(`
+      SELECT kb.paper_id, kb.user_id, kb.personal_tags, kb.reading_status, kb.added_at,
+             u.username, u.display_name, u.avatar_color, u.user_tags
+      FROM user_kb kb
+      JOIN users u ON kb.user_id = u.id
+      ORDER BY kb.added_at DESC
+    `)
+    .all() as Record<string, unknown>[];
+
+  const map = new Map<string, PaperCollectorBadge[]>();
+  for (const r of rows) {
+    const pid = String(r.paper_id);
+    let uTags: string[] = [];
+    let pTags: string[] = [];
+    try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+    try { pTags = JSON.parse(String(r.personal_tags || '[]')); } catch {}
+    const badge: PaperCollectorBadge = {
+      userId: String(r.user_id),
+      username: String(r.username),
+      displayName: String(r.display_name),
+      avatarColor: String(r.avatar_color || '#4F46E5'),
+      userTags: uTags,
+      personalTags: pTags,
+      readingStatus: String(r.reading_status || 'unread') as ReadingStatus,
+      addedAt: String(r.added_at),
+    };
+    const arr = map.get(pid) || [];
+    arr.push(badge);
+    map.set(pid, arr);
+  }
+  return map;
+}
+
+/* ---------- Settings ---------- */
 export function getAutoSyncConfig(): AutoSyncConfig {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get() as { value: string } | undefined;
   if (!row) return DEFAULT_AUTO_SYNC;
@@ -109,19 +359,51 @@ export function saveAutoSyncConfig(config: AutoSyncConfig): AutoSyncConfig {
   return config;
 }
 
-function hydratePaper(row: Record<string, unknown>): AcademicPaper {
+/* ---------- Papers & Comments CRUD ---------- */
+function hydrateCommentRow(r: Record<string, unknown>): PaperComment {
+  let uTags: string[] = [];
+  try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+  return {
+    id: String(r.id),
+    paperId: String(r.paper_id),
+    entryType: String(r.entry_type) === 'thought' ? 'thought' : 'comment',
+    userId: r.user_id ? String(r.user_id) : undefined,
+    username: r.username ? String(r.username) : undefined,
+    userTags: uTags,
+    author: String(r.author),
+    role: String(r.role),
+    content: String(r.content),
+    createdAt: String(r.created_at),
+    updatedAt: r.updated_at ? String(r.updated_at) : undefined,
+  };
+}
+
+function hydratePaper(
+  row: Record<string, unknown>,
+  collectorsMap: Map<string, PaperCollectorBadge[]>,
+  currentUserId?: string
+): AcademicPaper {
   const base = JSON.parse(String(row.payload)) as Omit<AcademicPaper, 'comments'>;
-  const commentsRows = db
-    .prepare('SELECT id, paper_id as paperId, author, role, content, created_at as createdAt FROM comments WHERE paper_id = ? ORDER BY created_at DESC')
-    .all(String(row.id)) as unknown as PaperComment[];
+  const pid = String(row.id);
+  const rawComments = db
+    .prepare('SELECT * FROM comments WHERE paper_id = ? ORDER BY created_at DESC')
+    .all(pid) as Record<string, unknown>[];
+
+  const collectors = collectorsMap.get(pid) || [];
+  const myEntry = currentUserId ? collectors.find((c) => c.userId === currentUserId) : undefined;
 
   return {
     ...base,
+    affiliations: Array.isArray(base.affiliations) ? base.affiliations : [],
     openAlexId: row.open_alex_id ? String(row.open_alex_id) : base.openAlexId,
     citedByCount: Number(row.cited_by_count ?? base.citedByCount ?? 0),
-    readingStatus: (row.reading_status ? String(row.reading_status) : base.readingStatus || 'unread') as ReadingStatus,
-    isBookmarked: Boolean(row.is_bookmarked),
-    comments: commentsRows,
+    readingStatus: (myEntry?.readingStatus || (row.reading_status ? String(row.reading_status) : base.readingStatus || 'unread')) as ReadingStatus,
+    isBookmarked: myEntry ? true : Boolean(row.is_bookmarked),
+    collectors,
+    inMyKb: Boolean(myEntry),
+    myPersonalTags: myEntry?.personalTags || [],
+    myReadingStatus: myEntry?.readingStatus,
+    comments: rawComments.map(hydrateCommentRow),
   };
 }
 
@@ -135,15 +417,25 @@ export interface PaperQueryFilters {
   readingStatus?: string;
   recentOnly?: boolean;
   date?: string;
+  scope?: 'pool' | 'my_kb';
+  collectedByUserId?: string;
 }
 
-export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
+export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: string): AcademicPaper[] {
   const rows = db
     .prepare('SELECT * FROM papers ORDER BY published_date DESC, synced_at DESC')
     .all() as Record<string, unknown>[];
 
-  let papers = rows.map(hydratePaper);
+  const collectorsMap = getCollectorsMap();
+  let papers = rows.map((r) => hydratePaper(r, collectorsMap, currentUserId));
 
+  if (filters.scope === 'my_kb') {
+    if (!currentUserId) return [];
+    papers = papers.filter((p) => p.inMyKb);
+  }
+  if (filters.collectedByUserId && filters.collectedByUserId !== 'all') {
+    papers = papers.filter((p) => (p.collectors || []).some((c) => c.userId === filters.collectedByUserId));
+  }
   if (filters.domain && filters.domain !== 'all') {
     papers = papers.filter((p) => p.domain === filters.domain);
   }
@@ -157,7 +449,7 @@ export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
     papers = papers.filter((p) => p.anatomy.dataset.sourceType === filters.datasetType);
   }
   if (filters.bookmarked) {
-    papers = papers.filter((p) => p.isBookmarked);
+    papers = papers.filter((p) => p.inMyKb || p.isBookmarked);
   }
   if (filters.readingStatus && filters.readingStatus !== 'all') {
     papers = papers.filter((p) => p.readingStatus === filters.readingStatus);
@@ -182,7 +474,10 @@ export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
         p.digestSummary,
         p.abstractOriginal,
         ...p.authors,
+        ...(p.affiliations || []),
         ...p.tags,
+        ...(p.myPersonalTags || []),
+        ...(p.collectors || []).flatMap((c) => [c.displayName, ...c.userTags, ...c.personalTags]),
         p.anatomy.proposedMethod,
         p.anatomy.problem,
         ...p.anatomy.dataset.names,
@@ -196,9 +491,9 @@ export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
   return papers;
 }
 
-export function getPaperById(id: string): AcademicPaper | null {
+export function getPaperById(id: string, currentUserId?: string): AcademicPaper | null {
   const row = db.prepare('SELECT * FROM papers WHERE id = ?').get(id) as Record<string, unknown> | undefined;
-  return row ? hydratePaper(row) : null;
+  return row ? hydratePaper(row, getCollectorsMap(), currentUserId) : null;
 }
 
 export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
@@ -210,8 +505,8 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
   return Boolean(byTitle);
 }
 
-export function upsertPaper(paper: AcademicPaper): AcademicPaper {
-  const { comments, ...rest } = paper;
+export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
+  const { comments, collectors: _c, inMyKb: _i, myPersonalTags: _mt, myReadingStatus: _ms, ...rest } = paper;
   const existing = db.prepare('SELECT id FROM papers WHERE id = ?').get(paper.id);
   if (existing) {
     db.prepare(`
@@ -253,53 +548,125 @@ export function upsertPaper(paper: AcademicPaper): AcademicPaper {
     );
   }
   if (comments && comments.length > 0) {
-    const insC = db.prepare('INSERT OR IGNORE INTO comments (id, paper_id, author, role, content, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+    const insC = db.prepare(`
+      INSERT OR IGNORE INTO comments (id, paper_id, entry_type, user_id, username, user_tags, author, role, content, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
     for (const c of comments) {
-      insC.run(c.id, paper.id, c.author, c.role, c.content, c.createdAt);
+      insC.run(
+        c.id,
+        paper.id,
+        c.entryType || 'comment',
+        c.userId || null,
+        c.username || null,
+        JSON.stringify(c.userTags || []),
+        c.author,
+        c.role,
+        c.content,
+        c.createdAt
+      );
     }
   }
-  return getPaperById(paper.id)!;
+  return getPaperById(paper.id, currentUserId)!;
 }
 
 export function updatePaperLibraryState(
   id: string,
-  patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }
+  patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus },
+  currentUserId?: string
 ): AcademicPaper | null {
   const row = db.prepare('SELECT * FROM papers WHERE id = ?').get(id) as Record<string, unknown> | undefined;
   if (!row) return null;
 
-  const nextBookmarked = patch.isBookmarked !== undefined ? (patch.isBookmarked ? 1 : 0) : Number(row.is_bookmarked);
-  const nextStatus = patch.readingStatus ?? String(row.reading_status || 'unread');
+  if (currentUserId) {
+    if (patch.isBookmarked === false) {
+      removeUserKbItem(currentUserId, id);
+    } else {
+      upsertUserKbItem(currentUserId, id, { readingStatus: patch.readingStatus });
+    }
+  } else {
+    const nextBookmarked = patch.isBookmarked !== undefined ? (patch.isBookmarked ? 1 : 0) : Number(row.is_bookmarked);
+    const nextStatus = patch.readingStatus ?? String(row.reading_status || 'unread');
+    db.prepare('UPDATE papers SET is_bookmarked = ?, reading_status = ? WHERE id = ?')
+      .run(nextBookmarked, nextStatus, id);
+  }
 
-  db.prepare('UPDATE papers SET is_bookmarked = ?, reading_status = ? WHERE id = ?')
-    .run(nextBookmarked, nextStatus, id);
-
-  return getPaperById(id);
+  return getPaperById(id, currentUserId);
 }
 
 export function deletePaper(id: string): boolean {
   db.prepare('DELETE FROM comments WHERE paper_id = ?').run(id);
+  db.prepare('DELETE FROM user_kb WHERE paper_id = ?').run(id);
   const res = db.prepare('DELETE FROM papers WHERE id = ?').run(id);
   return Number(res.changes) > 0;
 }
 
-export function addComment(paperId: string, author: string, role: string, content: string): PaperComment | null {
-  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+export function addComment(params: {
+  paperId: string;
+  entryType?: EntryType;
+  user?: UserProfile | null;
+  author?: string;
+  role?: string;
+  content: string;
+}): PaperComment | null {
+  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(params.paperId);
   if (!exists) return null;
-  const comment: PaperComment = {
-    id: `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    paperId,
-    author: author.trim() || '个人笔记',
-    role: role.trim() || '精读批注',
-    content: content.trim(),
-    createdAt: new Date().toISOString(),
-  };
-  db.prepare('INSERT INTO comments (id, paper_id, author, role, content, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(comment.id, comment.paperId, comment.author, comment.role, comment.content, comment.createdAt);
-  return comment;
+  const now = new Date().toISOString();
+  const id = `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const entryType: EntryType = params.entryType === 'thought' ? 'thought' : 'comment';
+  const author = params.user?.displayName || params.author?.trim() || '访客学者';
+  const role = params.role?.trim() || (entryType === 'thought' ? '深度思考' : '学术评论');
+  const userTags = params.user?.userTags || [];
+
+  db.prepare(`
+    INSERT INTO comments (id, paper_id, entry_type, user_id, username, user_tags, author, role, content, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    params.paperId,
+    entryType,
+    params.user?.id || null,
+    params.user?.username || null,
+    JSON.stringify(userTags),
+    author,
+    role,
+    params.content.trim(),
+    now
+  );
+
+  const row = db.prepare('SELECT * FROM comments WHERE id = ?').get(id) as Record<string, unknown>;
+  return hydrateCommentRow(row);
 }
 
-export function deleteComment(paperId: string, commentId: string): boolean {
+export function updateComment(
+  paperId: string,
+  commentId: string,
+  patch: { content: string; entryType?: EntryType },
+  requestUser?: UserProfile | null
+): PaperComment | null {
+  const row = db.prepare('SELECT * FROM comments WHERE id = ? AND paper_id = ?').get(commentId, paperId) as Record<string, unknown> | undefined;
+  if (!row) return null;
+
+  // Permission check: owner, admin, or unowned comment
+  if (row.user_id && requestUser && requestUser.role !== 'admin' && String(row.user_id) !== requestUser.id) {
+    throw new Error('无权修改他人发布的评论或思考');
+  }
+
+  const nextType = patch.entryType ?? String(row.entry_type || 'comment');
+  const now = new Date().toISOString();
+  db.prepare('UPDATE comments SET content = ?, entry_type = ?, updated_at = ? WHERE id = ? AND paper_id = ?')
+    .run(patch.content.trim(), nextType, now, commentId, paperId);
+
+  const updated = db.prepare('SELECT * FROM comments WHERE id = ?').get(commentId) as Record<string, unknown>;
+  return hydrateCommentRow(updated);
+}
+
+export function deleteComment(paperId: string, commentId: string, requestUser?: UserProfile | null): boolean {
+  const row = db.prepare('SELECT * FROM comments WHERE id = ? AND paper_id = ?').get(commentId, paperId) as Record<string, unknown> | undefined;
+  if (!row) return false;
+  if (row.user_id && requestUser && requestUser.role !== 'admin' && String(row.user_id) !== requestUser.id) {
+    throw new Error('无权删除他人的评论或思考');
+  }
   const res = db.prepare('DELETE FROM comments WHERE id = ? AND paper_id = ?').run(commentId, paperId);
   return Number(res.changes) > 0;
 }
@@ -319,13 +686,16 @@ export function getDatabaseStats() {
   const stats = fs.existsSync(DB_PATH) ? fs.statSync(DB_PATH) : null;
   const totalPapers = (db.prepare('SELECT COUNT(*) as c FROM papers').get() as { c: number }).c;
   const totalComments = (db.prepare('SELECT COUNT(*) as c FROM comments').get() as { c: number }).c;
+  const totalUsers = (db.prepare('SELECT COUNT(*) as c FROM users').get() as { c: number }).c;
+  const totalKbLinks = (db.prepare('SELECT COUNT(*) as c FROM user_kb').get() as { c: number }).c;
   const recentSyncs = getSyncLogs(8);
   return {
     dbPath: DB_PATH,
     sizeKB: stats ? Math.round((stats.size / 1024) * 10) / 10 : 0,
     totalPapers,
     totalComments,
+    totalUsers,
+    totalKbLinks,
     recentSyncs,
   };
 }
-

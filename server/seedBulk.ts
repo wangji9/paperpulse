@@ -609,17 +609,25 @@ export function getBulkSeedPapers(): AcademicPaper[] {
     return [];
   }
   const out: AcademicPaper[] = [];
+  const FALLBACK_AFFILIATIONS: Record<number, string[]> = {
+    2: ['Stanford University'],
+    15: ['Stanford University', 'UC Berkeley', 'Toyota Research Institute', 'Google DeepMind'],
+    16: ['Physical Intelligence'],
+    17: ['Physical Intelligence'],
+    24: ['Zep AI'],
+  };
   for (const e of ENTRIES) {
     const r = raw[e.idx];
     if (!r) continue;
     const sid = String(r.openAlexId).split('/').pop();
+    const resolvedAffs = r.affiliations?.length ? r.affiliations : (FALLBACK_AFFILIATIONS[e.idx] || []);
     out.push({
       id: `oa-${sid}`,
       openAlexId: r.openAlexId,
       title: r.title,
       titleZh: e.titleZh,
       authors: r.authors,
-      affiliations: r.affiliations?.length ? r.affiliations : [],
+      affiliations: resolvedAffs,
       journal: e.venue || r.journal,
       journalShort: e.short,
       journalRank: '',

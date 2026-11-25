@@ -1,4 +1,35 @@
-import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../types/paper';
+import type {
+  AcademicPaper,
+  AutoSyncConfig,
+  EntryType,
+  PaperComment,
+  ReadingStatus,
+  UserProfile,
+} from '../types/paper';
+
+const TOKEN_KEY = 'paperpulse_auth_token';
+
+export function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const token = getAuthToken();
+  return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
 
 export interface PaperFilters {
   q?: string;
@@ -10,6 +41,8 @@ export interface PaperFilters {
   readingStatus?: string;
   recentOnly?: boolean;
   date?: string;
+  scope?: 'pool' | 'my_kb';
+  collectedBy?: string;
 }
 
 export interface StorageStats {
@@ -17,9 +50,129 @@ export interface StorageStats {
   sizeKB: number;
   totalPapers: number;
   totalComments: number;
+  totalUsers?: number;
+  totalKbLinks?: number;
   recentSyncs: Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }>;
 }
 
+/* ---------- Auth & Users ---------- */
+export async function registerAccount(payload: {
+  username: string;
+  password: string;
+  displayName?: string;
+  userTags?: string[];
+}): Promise<{ user: UserProfile; token: string }> {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '注册失败');
+  setAuthToken(data.token);
+  return data;
+}
+
+export async function loginAccount(username: string, password: string): Promise<{ user: UserProfile; token: string }> {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '登录失败');
+  setAuthToken(data.token);
+  return data;
+}
+
+export async function logoutAccount(): Promise<void> {
+  await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() }).catch(() => {});
+  setAuthToken(null);
+}
+
+export async function fetchCurrentUser(): Promise<UserProfile | null> {
+  if (!getAuthToken()) return null;
+  const res = await fetch('/api/auth/me', { headers: authHeaders() });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { user: UserProfile | null };
+  return data.user;
+}
+
+export async function fetchUsersList(): Promise<UserProfile[]> {
+  const res = await fetch('/api/users', { headers: authHeaders() });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { users: UserProfile[] };
+  return data.users;
+}
+
+export async function createManagedUser(payload: {
+  username: string;
+  password: string;
+  displayName?: string;
+  userTags?: string[];
+  role?: 'admin' | 'member';
+}): Promise<UserProfile> {
+  const res = await fetch('/api/users', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '创建用户失败');
+  return data.user;
+}
+
+export async function updateUserAccount(
+  id: string,
+  patch: { displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
+): Promise<UserProfile> {
+  const res = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(patch),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '更新用户失败');
+  return data.user;
+}
+
+export async function deleteUserAccount(id: string): Promise<void> {
+  const res = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || '删除用户失败');
+  }
+}
+
+/* ---------- Personal Knowledge Base ---------- */
+export async function upsertMyKbPaper(
+  paperId: string,
+  payload: { personalTags?: string[]; readingStatus?: ReadingStatus } = {}
+): Promise<AcademicPaper> {
+  const res = await fetch(`/api/kb/${encodeURIComponent(paperId)}`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '加入个人知识库失败');
+  return data.paper;
+}
+
+export async function removeMyKbPaper(paperId: string): Promise<AcademicPaper> {
+  const res = await fetch(`/api/kb/${encodeURIComponent(paperId)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '移出知识库失败');
+  return data.paper;
+}
+
+/* ---------- Papers ---------- */
 export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicPaper[]> {
   const params = new URLSearchParams();
   if (filters.q) params.set('q', filters.q);
@@ -31,17 +184,21 @@ export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicP
   if (filters.readingStatus && filters.readingStatus !== 'all') params.set('readingStatus', filters.readingStatus);
   if (filters.recentOnly) params.set('recentOnly', 'true');
   if (filters.date) params.set('date', filters.date);
+  if (filters.scope) params.set('scope', filters.scope);
+  if (filters.collectedBy && filters.collectedBy !== 'all') params.set('collectedBy', filters.collectedBy);
 
-  const res = await fetch(`/api/papers?${params.toString()}`);
+  const res = await fetch(`/api/papers?${params.toString()}`, { headers: authHeaders() });
   if (!res.ok) throw new Error('获取文献列表失败');
   const data = (await res.json()) as { papers: AcademicPaper[] };
   return data.papers;
 }
 
-export async function createPaper(payload: Partial<AcademicPaper> & { quickAbstract?: string }): Promise<AcademicPaper> {
+export async function createPaper(
+  payload: Partial<AcademicPaper> & { quickAbstract?: string; addToMyKb?: boolean; personalTags?: string[] }
+): Promise<AcademicPaper> {
   const res = await fetch('/api/papers', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -52,11 +209,14 @@ export async function createPaper(payload: Partial<AcademicPaper> & { quickAbstr
   return data.paper;
 }
 
-export async function importPaperByIdentifier(identifier: string): Promise<{ paper: AcademicPaper; alreadyExists: boolean }> {
+export async function importPaperByIdentifier(
+  identifier: string,
+  options: { addToMyKb?: boolean; personalTags?: string[] } = {}
+): Promise<{ paper: AcademicPaper; alreadyExists: boolean }> {
   const res = await fetch('/api/papers/import', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier }),
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ identifier, ...options }),
   });
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
@@ -65,10 +225,20 @@ export async function importPaperByIdentifier(identifier: string): Promise<{ pap
   return (await res.json()) as { paper: AcademicPaper; alreadyExists: boolean };
 }
 
+export async function reparsePaper(id: string): Promise<AcademicPaper> {
+  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/reparse`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '自动解析失败');
+  return data.paper;
+}
+
 export async function updatePaper(id: string, payload: Partial<AcademicPaper>): Promise<AcademicPaper> {
   const res = await fetch(`/api/papers/${encodeURIComponent(id)}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('更新文献失败');
@@ -82,7 +252,7 @@ export async function updatePaperLibraryState(
 ): Promise<AcademicPaper> {
   const res = await fetch(`/api/papers/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error('状态更新失败');
@@ -93,28 +263,53 @@ export async function updatePaperLibraryState(
 export async function removePaper(id: string): Promise<void> {
   const res = await fetch(`/api/papers/${encodeURIComponent(id)}`, {
     method: 'DELETE',
+    headers: authHeaders(),
   });
   if (!res.ok) throw new Error('删除失败');
 }
 
-export async function postComment(paperId: string, author: string, role: string, content: string): Promise<PaperComment> {
+/* ---------- Comments & Thoughts Full CRUD ---------- */
+export async function postComment(
+  paperId: string,
+  payload: { content: string; entryType?: EntryType; author?: string; role?: string }
+): Promise<PaperComment> {
   const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ author, role, content }),
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('笔记保存失败');
-  const data = (await res.json()) as { comment: PaperComment };
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '发布失败');
+  return data.comment;
+}
+
+export async function editComment(
+  paperId: string,
+  commentId: string,
+  payload: { content: string; entryType?: EntryType }
+): Promise<PaperComment> {
+  const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '更新失败');
   return data.comment;
 }
 
 export async function removeComment(paperId: string, commentId: string): Promise<void> {
   const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
     method: 'DELETE',
+    headers: authHeaders(),
   });
-  if (!res.ok) throw new Error('删除笔记失败');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || '删除失败');
+  }
 }
 
+/* ---------- Sync ---------- */
 export async function syncLiveFeed(query?: string): Promise<{
   syncedAt: string;
   addedCount: number;
@@ -123,7 +318,7 @@ export async function syncLiveFeed(query?: string): Promise<{
 }> {
   const res = await fetch('/api/sync', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ query }),
   });
   if (!res.ok) {
@@ -139,7 +334,7 @@ export async function syncLiveFeed(query?: string): Promise<{
 }
 
 export async function fetchAutoSyncStatus(): Promise<{ config: AutoSyncConfig; storage: StorageStats }> {
-  const res = await fetch('/api/auto-sync/config');
+  const res = await fetch('/api/auto-sync/config', { headers: authHeaders() });
   if (!res.ok) throw new Error('获取自动追踪配置失败');
   return (await res.json()) as { config: AutoSyncConfig; storage: StorageStats };
 }
@@ -147,7 +342,7 @@ export async function fetchAutoSyncStatus(): Promise<{ config: AutoSyncConfig; s
 export async function updateAutoSyncConfig(patch: Partial<AutoSyncConfig>): Promise<AutoSyncConfig> {
   const res = await fetch('/api/auto-sync/config', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error('更新配置失败');
