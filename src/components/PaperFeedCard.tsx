@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { Bookmark, BookOpenCheck, Check, Copy, Edit3, ExternalLink, MessageSquare, Send, Trash2 } from 'lucide-react';
 import type { AcademicPaper, ReadingStatus } from '../types/paper';
-import { DATASET_SOURCE_META, DOMAIN_META, READING_STATUS_META, TOPIC_META, generateBibtex } from '../lib/constants';
+import {
+  DATASET_SOURCE_META,
+  DOMAIN_META,
+  READING_STATUS_META,
+  TOPIC_META,
+  generateBibtex,
+  resolveDoiUrl,
+  resolvePaperOriginalUrl,
+} from '../lib/constants';
 
 interface PaperFeedCardProps {
   paper: AcademicPaper;
@@ -125,7 +133,23 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         {paper.title}
       </h2>
       {showZhTitle && <p className="mt-1 text-base text-slate-600 dark:text-slate-300">{paper.titleZh}</p>}
-      <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">{paper.authors.slice(0, 5).join(', ')}</p>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+        <span>{paper.authors.slice(0, 5).join(', ')}</span>
+        {paper.doi && resolveDoiUrl(paper.doi, paper.url) && (
+          <>
+            <span className="text-slate-300">|</span>
+            <a
+              href={resolveDoiUrl(paper.doi, paper.url)}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-indigo-600 hover:underline dark:text-indigo-400"
+            >
+              DOI: {paper.doi}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </>
+        )}
+      </div>
 
       {/* Tags */}
       <div className="mt-3 flex flex-wrap gap-2">
@@ -201,6 +225,17 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             <BookOpenCheck className="h-4 w-4" />
             精读全文解析
           </button>
+          {resolvePaperOriginalUrl(paper) && (
+            <a
+              href={resolvePaperOriginalUrl(paper)}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300"
+            >
+              <ExternalLink className="h-4 w-4" />
+              查看原文
+            </a>
+          )}
           <button
             type="button"
             onClick={() => onUpdateStatus(paper.id, { isBookmarked: !paper.isBookmarked })}

@@ -5,7 +5,8 @@ export type ResearchTopic =
   | 'KnowledgeGraph'
   | 'ComputerVision'
   | 'Multimodal'
-  | 'EmbodiedAI';
+  | 'EmbodiedAI'
+  | 'AgentCollaboration';
 
 export type DatasetSourceType = 'public' | 'self_built' | 'hybrid' | 'unspecified';
 

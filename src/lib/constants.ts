@@ -2,8 +2,18 @@ import type { AcademicPaper, DatasetSourceType, DomainCategory, ReadingStatus, R
 
 const TOPIC_STYLE = 'bg-indigo-50 text-indigo-700 border-indigo-100';
 
-export const TOPIC_META: Record<ResearchTopic, { label: string; color: string; bgClass: string; textClass: string; borderClass: string }> = {
+export const TOPIC_META: Record<
+  ResearchTopic,
+  { label: string; color: string; bgClass: string; textClass: string; borderClass: string }
+> = {
   LLM: { label: '大模型', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  AgentCollaboration: {
+    label: '多智能体与人智协作',
+    color: '#4F46E5',
+    bgClass: 'bg-indigo-50',
+    textClass: 'text-indigo-700',
+    borderClass: 'border-indigo-100',
+  },
   KnowledgeGraph: { label: '知识图谱', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   ComputerVision: { label: '计算机视觉', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   Multimodal: { label: '多模态', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
@@ -32,14 +42,43 @@ export const READING_STATUS_META: Record<ReadingStatus, { label: string; cls: st
 
 export const TRACKED_JOURNALS = [
   { short: 'JMS', full: 'Journal of Manufacturing Systems' },
-  { short: 'IJPR', full: 'International Journal of Production Research' },
-  { short: 'AEI', full: 'Advanced Engineering Informatics' },
   { short: 'RCIM', full: 'Robotics and Computer-Integrated Manufacturing' },
-  { short: 'CVPR', full: 'CVPR' },
-  { short: 'ICML', full: 'ICML' },
+  { short: 'AEI', full: 'Advanced Engineering Informatics' },
+  { short: 'IJPR', full: 'International Journal of Production Research' },
+  { short: 'IEEE TII', full: 'IEEE Transactions on Industrial Informatics' },
+  { short: 'CIRP', full: 'CIRP Annals - Manufacturing Technology' },
+  { short: 'IJMTM', full: 'International Journal of Machine Tools and Manufacture' },
+  { short: 'JAS', full: 'IEEE/CAA Journal of Automatica Sinica' },
+  { short: 'INFFUS', full: 'Information Fusion' },
+  { short: 'TPAMI', full: 'IEEE Transactions on Pattern Analysis and Machine Intelligence' },
+  { short: 'CVPR', full: 'IEEE/CVF Conference on Computer Vision and Pattern Recognition' },
+  { short: 'ICML', full: 'International Conference on Machine Learning' },
+  { short: 'ICLR', full: 'International Conference on Learning Representations' },
+  { short: 'EMNLP', full: 'Conference on Empirical Methods in Natural Language Processing' },
+  { short: 'CHI', full: 'ACM CHI Conference on Human Factors in Computing Systems' },
+  { short: 'JAIR', full: 'Journal of Artificial Intelligence Research' },
+  { short: 'NHB', full: 'Nature Human Behaviour' },
   { short: 'CoRL', full: 'Conference on Robot Learning' },
+  { short: 'RSS', full: 'Robotics: Science and Systems' },
+  { short: 'ICRA', full: 'IEEE International Conference on Robotics and Automation' },
   { short: 'arXiv', full: 'arXiv' },
 ];
+
+export function resolveDoiUrl(doi?: string, fallbackUrl?: string): string {
+  const clean = (doi || '').trim();
+  if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+  if (clean.startsWith('10.')) return `https://doi.org/${clean}`;
+  if (fallbackUrl && fallbackUrl !== '#') return fallbackUrl;
+  return '';
+}
+
+export function resolvePaperOriginalUrl(paper: { doi?: string; url?: string; openAlexId?: string }): string {
+  if (paper.url && paper.url !== '#' && paper.url.startsWith('http')) return paper.url;
+  const doiUrl = resolveDoiUrl(paper.doi);
+  if (doiUrl) return doiUrl;
+  if (paper.openAlexId && paper.openAlexId.startsWith('http')) return paper.openAlexId;
+  return '';
+}
 
 export function generateBibtex(paper: AcademicPaper): string {
   const firstAuthor = (paper.authors[0] || 'Author').split(' ').pop()?.toLowerCase() || 'author';

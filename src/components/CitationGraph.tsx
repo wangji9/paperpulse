@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight, ExternalLink, Loader2, PlusCircle } from 'lucide-react';
 import type { AcademicPaper, CitationRefNode } from '../types/paper';
-import { DOMAIN_META } from '../lib/constants';
+import { DOMAIN_META, resolveDoiUrl, resolvePaperOriginalUrl } from '../lib/constants';
 
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
@@ -106,6 +106,19 @@ export const EgoCitationGraph: React.FC<EgoProps> = ({ paper, libraryPapers, dar
               <div>
                 {selected.year} · 被引 {selected.citedByCount ?? 0}
               </div>
+              {selected.doi && (
+                <div>
+                  <a
+                    href={resolveDoiUrl(selected.doi, selected.url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    DOI: {selected.doi}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              )}
             </div>
             <div className="mt-4 flex flex-col gap-2">
               {matched ? (
@@ -150,18 +163,18 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({ papers, darkMode, o
   const [importingId, setImportingId] = useState<string | null>(null);
 
   const W = 960;
-  const H = 520;
+  const cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(papers.length * 1.6))));
+  const rowsCount = Math.max(2, Math.ceil(papers.length / cols));
+  const H = Math.max(520, rowsCount * 112 + 70);
 
   const layout = useMemo(() => {
     const sorted = [...papers].sort((a, b) => a.publishedDate.localeCompare(b.publishedDate));
-    const cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(sorted.length * 1.8))));
-    const rows = Math.ceil(sorted.length / cols);
     const nodes = sorted.map((p, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
       const x = 80 + (col / Math.max(cols - 1, 1)) * (W - 160);
-      const y = 70 + (row / Math.max(rows - 1, 1)) * (H - 190);
-      return { p, x: x + (row % 2 ? 24 : 0), y };
+      const y = 65 + (row / Math.max(rowsCount - 1, 1)) * (H - 150);
+      return { p, x: x + (row % 2 ? 22 : 0), y };
     });
     const edges: Array<{ a: number; b: number }> = [];
     for (let i = 0; i < nodes.length; i++)
@@ -174,7 +187,7 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({ papers, darkMode, o
         if (bCitesA || aCitedByB) edges.push({ a: i, b: j });
       }
     return { nodes, edges };
-  }, [papers]);
+  }, [papers, cols, rowsCount, H]);
 
   const active = papers.find((p) => p.id === activeId) || papers[0];
   const activeNode = layout.nodes.find((n) => n.p.id === active?.id);
@@ -290,9 +303,35 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({ papers, darkMode, o
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{active.titleZh}</p>
               )}
               <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300">{active.digestSummary}</p>
-              <button type="button" onClick={() => onSelectPaper(active)} className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                精读全文解析
-              </button>
+              {active.doi && resolveDoiUrl(active.doi, active.url) && (
+                <div className="mt-2.5 text-sm">
+                  <a
+                    href={resolveDoiUrl(active.doi, active.url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    DOI: {active.doi}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              )}
+              <div className="mt-4 flex flex-col gap-2">
+                <button type="button" onClick={() => onSelectPaper(active)} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                  精读全文解析
+                </button>
+                {resolvePaperOriginalUrl(active) && (
+                  <a
+                    href={resolvePaperOriginalUrl(active)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 py-2 text-sm text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    查看原文
+                  </a>
+                )}
+              </div>
             </div>
           ) : null}
         </div>

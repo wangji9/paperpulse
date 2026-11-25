@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Copy, Edit3, ExternalLink, Send, Trash2, X } from 'lucide-react';
 import type { AcademicPaper } from '../types/paper';
-import { DOMAIN_META, TOPIC_META, generateBibtex } from '../lib/constants';
+import { DOMAIN_META, TOPIC_META, generateBibtex, resolveDoiUrl, resolvePaperOriginalUrl } from '../lib/constants';
 import {
   AblationTable,
   ArchitectureDiagram,
@@ -156,10 +156,37 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
               </div>
               <h2 className="mt-2 text-xl font-semibold leading-snug text-slate-900 dark:text-white">{paper.title}</h2>
               {hasZh && <p className="mt-1 text-base text-slate-600 dark:text-slate-300">{paper.titleZh}</p>}
-              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                {paper.authors.join(', ')}
-                {paper.doi ? `  ·  DOI ${paper.doi}` : ''}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
+                <span>{paper.authors.join(', ')}</span>
+                {paper.doi && resolveDoiUrl(paper.doi, paper.url) && (
+                  <>
+                    <span className="text-slate-300">|</span>
+                    <a
+                      href={resolveDoiUrl(paper.doi, paper.url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                      DOI: {paper.doi}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </>
+                )}
+                {resolvePaperOriginalUrl(paper) && (
+                  <>
+                    <span className="text-slate-300">|</span>
+                    <a
+                      href={resolvePaperOriginalUrl(paper)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                    >
+                      直达原文页面
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
               <button type="button" onClick={handleCopyBib} className={btn}>

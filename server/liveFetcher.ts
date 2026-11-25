@@ -59,7 +59,10 @@ export async function translateToZh(text: string, maxChars = 480): Promise<strin
 function detectTopics(text: string): ResearchTopic[] {
   const lower = text.toLowerCase();
   const topics: ResearchTopic[] = [];
-  if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|language model|agentic)/.test(lower)) topics.push('LLM');
+  if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|language model)/.test(lower)) topics.push('LLM');
+  if (/(multi-agent|multiagent|agentic|human-agent|human-ai collaboration|human-in-the-loop|human-robot collaboration|agent team|agent collaboration|autonomous agent)/.test(lower)) {
+    topics.push('AgentCollaboration');
+  }
   if (/(knowledge graph|ontology|triple|heterogeneous graph|graph neural|kgqa|causal graph)/.test(lower)) topics.push('KnowledgeGraph');
   if (/(computer vision|segmentation|detection|defect|point cloud|image|visual|diffusion|yolo|vit|3d|video)/.test(lower)) topics.push('ComputerVision');
   if (/(multimodal|vision-language|vlm|cross-modal|tactile|rgb-d|thermal|audio-visual|embedding)/.test(lower)) topics.push('Multimodal');
@@ -123,6 +126,7 @@ export function buildStructuredAnatomy(
   const ds = detectDataset(raw.abstract);
   const topicZh: Record<ResearchTopic, string> = {
     LLM: '大模型',
+    AgentCollaboration: '多智能体与人智协作',
     KnowledgeGraph: '知识图谱',
     ComputerVision: '计算机视觉',
     Multimodal: '多模态',
@@ -196,8 +200,8 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
 /* ---------- Relevance ---------- */
 export function isRelevant(text: string): boolean {
   const t = text.toLowerCase();
-  const domain = /(manufactur|industr|robot|embodied|assembly|defect|digital twin|fault diagnos|machining|supply chain|shop-floor)/.test(t);
-  const tech = /(large language model|llm|multimodal|vision-language|knowledge graph|computer vision|foundation model|vision-language-action|point cloud|diffusion|deep learning)/.test(t);
+  const domain = /(manufactur|industr|robot|embodied|assembly|defect|digital twin|fault diagnos|machining|supply chain|shop-floor|multi-agent|multiagent|human-agent|human-ai)/.test(t);
+  const tech = /(large language model|llm|multimodal|vision-language|knowledge graph|computer vision|foundation model|vision-language-action|point cloud|diffusion|deep learning|multi-agent|multiagent|agentic|human-agent)/.test(t);
   const off = /(autonomous driving|self-driving|autonomous vehicle|clinical|medical|humanities|patient)/.test(t);
   return domain && tech && !off;
 }
@@ -321,7 +325,7 @@ export async function fetchYesterdayTodayFromOpenAlex(daysBack = 1, customQuery?
 export async function fetchYesterdayTodayFromArxiv(daysBack = 1): Promise<RawExternalPaper[]> {
   const w = dateWindow(daysBack);
   const query =
-    '(cat:cs.CV OR cat:cs.RO OR cat:cs.CL OR cat:cs.AI) AND (manufacturing OR industrial OR "knowledge graph" OR "vision-language" OR embodied OR defect)';
+    '(cat:cs.CV OR cat:cs.RO OR cat:cs.CL OR cat:cs.AI OR cat:cs.MA OR cat:cs.HC) AND (manufacturing OR industrial OR "knowledge graph" OR "vision-language" OR embodied OR defect OR "multi-agent" OR "human-agent")';
   try {
     const res = await fetch(
       `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&sortBy=submittedDate&sortOrder=descending&max_results=25`,

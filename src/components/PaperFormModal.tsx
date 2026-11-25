@@ -16,7 +16,14 @@ interface PaperFormModalProps {
   onSaved: (paper: AcademicPaper, isNew: boolean) => void;
 }
 
-const ALL_TOPICS: ResearchTopic[] = ['LLM', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'];
+const ALL_TOPICS: ResearchTopic[] = [
+  'LLM',
+  'AgentCollaboration',
+  'KnowledgeGraph',
+  'ComputerVision',
+  'Multimodal',
+  'EmbodiedAI',
+];
 
 export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   editingPaper,

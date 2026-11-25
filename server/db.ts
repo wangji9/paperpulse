@@ -4,6 +4,7 @@ import path from 'node:path';
 import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../src/types/paper.js';
 import { SEED_PAPERS } from './seedData.js';
 import { getBulkSeedPapers } from './seedBulk.js';
+import { getAgentAndJournalSeedPapers } from './seedAgents.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -66,21 +67,21 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
   enabled: true,
   intervalHours: 6,
   targetWindow: 'yesterday_today',
-  trackedTopics: ['LLM', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
-  trackedJournals: ['JMS', 'RCIM', 'IJMTM', 'AEI', 'IEEE TII', 'TPAMI', 'CVPR', 'CoRL', 'arXiv'],
+  trackedTopics: ['LLM', 'AgentCollaboration', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
+  trackedJournals: ['JMS', 'RCIM', 'AEI', 'IJPR', 'IEEE TII', 'CIRP', 'IJMTM', 'JAS', 'INFFUS', 'TPAMI', 'CVPR', 'ICML', 'ICLR', 'EMNLP', 'CHI', 'CoRL', 'RSS', 'ICRA', 'arXiv'],
   lastAutoSyncAt: null,
   nextAutoSyncAt: null,
 };
 
 export function initDatabase(): void {
-  const LIB_VERSION = 'v3.2-zh-complete';
+  const LIB_VERSION = 'v3.3-multiagent-doi';
   const ver = db.prepare("SELECT value FROM settings WHERE key = 'library_version'").get() as { value: string } | undefined;
   if (!ver || ver.value !== LIB_VERSION) {
-    const seeds = [...SEED_PAPERS, ...getBulkSeedPapers()];
+    const seeds = [...SEED_PAPERS, ...getBulkSeedPapers(), ...getAgentAndJournalSeedPapers()];
     for (const paper of seeds) {
       upsertPaper(paper);
     }
-    recordSyncLog('文献库升级', seeds.length, `同步更新 ${seeds.length} 篇核心文献全中文深度解析`);
+    recordSyncLog('文献库扩充', seeds.length, `新增多智能体、人智协作与多期刊核心文献，累计核心库 ${seeds.length} 篇`);
     db.prepare("INSERT INTO settings (key, value) VALUES ('library_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(LIB_VERSION);
   }
 

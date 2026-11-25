@@ -1,0 +1,1064 @@
+[
+  {
+    "openAlexId": "https://openalex.org/W4408100174",
+    "title": "When Embodied AI Meets Industry 5.0: Human-Centered Smart Manufacturing",
+    "authors": [
+      "Jing Xu",
+      "Qiyu Sun",
+      "Qing‐Long Han",
+      "Yang Shan Tang"
+    ],
+    "affiliations": [
+      "East China University of Science and Technology",
+      "Key Laboratory of Smart Manufacturing in Energy Chemical Process, Ministry of Education",
+      "Swinburne University of Technology"
+    ],
+    "journal": "IEEE/CAA Journal of Automatica Sinica",
+    "date": "2025-03-01",
+    "doi": "10.1109/jas.2025.125327",
+    "cited": 169,
+    "abstract": "As embodied intelligence (EI), large language models (LLMs), and cloud computing continue to advance, Industry 5.0 facilitates the development of industrial artificial intelligence (IndAI) through cyber-physical-social systems (CPSSs) with a human-centric focus. These technologies are organized by the system-wide approach of Industry 5.0, in order to empower the manufacturing industry to achieve broader societal goals of job creation, economic growth, and green production. This survey first provides a general framework of smart manufacturing in the context of Industry 5.0. Wherein, the embodied agents, like robots, sensors, and actuators, are the carriers for IndAI, facilitating the development of the self-learning intelligence in individual entities, the collaborative intelligence in production lines and factories (smart systems), and the swarm intelligence within industrial clusters (systems of smart systems). Through the framework of CPSSs, the key technologies and their possible applications for supporting the single-agent, multi-agent and swarm-agent embodied IndAI have been reviewed, such as the embodied perception, interaction, scheduling, multi-mode large language models, and collaborative training. Finally, to stimulate future research in this area, the open challenges and opportunities of applying Industry 5.0 to smart manufacturing are identified and discussed. The perspective of Industry 5.0-driven manufacturing industry aims to enhance operational productivity and efficiency by seamlessly integrating the virtual and physical worlds in a human-centered manner, thereby fostering an intelligent, sustainable, and resilient industrial landscape.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2074207981",
+        "title": "Autonomous undulatory serpentine locomotion utilizing body dynamics of a fluidic soft robot",
+        "year": "2013",
+        "venue": "Bioinspiration & Biomimetics",
+        "doi": "10.1088/1748-3182/8/2/026003",
+        "url": "https://doi.org/10.1088/1748-3182/8/2/026003",
+        "citedByCount": 417,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2104250594",
+        "title": "Adaptive Dynamic Surface Control of Flexible-Joint Robots Using Self-Recurrent Wavelet Neural Networks",
+        "year": "2006",
+        "venue": "IEEE Transactions on Systems Man and Cybernetics Part B (Cybernetics)",
+        "doi": "10.1109/tsmcb.2006.875869",
+        "url": "https://doi.org/10.1109/tsmcb.2006.875869",
+        "citedByCount": 175,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2015153742",
+        "title": "Human–robot communication for collaborative decision making — A probabilistic approach",
+        "year": "2010",
+        "venue": "Robotics and Autonomous Systems",
+        "doi": "10.1016/j.robot.2010.02.003",
+        "url": "https://doi.org/10.1016/j.robot.2010.02.003",
+        "citedByCount": 112,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4416095924",
+        "title": "Vision-Language-Action (VLA) Models: Concepts, Progress, Applications and Challenges",
+        "year": "2025",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2505.04769",
+        "url": "https://doi.org/10.48550/arxiv.2505.04769",
+        "citedByCount": 230,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4416098348",
+        "title": "Multi-agent embodied AI: advances and future directions",
+        "year": "2026",
+        "venue": "Science China Information Sciences",
+        "doi": "10.1007/s11432-025-4820-4",
+        "url": "https://doi.org/10.1007/s11432-025-4820-4",
+        "citedByCount": 121,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4414152211",
+        "title": "A Review of Hybrid Manufacturing: Integrating Subtractive and Additive Manufacturing",
+        "year": "2025",
+        "venue": "Materials",
+        "doi": "10.3390/ma18184249",
+        "url": "https://doi.org/10.3390/ma18184249",
+        "citedByCount": 61,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4391399751",
+    "title": "Human-in-the-Loop Reinforcement Learning: A Survey and Position on Requirements, Challenges, and Opportunities",
+    "authors": [
+      "Carl Orge Retzlaff",
+      "Srijita Das",
+      "Christabel Wayllace",
+      "Payam Mousavi",
+      "Mohammad Pooya Afshari"
+    ],
+    "affiliations": [
+      "New Mexico State University",
+      "University of Alberta",
+      "Alberta Machine Intelligence Institute",
+      "AI Redefined (Canada)",
+      "BOKU University"
+    ],
+    "journal": "Journal of Artificial Intelligence Research",
+    "date": "2024-01-30",
+    "doi": "10.1613/jair.1.15348",
+    "cited": 288,
+    "abstract": "Artificial intelligence (AI) and especially reinforcement learning (RL) have the potential to enable agents to learn and perform tasks autonomously with superhuman performance. However, we consider RL as fundamentally a Human-in-the-Loop (HITL) paradigm, even when an agent eventually performs its task autonomously. In cases where the reward function is challenging or impossible to define, HITL approaches are considered particularly advantageous. The application of Reinforcement Learning from Human Feedback (RLHF) in systems such as ChatGPT demonstrates the effectiveness of optimizing for user experience and integrating their feedback into the training loop. In HITL RL, human input is integrated during the agent’s learning process, allowing iterative updates and fine-tuning based on human feedback, thus enhancing the agent’s performance. Since the human is an essential part of this process, we argue that human-centric approaches are the key to successful RL, a fact that has not been adequately considered in the existing literature. This paper aims to inform readers about current explainability methods in HITL RL. It also shows how the application of explainable AI (xAI) and specific improvements to existing explainability approaches can enable a better human-agent interaction in HITL RL for all types of users, whether for lay people, domain experts, or machine learning specialists. Accounting for the workflow in HITL RL and based on software and machine learning methodologies, this article identifies four phases for human involvement for creating HITL RL systems: (1) Agent Development, (2) Agent Learning, (3) Agent Evaluation, and (4) Agent Deployment. We highlight human involvement, explanation requirements, new challenges, and goals for each phase. We furthermore identify low-risk, high-return opportunities for explainability research in HITL RL and present long-term research goals to advance the field. Finally, we propose a vision of human-robot collaboration that allows both parties to reach their full potential and cooperate effectively.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W121023703",
+        "title": "Reinforcement learning with human teachers: evidence of feedback and guidance with implications for learning performance",
+        "year": "2006",
+        "venue": "National Conference on Artificial Intelligence",
+        "doi": "",
+        "url": "https://openalex.org/W121023703",
+        "citedByCount": 356,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W122021961",
+        "title": "Preference-Based Policy Learning",
+        "year": "2011",
+        "venue": "Lecture notes in computer science",
+        "doi": "10.1007/978-3-642-23780-5_11",
+        "url": "https://doi.org/10.1007/978-3-642-23780-5_11",
+        "citedByCount": 128,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W31984690",
+        "title": "Back to reality: Crossing the reality gap in evolutionary robotics",
+        "year": "2004",
+        "venue": "IFAC Proceedings Volumes",
+        "doi": "10.1016/s1474-6670(17)32084-0",
+        "url": "https://doi.org/10.1016/s1474-6670(17)32084-0",
+        "citedByCount": 81,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4390215524",
+        "title": "A Survey of Reinforcement Learning from Human Feedback",
+        "year": "2023",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2312.14925",
+        "url": "https://doi.org/10.48550/arxiv.2312.14925",
+        "citedByCount": 470,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4401948668",
+        "title": "AI-based decision support systems in Industry 4.0, a review",
+        "year": "2024",
+        "venue": "Journal of Economy and Technology",
+        "doi": "10.1016/j.ject.2024.08.005",
+        "url": "https://doi.org/10.1016/j.ject.2024.08.005",
+        "citedByCount": 438,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4396668454",
+        "title": "Post-hoc vs ante-hoc explanations: xAI design guidelines for data scientists",
+        "year": "2024",
+        "venue": "Cognitive Systems Research",
+        "doi": "10.1016/j.cogsys.2024.101243",
+        "url": "https://doi.org/10.1016/j.cogsys.2024.101243",
+        "citedByCount": 285,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W7130686334",
+    "title": "Embodied LLM Agents Learn to Cooperate in Organized Teams",
+    "authors": [
+      "Xudong Guo",
+      "Kaixuan Huang",
+      "Jiale Liu",
+      "Wenhui Fan",
+      "Natalia Vélez"
+    ],
+    "affiliations": [
+      "Tsinghua University",
+      "Princeton University",
+      "Pennsylvania State University"
+    ],
+    "journal": "IEEE Transactions on Computational Social Systems",
+    "date": "2026-02-20",
+    "doi": "10.1109/tcss.2025.3637527",
+    "cited": 124,
+    "abstract": "Large language models (LLMs) have emerged as integral tools for reasoning, planning, and decision-making, drawing upon their extensive world knowledge and proficiency in language-related tasks. LLMs thus hold tremendous potential for natural language interaction within multiagent systems to foster cooperation. However, LLM agents tend to over-report and comply with any instruction, which may result in information redundancy and confusion in multiagent cooperation. Inspired by human organizations, this article introduces a framework that imposes prompt-based organization structures on LLM agents to mitigate these problems. Through a series of experiments with embodied LLM agents and human–agent collaboration, our results highlight the impact of designated leadership on team efficiency, shedding light on the leadership qualities displayed by LLM agents and their spontaneous cooperative behaviors. Further, we harness the potential of LLMs to propose enhanced organizational prompts, via acriticize-reflectprocess, resulting in novel organization structures that reduce communication costs and enhance team efficiency.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2116982410",
+        "title": "The Firm as a Communication Network",
+        "year": "1994",
+        "venue": "The Quarterly Journal of Economics",
+        "doi": "10.2307/2118349",
+        "url": "https://doi.org/10.2307/2118349",
+        "citedByCount": 932,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2005460785",
+        "title": "The Organization of Decentralized Information Processing",
+        "year": "1993",
+        "venue": "Econometrica",
+        "doi": "10.2307/2951495",
+        "url": "https://doi.org/10.2307/2951495",
+        "citedByCount": 837,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W288468702",
+        "title": "Decentralized Information Processing in the Theory of Organizations",
+        "year": "1999",
+        "venue": "Palgrave Macmillan UK eBooks",
+        "doi": "10.1007/978-1-349-14540-9_7",
+        "url": "https://doi.org/10.1007/978-1-349-14540-9_7",
+        "citedByCount": 140,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4394948161",
+        "title": "The Landscape of Emerging AI Agent Architectures for Reasoning, Planning, and Tool Calling: A Survey",
+        "year": "2024",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2404.11584",
+        "url": "https://doi.org/10.48550/arxiv.2404.11584",
+        "citedByCount": 434,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4415800455",
+        "title": "FinCon: A Synthesized LLM Multi-Agent System with Conceptual Verbal Reinforcement for Enhanced Financial Decision Making",
+        "year": "2024",
+        "venue": "neural information processing systems",
+        "doi": "10.52202/079017-4354",
+        "url": "https://doi.org/10.52202/079017-4354",
+        "citedByCount": 420,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4399597845",
+        "title": "Scaling Large Language Model-based Multi-Agent Collaboration",
+        "year": "2025",
+        "venue": "International Conference on Learning Representations",
+        "doi": "10.48550/arxiv.2406.07155",
+        "url": "https://doi.org/10.48550/arxiv.2406.07155",
+        "citedByCount": 312,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4385963839",
+    "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+    "authors": [
+      "Sirui Hong",
+      "Zhuge, Mingchen",
+      "Chen, Jiaqi",
+      "Xiawu Zheng",
+      "Yuheng Cheng"
+    ],
+    "affiliations": [
+      "King Abdullah University of Science and Technology"
+    ],
+    "journal": "International Conference on Learning Representations",
+    "date": "2024-05-31",
+    "doi": "10.48550/arxiv.2308.00352",
+    "cited": 2921,
+    "abstract": "Remarkable progress has been made on automated problem solving through societies of agents based on large language models (LLMs). Existing LLM-based multi-agent systems can already solve simple dialogue tasks. Solutions to more complex tasks, however, are complicated through logic inconsistencies due to cascading hallucinations caused by naively chaining LLMs. Here we introduce MetaGPT, an innovative meta-programming framework incorporating efficient human workflows into LLM-based multi-agent collaborations. MetaGPT encodes Standardized Operating Procedures (SOPs) into prompt sequences for more streamlined workflows, thus allowing agents with human-like domain expertise to verify intermediate results and reduce errors. MetaGPT utilizes an assembly line paradigm to assign diverse roles to various agents, efficiently breaking down complex tasks into subtasks involving many agents working together. On collaborative software engineering benchmarks, MetaGPT generates more coherent solutions than previous chat-based multi-agent systems. Our project can be found at https://github.com/geekan/MetaGPT",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1548944277",
+        "title": "Team Roles at Work",
+        "year": "2012",
+        "venue": "Routledge eBooks",
+        "doi": "10.4324/9780080963242",
+        "url": "https://doi.org/10.4324/9780080963242",
+        "citedByCount": 824,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W252317575",
+        "title": "Peopleware: Productive Projects and Teams (3rd Edition)",
+        "year": "2013",
+        "venue": "Addison-Wesley Professional eBooks",
+        "doi": "",
+        "url": "https://openalex.org/W252317575",
+        "citedByCount": 152,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1533058732",
+        "title": "Reinforcement Learning with Self-Modifying Policies",
+        "year": "1998",
+        "venue": "Springer eBooks",
+        "doi": "10.1007/978-1-4615-5529-2_12",
+        "url": "https://doi.org/10.1007/978-1-4615-5529-2_12",
+        "citedByCount": 83,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4362515116",
+        "title": "A Survey of Large Language Models",
+        "year": "2026",
+        "venue": "Frontiers of Computer Science",
+        "doi": "10.1007/s11704-026-60308-3",
+        "url": "https://doi.org/10.1007/s11704-026-60308-3",
+        "citedByCount": 8902,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4387225871",
+        "title": "Qwen Technical Report",
+        "year": "2023",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2309.16609",
+        "url": "https://doi.org/10.48550/arxiv.2309.16609",
+        "citedByCount": 7351,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4393065402",
+        "title": "A survey on large language model based autonomous agents",
+        "year": "2024",
+        "venue": "Frontiers of Computer Science",
+        "doi": "10.1007/s11704-024-40231-1",
+        "url": "https://doi.org/10.1007/s11704-024-40231-1",
+        "citedByCount": 5561,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4404782209",
+    "title": "Encouraging Divergent Thinking in Large Language Models through Multi-Agent Debate",
+    "authors": [
+      "Tian Liang",
+      "Zhiwei He",
+      "Wenxiang Jiao",
+      "Xing Wang",
+      "Yan Wang"
+    ],
+    "affiliations": [
+      "Shanghai Jiao Tong University",
+      "Tencent (China)"
+    ],
+    "journal": "Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+    "date": "2024-01-01",
+    "doi": "10.18653/v1/2024.emnlp-main.992",
+    "cited": 1787,
+    "abstract": "Modern large language models (LLMs) like ChatGPT have shown remarkable performance on general language tasks but still struggle on complex reasoning tasks, which drives the research on cognitive behaviors of LLMs to explore human-like problem-solving strategies. Along this direction, one representative strategy is self-reflection, which asks an LLM to refine the solution with the feedback generated by itself iteratively. However, our study shows that such reflection-style methods suffer from the Degeneration-of-Thought (DoT) problem: once the LLM has established confidence in its solutions, it is unable to generate novel thoughts later through reflection even if its initial stance is incorrect. To address the DoT problem, we propose a Multi-Agent Debate (MAD) framework, in which multiple agents express their arguments in the state of “tit for tat” and a judge manages the debate process to obtain a final solution. Clearly, our MAD framework encourages divergent thinking in LLMs which would be helpful for tasks that require deep levels of contemplation. Experiment results on two challenging datasets, commonsense machine translation and counter-intuitive arithmetic reasoning, demonstrate the effectiveness of our MAD framework. Extensive analyses suggest that the adaptive break of debate and the modest level of “tit for tat” state are required for MAD to obtain good performance. Moreover, we find that LLMs might not be a fair judge if different LLMs are used for agents.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2251935656",
+        "title": "Solving General Arithmetic Word Problems",
+        "year": "2015",
+        "venue": "Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+        "doi": "10.18653/v1/d15-1202",
+        "url": "https://doi.org/10.18653/v1/d15-1202",
+        "citedByCount": 718,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2105717194",
+        "title": "Learning to Solve Arithmetic Word Problems with Verb Categorization",
+        "year": "2014",
+        "venue": "Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+        "doi": "10.3115/v1/d14-1058",
+        "url": "https://doi.org/10.3115/v1/d14-1058",
+        "citedByCount": 551,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2063288340",
+        "title": "Does reflection lead to wise choices?",
+        "year": "2011",
+        "venue": "Philosophical Explorations",
+        "doi": "10.1080/13869795.2011.594962",
+        "url": "https://doi.org/10.1080/13869795.2011.594962",
+        "citedByCount": 60,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4362515116",
+        "title": "A Survey of Large Language Models",
+        "year": "2026",
+        "venue": "Frontiers of Computer Science",
+        "doi": "10.1007/s11704-026-60308-3",
+        "url": "https://doi.org/10.1007/s11704-026-60308-3",
+        "citedByCount": 8902,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4406800520",
+        "title": "The rise and potential of large language model based agents: a survey",
+        "year": "2025",
+        "venue": "Science China Information Sciences",
+        "doi": "10.1007/s11432-024-4222-0",
+        "url": "https://doi.org/10.1007/s11432-024-4222-0",
+        "citedByCount": 3379,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W7120088840",
+        "title": "A survey on LLM-as-a-judge",
+        "year": "2026",
+        "venue": "The Innovation",
+        "doi": "10.1016/j.xinn.2025.101253",
+        "url": "https://doi.org/10.1016/j.xinn.2025.101253",
+        "citedByCount": 2207,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4403839497",
+    "title": "When combinations of humans and AI are useful: A systematic review and meta-analysis",
+    "authors": [
+      "Thomas W. Malone",
+      "Michelle Anna Vaccaro",
+      "Andres Campero",
+      "Jaeyoon Song",
+      "Haoran Wen"
+    ],
+    "affiliations": [
+      "Massachusetts Institute of Technology"
+    ],
+    "journal": "Nature Human Behaviour",
+    "date": "2024-10-28",
+    "doi": "10.1038/s41562-024-02024-1",
+    "cited": 1317,
+    "abstract": "Inspired by the increasing use of artificial intelligence (AI) to augment humans, researchers have studied human-AI systems involving different tasks, systems and populations. Despite such a large body of work, we lack a broad conceptual understanding of when combinations of humans and AI are better than either alone. Here we addressed this question by conducting a preregistered systematic review and meta-analysis of 106 experimental studies reporting 370 effect sizes. We searched an interdisciplinary set of databases (the Association for Computing Machinery Digital Library, the Web of Science and the Association for Information Systems eLibrary) for studies published between 1 January 2020 and 30 June 2023. Each study was required to include an original human-participants experiment that evaluated the performance of humans alone, AI alone and human-AI combinations. First, we found that, on average, human-AI combinations performed significantly worse than the best of humans or AI alone (Hedges' g = -0.23; 95% confidence interval, -0.39 to -0.07). Second, we found performance losses in tasks that involved making decisions and significantly greater gains in tasks that involved creating content. Finally, when humans outperformed AI alone, we found performance gains in the combination, but when AI outperformed humans alone, we found losses. Limitations of the evidence assessed here include possible publication bias and variations in the study designs analysed. Overall, these findings highlight the heterogeneity of the effects of human-AI collaboration and point to promising avenues for improving human-AI systems.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W71228264",
+        "title": "Introduction to Meta‐Analysis",
+        "year": "2021",
+        "venue": "Wiley eBooks",
+        "doi": "10.1002/9781119558378",
+        "url": "https://doi.org/10.1002/9781119558378",
+        "citedByCount": 10090,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W173895910",
+        "title": "Multiple Criteria Decision Analysis: State of the Art Surveys",
+        "year": "2005",
+        "venue": "International series in management science/operations research/International series in operations research & management science",
+        "doi": "10.1007/b100605",
+        "url": "https://doi.org/10.1007/b100605",
+        "citedByCount": 5200,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2036740",
+        "title": "Funnel plots for detecting bias in meta-analysis",
+        "year": "2001",
+        "venue": "Journal of Clinical Epidemiology",
+        "doi": "10.1016/s0895-4356(01)00377-8",
+        "url": "https://doi.org/10.1016/s0895-4356(01)00377-8",
+        "citedByCount": 4229,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4407142724",
+        "title": "Generative AI at Work",
+        "year": "2025",
+        "venue": "The Quarterly Journal of Economics",
+        "doi": "10.1093/qje/qjae044",
+        "url": "https://doi.org/10.1093/qje/qjae044",
+        "citedByCount": 2598,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W7135096569",
+        "title": "Navigating the Jagged Technological Frontier: Field Experimental Evidence of the Effects of Artificial Intelligence on Knowledge Worker Productivity and Quality",
+        "year": "2026",
+        "venue": "Organization Science",
+        "doi": "10.1287/orsc.2025.21838",
+        "url": "https://doi.org/10.1287/orsc.2025.21838",
+        "citedByCount": 1726,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4413357894",
+        "title": "Educational Strategies for Clinical Supervision of Artificial Intelligence Use",
+        "year": "2025",
+        "venue": "New England Journal of Medicine",
+        "doi": "10.1056/nejmra2503232",
+        "url": "https://doi.org/10.1056/nejmra2503232",
+        "citedByCount": 288,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4392607872",
+    "title": "Joint Knowledge Graph and Large Language Model for Fault Diagnosis and Its Application in Aviation Assembly",
+    "authors": [
+      "Peifeng Liu",
+      "Lu Qian",
+      "Xingwei Zhao",
+      "Bo Tao"
+    ],
+    "affiliations": [
+      "Huazhong University of Science and Technology",
+      "Wuhan University of Technology"
+    ],
+    "journal": "IEEE Transactions on Industrial Informatics",
+    "date": "2024-03-08",
+    "doi": "10.1109/tii.2024.3366977",
+    "cited": 237,
+    "abstract": "In complex assembly industry settings, fault localization involves rapidly and accurately identifying the source of a fault and obtaining a troubleshooting solution based on fault symptoms. This study proposes a knowledge-enhanced joint model that incorporates aviation assembly knowledge graph (KG) embedding into large language models (LLMs). This model utilizes graph-structured Big Data within KGs to conduct prefix-tuning of the LLMs. The KGs for prefix-tuning enable an online reconfiguration of the LLMs, which avoids a massive computational load. Through the subgraph embedding learning process, the specialized knowledge of the joint model within the aviation assembly domain, especially in fault localization, is strengthened. In the context of aviation assembly functional testing, the joint model can generate knowledge subgraphs, fuse knowledge through retrieval augmentation, and ultimately provide knowledge-based reasoning responses. In practical industrial scenario experiments, the joint enhancement model demonstrates an accuracy of 98.5% for fault diagnosis and troubleshooting schemes.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2080133951",
+        "title": "Wikidata: a free collaborative knowledgebase",
+        "year": "2014",
+        "venue": "Communications of the ACM",
+        "doi": "10.1145/2629489",
+        "url": "https://doi.org/10.1145/2629489",
+        "citedByCount": 5430,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2100028154",
+        "title": "A Survey of Fault Diagnosis and Fault-Tolerant Techniques Part II: Fault Diagnosis with Knowledge-Based and Hybrid/Active Approaches",
+        "year": "2015",
+        "venue": "IEEE Transactions on Industrial Electronics",
+        "doi": "10.1109/tie.2015.2419013",
+        "url": "https://doi.org/10.1109/tie.2015.2419013",
+        "citedByCount": 895,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1542537254",
+        "title": "Markovian Models for Sequential Data",
+        "year": "2007",
+        "venue": "Springer eBooks",
+        "doi": "10.1007/978-1-84800-007-0_10",
+        "url": "https://doi.org/10.1007/978-1-84800-007-0_10",
+        "citedByCount": 208,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4396620506",
+        "title": "An LLM-based vision and language cobot navigation approach for Human-centric Smart Manufacturing",
+        "year": "2024",
+        "venue": "Journal of Manufacturing Systems",
+        "doi": "10.1016/j.jmsy.2024.04.020",
+        "url": "https://doi.org/10.1016/j.jmsy.2024.04.020",
+        "citedByCount": 167,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4405317693",
+        "title": "Multimodal Large Language Model-Based Fault Detection and Diagnosis in Context of Industry 4.0",
+        "year": "2024",
+        "venue": "Electronics",
+        "doi": "10.3390/electronics13244912",
+        "url": "https://doi.org/10.3390/electronics13244912",
+        "citedByCount": 132,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402857920",
+        "title": "A survey on potentials, pathways and challenges of large language models in new-generation intelligent manufacturing",
+        "year": "2024",
+        "venue": "Robotics and Computer-Integrated Manufacturing",
+        "doi": "10.1016/j.rcim.2024.102883",
+        "url": "https://doi.org/10.1016/j.rcim.2024.102883",
+        "citedByCount": 124,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4410798479",
+    "title": "Industrial Internet of Things: Implementations, challenges, and potential solutions across various industries",
+    "authors": [
+      "Shaila Afrin",
+      "Sabiha Jannat Rafa",
+      "Maliha Kabir",
+      "Tasfia Farah",
+      "Md. Sakib Bin Alam"
+    ],
+    "affiliations": [
+      "Asian University for Women",
+      "Medical College of Wisconsin"
+    ],
+    "journal": "Computers in Industry",
+    "date": "2025-05-28",
+    "doi": "10.1016/j.compind.2025.104317",
+    "cited": 130,
+    "abstract": "The Industrial Internet of Things (IIoT) has emerged as a potent catalyst for transformation across many industries as a part of Industry 4.0 . This review thoroughly examines IIoT applications, demonstrating how it enhances operational efficiency, informed decision-making, cost optimization, innovation, and workplace safety. While prior research has often concentrated on technical dimensions such as fog and edge computing , network protocols, or big data integration, several emerging and high-impact application areas remain underexplored. This study addresses that gap by systematically reviewing IIoT implementations in critical yet often overlooked domains, including environmental monitoring, agriculture , construction, healthcare, robotics, smart grids, and predictive maintenance . It offers fresh insights into how IIoT is being adapted to meet real-world challenges in these sectors. In addition to outlining the current landscape, the review identifies core barriers such as data security , interoperability, and system scalability. It underscores the importance of cross-sector collaboration and strategic alignment to fully leverage the transformative potential of IIoT. The paper concludes by outlining key research gaps and future opportunities to guide continued innovation and scholarly investigation.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1865772772",
+        "title": "Industry 4.0 - Potentials for Creating Smart Products: Empirical Research Results",
+        "year": "2015",
+        "venue": "Lecture notes in business information processing",
+        "doi": "10.1007/978-3-319-19027-3_2",
+        "url": "https://doi.org/10.1007/978-3-319-19027-3_2",
+        "citedByCount": 754,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1480811131",
+        "title": "WSN- and IOT-Based Smart Homes and Their Extension to Smart Buildings",
+        "year": "2015",
+        "venue": "Sensors",
+        "doi": "10.3390/s150510350",
+        "url": "https://doi.org/10.3390/s150510350",
+        "citedByCount": 426,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2001160606",
+        "title": "Emerging technologies and challenges for the Internet of Things",
+        "year": "2011",
+        "venue": "IEEE International Midwest Symposium on Circuits and Systems (MWSCAS)",
+        "doi": "10.1109/mwscas.2011.6026414",
+        "url": "https://doi.org/10.1109/mwscas.2011.6026414",
+        "citedByCount": 24,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4417301393",
+        "title": "A novel deep learning framework with temporal attention convolutional networks for intrusion detection in IoT and IIoT networks",
+        "year": "2025",
+        "venue": "Scientific Reports",
+        "doi": "10.1038/s41598-025-32697-1",
+        "url": "https://doi.org/10.1038/s41598-025-32697-1",
+        "citedByCount": 36,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4413442216",
+        "title": "Integrating industry 4.0 technologies and maintenance 4.0 for sustainable manufacturing: a systematic literature review",
+        "year": "2025",
+        "venue": "The International Journal of Advanced Manufacturing Technology",
+        "doi": "10.1007/s00170-025-16194-3",
+        "url": "https://doi.org/10.1007/s00170-025-16194-3",
+        "citedByCount": 23,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4415749334",
+        "title": "Intrusion detection systems in IoT: A detailed review of threat categories, detection strategies, and future technologies",
+        "year": "2025",
+        "venue": "Journal of Information Security and Applications",
+        "doi": "10.1016/j.jisa.2025.104291",
+        "url": "https://doi.org/10.1016/j.jisa.2025.104291",
+        "citedByCount": 20,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4398217369",
+    "title": "An LLM-based approach for enabling seamless Human-Robot collaboration in assembly",
+    "authors": [
+      "Christos Gkournelos",
+      "Christos Konstantinou",
+      "Sotiris Makris"
+    ],
+    "affiliations": [
+      "University of Patras"
+    ],
+    "journal": "CIRP Annals",
+    "date": "2024-01-01",
+    "doi": "10.1016/j.cirp.2024.04.002",
+    "cited": 161,
+    "abstract": "The complexity in the collaboration between humans and robots in smart manufacturing remains a significant challenge. This paper introduces an LLM-based manufacturing execution system enhancing Human-Robot Collaboration (HRC) in smart manufacturing. By leveraging Large Language Models (LLMs), the system provides a natural language interface for operators, integrates with Digital Twins for real-time data, and employs behavior-based control for robots. This integration facilitates intuitive interactions and rapid system programming, addressing communication complexities in HRC. The effectiveness of this approach is validated through two HRC assembly case studies, demonstrating significant improvements in collaboration and efficiency.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2599674900",
+        "title": "Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics",
+        "year": "2019",
+        "venue": "Preprint",
+        "doi": "10.18653/v1/p19-1",
+        "url": "https://doi.org/10.18653/v1/p19-1",
+        "citedByCount": 2436,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1530229671",
+        "title": "Manufacturing Systems: Theory and Practice",
+        "year": "2006",
+        "venue": "Springer eBooks",
+        "doi": "10.1007/0-387-28431-1",
+        "url": "https://doi.org/10.1007/0-387-28431-1",
+        "citedByCount": 1142,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1131320503",
+        "title": "Getting to Know Your Data",
+        "year": "2012",
+        "venue": "Elsevier eBooks",
+        "doi": "10.1016/b978-0-12-381479-1.00002-2",
+        "url": "https://doi.org/10.1016/b978-0-12-381479-1.00002-2",
+        "citedByCount": 355,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4407325419",
+        "title": "Integrating large language model and digital twins in the context of industry 5.0: Framework, challenges and opportunities",
+        "year": "2025",
+        "venue": "Robotics and Computer-Integrated Manufacturing",
+        "doi": "10.1016/j.rcim.2025.102982",
+        "url": "https://doi.org/10.1016/j.rcim.2025.102982",
+        "citedByCount": 138,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4407251737",
+        "title": "A Comprehensive Review of AI-Based Digital Twin Applications in Manufacturing: Integration Across Operator, Product, and Process Dimensions",
+        "year": "2025",
+        "venue": "Electronics",
+        "doi": "10.3390/electronics14040646",
+        "url": "https://doi.org/10.3390/electronics14040646",
+        "citedByCount": 137,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402857920",
+        "title": "A survey on potentials, pathways and challenges of large language models in new-generation intelligent manufacturing",
+        "year": "2024",
+        "venue": "Robotics and Computer-Integrated Manufacturing",
+        "doi": "10.1016/j.rcim.2024.102883",
+        "url": "https://doi.org/10.1016/j.rcim.2024.102883",
+        "citedByCount": 124,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4390651637",
+    "title": "A review of parallel kinematic machine tools: Design, modeling, and applications",
+    "authors": [
+      "Matteo Russo",
+      "Dan Zhang",
+      "Xin-Jun Liu",
+      "Zenghui Xie"
+    ],
+    "affiliations": [
+      "University of Rome Tor Vergata",
+      "Hong Kong Polytechnic University",
+      "Tsinghua University"
+    ],
+    "journal": "International Journal of Machine Tools and Manufacture",
+    "date": "2024-01-07",
+    "doi": "10.1016/j.ijmachtools.2024.104118",
+    "cited": 151,
+    "abstract": "Parallel manipulators are generally associated with high speed, stiffness, and repeatability. Nonetheless, after decades of development, their industrial uptake is still limited when compared to serial architectures. In this paper, we investigate the reasons behind this gap between parallel machine tool potential and real-case applications with a critical analysis of the state of the art. This paper aims to provide machine tool users with the understanding of the functional and technological characteristics of parallel manipulators, as well as to help roboticists approach machining applications with an in-depth perspective and a curated collection of references. We outline fundamental modeling tools for parallel mechanisms and then explain how they can be applied to the development, optimization, and performance evaluation of machine tools, with a focus on kinematic and dynamic metrics, error analysis, and calibration. We then discuss the evolution of parallel machine tools in industry, highlighting successful designs and commercial applications. Finally, we provide our perspective of the field, summarizing the main characteristics, advantages, and disadvantages of parallel machine tools, highlighting the barriers preventing a more widespread implementation of these systems, outlining current research trends, and identifying potential future developments.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W118697062",
+        "title": "Parallel Robots: Open Problems",
+        "year": "2000",
+        "venue": "Springer eBooks",
+        "doi": "10.1007/978-1-4471-0765-1_4",
+        "url": "https://doi.org/10.1007/978-1-4471-0765-1_4",
+        "citedByCount": 62,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W178715585",
+        "title": "Experiences with Hexapod-Based Machine Tool",
+        "year": "1999",
+        "venue": "Advanced manufacturing series",
+        "doi": "10.1007/978-1-4471-0885-6_22",
+        "url": "https://doi.org/10.1007/978-1-4471-0885-6_22",
+        "citedByCount": 6,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W75246839",
+        "title": "Classification and Kinematic Modelling of Fully-Parallel Manipulators — A Review",
+        "year": "1999",
+        "venue": "Advanced manufacturing series",
+        "doi": "10.1007/978-1-4471-0885-6_4",
+        "url": "https://doi.org/10.1007/978-1-4471-0885-6_4",
+        "citedByCount": 13,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4404346514",
+        "title": "Parallel–Serial Robotic Manipulators: A Review of Architectures, Applications, and Methods of Design and Analysis",
+        "year": "2024",
+        "venue": "Machines",
+        "doi": "10.3390/machines12110811",
+        "url": "https://doi.org/10.3390/machines12110811",
+        "citedByCount": 50,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4400164121",
+        "title": "Heavy-load Nonapod: A novel flexible redundant parallel kinematic machine for multi-DoF forming process",
+        "year": "2024",
+        "venue": "International Journal of Machine Tools and Manufacture",
+        "doi": "10.1016/j.ijmachtools.2024.104183",
+        "url": "https://doi.org/10.1016/j.ijmachtools.2024.104183",
+        "citedByCount": 43,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402858222",
+        "title": "Stress-adaptive femur bionic triple periodic minimal heterostructures manufactured by SLS technology with excellent mechanical properties",
+        "year": "2024",
+        "venue": "Additive manufacturing",
+        "doi": "10.1016/j.addma.2024.104457",
+        "url": "https://doi.org/10.1016/j.addma.2024.104457",
+        "citedByCount": 37,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4409767398",
+    "title": "AppAgent: Multimodal Agents as Smartphone Users",
+    "authors": [
+      "Chi Zhang",
+      "Zhao Yang",
+      "Jiaxuan Liu",
+      "Yanda Li",
+      "Yucheng Han"
+    ],
+    "affiliations": [
+      "Westlake University",
+      "Tencent (China)"
+    ],
+    "journal": "CHI Conference on Human Factors in Computing Systems",
+    "date": "2025-04-25",
+    "doi": "10.1145/3706598.3713600",
+    "cited": 657,
+    "abstract": "Recent advancements in large language models (LLMs) have led to the creation of intelligent agents capable of performing complex tasks. This paper introduces a novel LLM-based multimodal agent framework designed to operate smartphone applications. Our framework allows the agent to mimic human-like interactions such as tapping and swiping through a simplified action space, eliminating the need for system back-end access and enhancing its versatility across various apps. Central to the agent’s functionality is an innovative in-context learning method, where it either autonomously explores or learns from human demonstrations, creating a knowledge base used to execute complex tasks across diverse applications. We conducted extensive testing with our agent on over 50 tasks spanning 10 applications, ranging from social media to sophisticated image editing tools. Additionally, a user study confirmed the agent’s superior performance and practicality in handling a diverse array of high-level tasks, demonstrating its effectiveness in real-world settings. Our project page is available at https://appagent-official.github.io/.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2990138404",
+        "title": "Advances in Neural Information Processing Systems 19: Proceedings of the 2006 Conference",
+        "year": "2007",
+        "venue": "The MIT Press eBooks",
+        "doi": "10.52202/085713",
+        "url": "https://doi.org/10.52202/085713",
+        "citedByCount": 16042,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1492324553",
+        "title": "Watch what I do: programming by demonstration",
+        "year": "1993",
+        "venue": "The MIT Press eBooks",
+        "doi": "",
+        "url": "https://openalex.org/W1492324553",
+        "citedByCount": 1175,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W3177813494",
+        "title": "Evaluating Large Language Models Trained on Code",
+        "year": "2021",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2107.03374",
+        "url": "https://doi.org/10.48550/arxiv.2107.03374",
+        "citedByCount": 15520,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4393065402",
+        "title": "A survey on large language model based autonomous agents",
+        "year": "2024",
+        "venue": "Frontiers of Computer Science",
+        "doi": "10.1007/s11704-024-40231-1",
+        "url": "https://doi.org/10.1007/s11704-024-40231-1",
+        "citedByCount": 5561,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4404356490",
+        "title": "A survey on multimodal large language models",
+        "year": "2024",
+        "venue": "National Science Review",
+        "doi": "10.1093/nsr/nwae403",
+        "url": "https://doi.org/10.1093/nsr/nwae403",
+        "citedByCount": 2544,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402667024",
+        "title": "VisualWebArena: Evaluating Multimodal Agents on Realistic Visual Web Tasks",
+        "year": "2024",
+        "venue": "Proceedings of the conference - Association for Computational Linguistics. Meeting",
+        "doi": "10.18653/v1/2024.acl-long.50",
+        "url": "https://doi.org/10.18653/v1/2024.acl-long.50",
+        "citedByCount": 926,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4393906060",
+    "title": "SpectralGPT: Spectral Remote Sensing Foundation Model",
+    "authors": [
+      "Danfeng Hong",
+      "Bing Zhang",
+      "Xuyang Li",
+      "Yuxuan Li",
+      "Chenyu Li"
+    ],
+    "affiliations": [
+      "Chinese Academy of Sciences",
+      "Aerospace Information Research Institute",
+      "University of Chinese Academy of Sciences"
+    ],
+    "journal": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+    "date": "2024-04-03",
+    "doi": "10.1109/tpami.2024.3362475",
+    "cited": 1258,
+    "abstract": "The foundation model has recently garnered significant attention due to its potential to revolutionize the field of visual representation learning in a self-supervised manner. While most foundation models are tailored to effectively process RGB images for various visual tasks, there is a noticeable gap in research focused on spectral data, which offers valuable information for scene understanding, especially in remote sensing (RS) applications. To fill this gap, we created for the first time a universal RS foundation model, named SpectralGPT, which is purpose-built to handle spectral RS images using a novel 3D generative pretrained transformer (GPT). Compared to existing foundation models, SpectralGPT 1) accommodates input images with varying sizes, resolutions, time series, and regions in a progressive training fashion, enabling full utilization of extensive RS Big Data; 2) leverages 3D token generation for spatial-spectral coupling; 3) captures spectrally sequential patterns via multi-target reconstruction; and 4) trains on one million spectral RS images, yielding models with over 600 million parameters. Our evaluation highlights significant performance improvements with pretrained SpectralGPT models, signifying substantial potential in advancing spectral RS Big Data applications within the field of geoscience across four downstream tasks: single/multi-label scene classification, semantic segmentation, and change detection.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2194775991",
+        "title": "Deep Residual Learning for Image Recognition",
+        "year": "2016",
+        "venue": "IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings - IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings",
+        "doi": "10.1109/cvpr.2016.90",
+        "url": "https://doi.org/10.1109/cvpr.2016.90",
+        "citedByCount": 293716,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2145094598",
+        "title": "Stacked Denoising Autoencoders: Learning Useful Representations in a Deep Network with a Local Denoising Criterion",
+        "year": "2010",
+        "venue": "Journal of Machine Learning Research",
+        "doi": "10.5555/1756006.1953039",
+        "url": "https://doi.org/10.5555/1756006.1953039",
+        "citedByCount": 8528,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2010797000",
+        "title": "Imaging Spectrometry for Earth Remote Sensing",
+        "year": "1985",
+        "venue": "Science",
+        "doi": "10.1126/science.228.4704.1147",
+        "url": "https://doi.org/10.1126/science.228.4704.1147",
+        "citedByCount": 2260,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4401819987",
+        "title": "Artificial intelligence for geoscience: Progress, challenges, and perspectives",
+        "year": "2024",
+        "venue": "The Innovation",
+        "doi": "10.1016/j.xinn.2024.100691",
+        "url": "https://doi.org/10.1016/j.xinn.2024.100691",
+        "citedByCount": 567,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402667899",
+        "title": "SkySense: A Multi-Modal Remote Sensing Foundation Model Towards Universal Interpretation for Earth Observation Imagery",
+        "year": "2024",
+        "venue": "IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings - IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings",
+        "doi": "10.1109/cvpr52733.2024.02613",
+        "url": "https://doi.org/10.1109/cvpr52733.2024.02613",
+        "citedByCount": 558,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4409263216",
+        "title": "HyperSIGMA: Hyperspectral Intelligence Comprehension Foundation Model",
+        "year": "2025",
+        "venue": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+        "doi": "10.1109/tpami.2025.3557581",
+        "url": "https://doi.org/10.1109/tpami.2025.3557581",
+        "citedByCount": 357,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "openAlexId": "https://openalex.org/W4415796712",
+    "title": "MDAgents: An Adaptive Collaboration of LLMs for Medical Decision-Making",
+    "authors": [
+      "Yubin Kim",
+      "Chanwoo Park",
+      "Hyewon Jeong",
+      "Yik Siu Chan",
+      "Xuhai Xu"
+    ],
+    "affiliations": [],
+    "journal": "neural information processing systems",
+    "date": "2024-01-01",
+    "doi": "10.52202/079017-2522",
+    "cited": 588,
+    "abstract": "Foundation models are becoming valuable tools in medicine. Yet despite their promise, the best way to leverage Large Language Models (LLMs) in complex medical tasks remains an open question. We introduce a novel multi-agent framework, named Medical Decision-making Agents (MDAgents) that helps address this gap by automatically assigning a collaboration structure to a team of LLMs. The assigned solo or group collaboration structure is tailored to the medical task at hand, emulating real-world medical decision-making processes adapted to tasks of varying complexities. We evaluate our framework and baseline methods using state-of-the-art LLMs across a suite of real-world medical knowledge and medical diagnosis benchmarks, including a comparison of LLMs' medical complexity classification against human physicians. MDAgents achieved the best performance in seven out of ten benchmarks on tasks requiring an understanding of medical knowledge and multi-modal reasoning, showing a significant improvement of up to 4.2% (p < 0.05) compared to previous methods' best performances. Ablation studies reveal that MDAgents effectively determines medical complexity to optimize for efficiency and accuracy across diverse medical tasks. Notably, the combination of moderator review and external medical knowledge in group collaboration resulted in an average accuracy improvement of 11.8%. Our code can be found at https://github.com/mitmedialab/MDAgents.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1582530249",
+        "title": "Clinical problem solving and diagnostic decision making: selective review of the cognitive literature",
+        "year": "2002",
+        "venue": "BMJ",
+        "doi": "10.1136/bmj.324.7339.729",
+        "url": "https://doi.org/10.1136/bmj.324.7339.729",
+        "citedByCount": 951,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4007095",
+        "title": "Modern Triage in the Emergency Department",
+        "year": "2010",
+        "venue": "Deutsches Ärzteblatt international",
+        "doi": "10.3238/arztebl.2010.0892",
+        "url": "https://doi.org/10.3238/arztebl.2010.0892",
+        "citedByCount": 764,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1975630033",
+        "title": "Reliability and Validity of a New Five‐level Triage Instrument",
+        "year": "2000",
+        "venue": "Academic Emergency Medicine",
+        "doi": "10.1111/j.1553-2712.2000.tb01066.x",
+        "url": "https://doi.org/10.1111/j.1553-2712.2000.tb01066.x",
+        "citedByCount": 637,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4415062702",
+        "title": "Large Language Model Agent: A Survey on Methodology, Applications and Challenges",
+        "year": "2025",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2503.21460",
+        "url": "https://doi.org/10.48550/arxiv.2503.21460",
+        "citedByCount": 524,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4396718668",
+        "title": "Agent Hospital: A Simulacrum of Hospital with Evolvable Medical Agents",
+        "year": "2024",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2405.02957",
+        "url": "https://doi.org/10.48550/arxiv.2405.02957",
+        "citedByCount": 511,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4408108874",
+        "title": "Medical Hallucination in Foundation Models and Their Impact on Healthcare",
+        "year": "2025",
+        "venue": "medRxiv",
+        "doi": "10.1101/2025.02.28.25323115",
+        "url": "https://doi.org/10.1101/2025.02.28.25323115",
+        "citedByCount": 457,
+        "relation": "cited_by"
+      }
+    ]
+  }
+]
