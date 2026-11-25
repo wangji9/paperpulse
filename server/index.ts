@@ -654,8 +654,9 @@ if (fs.existsSync(DIST_DIR)) {
 }
 
 const PORT = Number(process.env.PORT || 3000);
-app.listen(PORT, () => {
-  console.log(`PaperPulse server running at http://localhost:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`PaperPulse server running at http://${HOST}:${PORT}`);
 
   const cfg = getAutoSyncConfig();
   if (cfg.enabled) {
