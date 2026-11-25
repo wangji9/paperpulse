@@ -1,0 +1,857 @@
+[
+  {
+    "short": "JIM",
+    "journal": "Journal of Intelligent Manufacturing",
+    "openAlexId": "https://openalex.org/W4408249737",
+    "title": "Reinforcement learning in dynamic job shop scheduling: a comprehensive review of AI-driven approaches in modern manufacturing",
+    "authors": [
+      "Chinyere Ngwu",
+      "Ying Liu",
+      "Rui Wu"
+    ],
+    "affiliations": [
+      "University of Glasgow"
+    ],
+    "date": "2025-03-08",
+    "doi": "10.1007/s10845-025-02585-6",
+    "cited": 127,
+    "abstract": "Dynamic job shop scheduling (DJSS) demands real-time adaptability under unpredictable conditions such as sudden job arrivals, equipment failures, and fluctuating demands. Traditional scheduling approaches—though foundational—often fall short when faced with rapid changes and high computational complexity. Recent developments in artificial intelligence (AI), especially reinforcement learning (RL), offer powerful alternatives by continuously refining scheduling policies through interaction with live shop-floor data. This review systematically examines AI-driven scheduling methods, highlighting how evolutionary heuristics, advanced machine learning, and RL-based algorithms each address the demands of modern manufacturing. Emphasis is placed on RL’s capacity to cope with large state spaces, handle continuous or discrete control, and integrate domain heuristics for more robust real-time decision-making. Despite these advances, challenges remain in algorithm scalability, interpretability, data availability, and standardization of performance metrics. Future directions point toward leveraging digital twins, quantum computing, hybrid models, and explainable RL to ensure more resilient, transparent, and scalable solutions. By illuminating both current achievements and persistent gaps, this review underscores the transformative potential of RL in dynamic scheduling and highlights actionable steps for broader industrial adoption.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W32403112",
+        "title": "Q-learning",
+        "year": "1992",
+        "venue": "Machine Learning",
+        "doi": "10.1007/bf00992698",
+        "url": "https://doi.org/10.1007/bf00992698",
+        "citedByCount": 18779,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W608467838",
+        "title": "Tactical berth allocation under uncertainty",
+        "year": "2015",
+        "venue": "European Journal of Operational Research",
+        "doi": "10.1016/j.ejor.2015.05.079",
+        "url": "https://doi.org/10.1016/j.ejor.2015.05.079",
+        "citedByCount": 217,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W32649994",
+        "title": "Job-shop scheduling with genetic programming",
+        "year": "2000",
+        "venue": "Genetic and Evolutionary Computation Conference (GECCO)",
+        "doi": "",
+        "url": "https://openalex.org/W32649994",
+        "citedByCount": 104,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4414051643",
+        "title": "Multi-objective Optimization Framework for Energy Efficiency and Production Scheduling in Smart Manufacturing Using Reinforcement Learning and Digital Twin Technology Integration",
+        "year": "2025",
+        "venue": "International Journal of Industrial Engineering and Management",
+        "doi": "10.24867/ijiem-389",
+        "url": "https://doi.org/10.24867/ijiem-389",
+        "citedByCount": 32,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4411748281",
+        "title": "AI-Driven Intelligent Control Strategies for Industrial Robotics: A Reinforcement Learning Approach",
+        "year": "2025",
+        "venue": "International Journal of Basic and Applied Sciences",
+        "doi": "10.14419/1dy21h49",
+        "url": "https://doi.org/10.14419/1dy21h49",
+        "citedByCount": 27,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4410953431",
+        "title": "Quantum-Inspired Hyperheuristic Framework for Solving Dynamic Multi-Objective Combinatorial Problems in Disaster Logistics",
+        "year": "2025",
+        "venue": "World Electric Vehicle Journal",
+        "doi": "10.3390/wevj16060310",
+        "url": "https://doi.org/10.3390/wevj16060310",
+        "citedByCount": 26,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "IEEE TASE",
+    "journal": "IEEE Transactions on Automation Science and Engineering",
+    "openAlexId": "https://openalex.org/W4391621173",
+    "title": "Human-Cyber-Physical System for Industry 5.0: A Review From a Human-Centric Perspective",
+    "authors": [
+      "Shanhe Lou",
+      "Zhongxu Hu",
+      "Yiran Zhang",
+      "Yixiong Feng",
+      "MengChu Zhou"
+    ],
+    "affiliations": [
+      "Nanyang Technological University",
+      "State Key Laboratory Fluid Power and Mechatronic Systems",
+      "Zhejiang University"
+    ],
+    "date": "2024-02-07",
+    "doi": "10.1109/tase.2024.3360476",
+    "cited": 205,
+    "abstract": "Industry 5.0 heralds a new wave of the industrial revolution, placing a spotlight on human-centric intelligent manufacturing. At the core of Industry 5.0 lies the human-cyber-physical system (HCPS), a composite intelligent system where interactions among humans, cyberspace, and physical assets are orchestrated across diverse manufacturing levels and phases. Understanding the pivotal roles played by humans in these advanced systems is of paramount importance. Nonetheless, the exploration of HCPS within the context of Industry 5.0 remains in its infancy. This paper presents a holistic literature review of industrial HCPS from a human-centric perspective. A united architecture is employed to encompass the aspects of cognitive-to-technology integration and human-to-human interaction in HCPS, highlighting human-in-the-loop, human-on-the-loop, and human-in-the-society paradigms. The mechanisms of these paradigms and their effects on design, production, and service are investigated to expand the research landscape of intelligent manufacturing in Industry 5.0. Key enabling technologies that facilitate harmonious tri-space integration are introduced, and the future challenges of industrial HCPS are discussed. This work is expected to attract more open discussions and in-depth research on HCPS in the new industrial revolution era.Note to Practitioners—This paper is motivated by the emergence of Industry 5.0 that integrates humans into cyber-physical systems to offset drawbacks on both sides. It presents an overview of HCPS-related works to identify the state-of-the-art and open problems in the Industry 5.0 era. The review of HCPS applications in the design, production, and service phases can benefit engineers in the intelligent manufacturing area. Key enabling technologies on human ability augmentation, human-robot interaction, digital twin, human-cyber-physical data fusion, crowdsourcing, and system modeling, are analyzed to attract researchers in broader research fields to join in the development of industrial HCPS.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1969324951",
+        "title": "Visual Computing as a Key Enabling Technology for Industrie 4.0 and Industrial Internet",
+        "year": "2015",
+        "venue": "IEEE Computer Graphics and Applications",
+        "doi": "10.1109/mcg.2015.45",
+        "url": "https://doi.org/10.1109/mcg.2015.45",
+        "citedByCount": 756,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1493258571",
+        "title": "Mighty MESs; state-of-the-art and future manufacturing execution systems",
+        "year": "2004",
+        "venue": "IEEE Robotics & Automation Magazine",
+        "doi": "10.1109/mra.2004.1275947",
+        "url": "https://doi.org/10.1109/mra.2004.1275947",
+        "citedByCount": 67,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1976830989",
+        "title": "Aligning Brain Activity and Sketch in Multi-Modal CAD Interface",
+        "year": "2014",
+        "venue": "ASME International Design Engineering Technical Conferences and Computers and Information in Engineering Conference (IDETC/CIE)",
+        "doi": "10.1115/detc2014-34816",
+        "url": "https://doi.org/10.1115/detc2014-34816",
+        "citedByCount": 7,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4405928941",
+        "title": "Reviewing human-robot collaboration in manufacturing: Opportunities and challenges in the context of industry 5.0",
+        "year": "2024",
+        "venue": "Robotics and Computer-Integrated Manufacturing",
+        "doi": "10.1016/j.rcim.2024.102937",
+        "url": "https://doi.org/10.1016/j.rcim.2024.102937",
+        "citedByCount": 262,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4404563207",
+        "title": "A Survey on Cyber-Attacks for Cyber-Physical Systems: Modeling, Defense, and Design",
+        "year": "2024",
+        "venue": "IEEE Internet of Things Journal",
+        "doi": "10.1109/jiot.2024.3495046",
+        "url": "https://doi.org/10.1109/jiot.2024.3495046",
+        "citedByCount": 106,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4402215325",
+        "title": "Evolution and Role of Optimizers in Training Deep Learning Models",
+        "year": "2024",
+        "venue": "IEEE/CAA Journal of Automatica Sinica",
+        "doi": "10.1109/jas.2024.124806",
+        "url": "https://doi.org/10.1109/jas.2024.124806",
+        "citedByCount": 39,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "COMPIND",
+    "journal": "Computers in Industry",
+    "openAlexId": "https://openalex.org/W4401184025",
+    "title": "Assessment of a large language model based digital intelligent assistant in assembly manufacturing",
+    "authors": [
+      "Silvia Colabianchi",
+      "Francesco Costantino",
+      "Nicolò Sabetta"
+    ],
+    "affiliations": [
+      "Sapienza University of Rome",
+      "Department of computer, control, and management engineering Antonio Ruberti, Sapienza University of Rome, Via Ariosto 25, Rome 00185, Italy"
+    ],
+    "date": "2024-07-31",
+    "doi": "10.1016/j.compind.2024.104129",
+    "cited": 90,
+    "abstract": "The use of Digital Intelligent Assistants (DIAs) in manufacturing aims to enhance performance and reduce cognitive workload. By leveraging the advanced capabilities of Large Language Models (LLMs), the research aims to understand the impact of DIAs on assembly processes, emphasizing human-centric design and operational efficiency. The study is novel in considering the three primary objectives: evaluating the technical robustness of DIAs, assessing their effect on operators' cognitive workload and user experience, and determining the overall performance improvement of the assembly process. Methodologically, the research employs a laboratory experiment, incorporating a controlled setting to meticulously assess the DIA's performance. The experiment used a between-subjects design comparing a group of participants using the DIA against a control group relying on traditional manual methods across a series of assembly tasks. Findings reveal a significant enhancement in the operators' experience, a reduction in cognitive load, and an improvement in the quality of process outputs when the DIA is employed. The article contributes to the study of the DIA's potential and AI integration in manufacturing, offering insights into the design, development, and evaluation of DIAs in industrial settings.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2094419105",
+        "title": "Experimental and Quasi-Experimental Designs for Research",
+        "year": "1963",
+        "venue": "Journal",
+        "doi": "",
+        "url": "https://openalex.org/W2094419105",
+        "citedByCount": 16189,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2032191478",
+        "title": "An Empirical Evaluation of the System Usability Scale",
+        "year": "2008",
+        "venue": "International Journal of Human-Computer Interaction",
+        "doi": "10.1080/10447310802205776",
+        "url": "https://doi.org/10.1080/10447310802205776",
+        "citedByCount": 6950,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2044111859",
+        "title": "Experimental methods in innovation research",
+        "year": "2010",
+        "venue": "Research Policy",
+        "doi": "10.1016/j.respol.2010.01.006",
+        "url": "https://doi.org/10.1016/j.respol.2010.01.006",
+        "citedByCount": 151,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4413434333",
+        "title": "Large language models for clinical decision support in gastroenterology and hepatology",
+        "year": "2025",
+        "venue": "Nature Reviews Gastroenterology & Hepatology",
+        "doi": "10.1038/s41575-025-01108-1",
+        "url": "https://doi.org/10.1038/s41575-025-01108-1",
+        "citedByCount": 51,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4413038281",
+        "title": "Integrating Large Language Models into Digital Manufacturing: A Systematic Review and Research Agenda",
+        "year": "2025",
+        "venue": "Computers",
+        "doi": "10.3390/computers14080318",
+        "url": "https://doi.org/10.3390/computers14080318",
+        "citedByCount": 41,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4413996635",
+        "title": "From Industry 4.0 to 5.0: leveraging AI and IoT for sustainable and human-centric operations",
+        "year": "2025",
+        "venue": "International Journal of Industrial Engineering and Operations Management",
+        "doi": "10.1108/ijieom-04-2025-0070",
+        "url": "https://doi.org/10.1108/ijieom-04-2025-0070",
+        "citedByCount": 40,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "ESWA",
+    "journal": "Expert Systems with Applications",
+    "openAlexId": "https://openalex.org/W4403329963",
+    "title": "Evaluation of LLM-based chatbots for OSINT-based Cyber Threat Awareness",
+    "authors": [
+      "Samaneh Shafee",
+      "Alysson Bessani",
+      "Pedro Ferreira"
+    ],
+    "affiliations": [
+      "University of Lisbon",
+      "Laboratório de Sistemas Informáticos de Grande Escala",
+      "LASIGE, Faculdade de Ciências, Universidade de Lisboa, Portugal"
+    ],
+    "date": "2024-10-11",
+    "doi": "10.1016/j.eswa.2024.125509",
+    "cited": 115,
+    "abstract": "Knowledge sharing about emerging threats is crucial in the rapidly advancing field of cybersecurity and forms the foundation of Cyber Threat Intelligence (CTI). In this context, Large Language Models (LLMs) are becoming increasingly significant in the field of cybersecurity. This study surveys the performance of ChatGPT , GPT4all, Dolly, Stanford Alpaca, Alpaca-LoRA, Falcon, and Vicuna LLM-based chatbots in binary classification and Named Entity Recognition (NER) tasks using Open-source intelligence (OSINT) to detect and extract structured data about cybersecurity threats. We utilize data collected in previous research from Twitter to assess the competitiveness of these chatbots when compared to specialized state-of-the-art models trained for those tasks. In binary classification experiments, the commercial chatbot GPT-4 achieved an acceptable F 1 score of 0.94, and the open-source GPT4all achieved an F 1 score of 0.90. However, when applied for cybersecurity entity recognition, all evaluated LLM-based chatbots have limitations and are less effective. This study demonstrates the capability of LLM-based chatbots for OSINT processing and shows that they require further improvement in NER to effectively replace specially trained models. Our results highlight their strengths and limitations compared to specialized models. This provides insights for researchers to enhance LLM-based chatbots to reduce the effort required to integrate machine learning in OSINT-based CTI tools.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2064675550",
+        "title": "Long Short-Term Memory",
+        "year": "1997",
+        "venue": "Neural Computation",
+        "doi": "10.1162/neco.1997.9.8.1735",
+        "url": "https://doi.org/10.1162/neco.1997.9.8.1735",
+        "citedByCount": 135056,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1832693441",
+        "title": "Convolutional Neural Networks for Sentence Classification",
+        "year": "2014",
+        "venue": "Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+        "doi": "10.3115/v1/d14-1181",
+        "url": "https://doi.org/10.3115/v1/d14-1181",
+        "citedByCount": 18645,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1707806712",
+        "title": "Vulnerability disclosure in the age of social media: exploiting twitter for predicting real-world exploits",
+        "year": "2015",
+        "venue": "USENIX Security Symposium",
+        "doi": "",
+        "url": "https://openalex.org/W1707806712",
+        "citedByCount": 438,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4407163436",
+        "title": "When LLMs meet cybersecurity: a systematic literature review",
+        "year": "2025",
+        "venue": "Cybersecurity",
+        "doi": "10.1186/s42400-025-00361-w",
+        "url": "https://doi.org/10.1186/s42400-025-00361-w",
+        "citedByCount": 527,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4401357555",
+        "title": "Enhancing Autonomous System Security and Resilience With Generative AI: A Comprehensive Survey",
+        "year": "2024",
+        "venue": "IEEE Access",
+        "doi": "10.1109/access.2024.3439363",
+        "url": "https://doi.org/10.1109/access.2024.3439363",
+        "citedByCount": 174,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4404688214",
+        "title": "Application of Large Language Models in Cybersecurity: A Systematic Literature Review",
+        "year": "2024",
+        "venue": "IEEE Access",
+        "doi": "10.1109/access.2024.3505983",
+        "url": "https://doi.org/10.1109/access.2024.3505983",
+        "citedByCount": 173,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "IEEE TIE",
+    "journal": "IEEE Transactions on Industrial Electronics",
+    "openAlexId": "https://openalex.org/W4392543824",
+    "title": "Adaptive Disturbance Observer-Based Fixed-Time Tracking Control for Uncertain Robotic Systems",
+    "authors": [
+      "Zhuang Liu",
+      "Jianxing Liu",
+      "Ouyang Zhang",
+      "Yue Zhao",
+      "W.S. Chen"
+    ],
+    "affiliations": [
+      "Harbin Institute of Technology"
+    ],
+    "date": "2024-03-07",
+    "doi": "10.1109/tie.2024.3366204",
+    "cited": 150,
+    "abstract": "This article proposes a novel adaptive disturbance observer-based fixed-time backstepping control algorithm for uncertain robotic systems. First, an adaptive sliding mode disturbance observer (ASMDO) is designed to compensate for the lumped disturbances of the robotic system, such as model uncertainty and friction. Second, considering the actuator saturation problem of the robotic system, a new adaptive fixed-time auxiliary system is developed. Then, based on the ASMDO and the adaptive auxiliary system, a novel fixed-time backstepping tracking control algorithm is proposed to achieve faster fixed-time high accuracy tracking control for uncertain robotic systems under actuator saturation. Finally, comparative experiments validate the practicality of the proposed faster fixed-time backstepping control algorithm. Both theoretical analysis and experimental results demonstrate the superiority of the proposed fixed-time backstepping control algorithm.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2015113370",
+        "title": "Nonlinear Feedback Design for Fixed-Time Stabilization of Linear Control Systems",
+        "year": "2011",
+        "venue": "IEEE Transactions on Automatic Control",
+        "doi": "10.1109/tac.2011.2179869",
+        "url": "https://doi.org/10.1109/tac.2011.2179869",
+        "citedByCount": 5529,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1973578767",
+        "title": "Nonsingular fixed-time consensus tracking for second-order multi-agent networks",
+        "year": "2015",
+        "venue": "Automatica",
+        "doi": "10.1016/j.automatica.2015.01.021",
+        "url": "https://doi.org/10.1016/j.automatica.2015.01.021",
+        "citedByCount": 1206,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W2049933349",
+        "title": "Adaptive tracking control of uncertain MIMO nonlinear systems with input constraints",
+        "year": "2011",
+        "venue": "Automatica",
+        "doi": "10.1016/j.automatica.2011.01.025",
+        "url": "https://doi.org/10.1016/j.automatica.2011.01.025",
+        "citedByCount": 1082,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4410115249",
+        "title": "Predefined-Time Reliable Control for Robotic Systems With Prescribed Performance",
+        "year": "2025",
+        "venue": "IEEE Transactions on Industrial Electronics",
+        "doi": "10.1109/tie.2025.3558003",
+        "url": "https://doi.org/10.1109/tie.2025.3558003",
+        "citedByCount": 61,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4409191334",
+        "title": "Adaptive neural network-based fixed-time control for robots with input saturation and prescribed performance",
+        "year": "2025",
+        "venue": "Nonlinear Dynamics",
+        "doi": "10.1007/s11071-025-11103-5",
+        "url": "https://doi.org/10.1007/s11071-025-11103-5",
+        "citedByCount": 60,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4409473657",
+        "title": "Event-Triggered Generalized Super-Twisting Sliding Mode Control for Position Tracking of PMSMs",
+        "year": "2025",
+        "venue": "IEEE Transactions on Industrial Informatics",
+        "doi": "10.1109/tii.2025.3556086",
+        "url": "https://doi.org/10.1109/tii.2025.3556086",
+        "citedByCount": 50,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "JIII",
+    "journal": "Journal of Industrial Information Integration",
+    "openAlexId": "https://openalex.org/W4408184619",
+    "title": "Knowledge graph enhanced retrieval-augmented generation for failure mode and effects analysis",
+    "authors": [
+      "Lukas Bahr",
+      "Christoph Wehner",
+      "Judith Wewerka",
+      "José Bittencourt",
+      "Ute Schmid"
+    ],
+    "affiliations": [
+      "Technical University of Munich",
+      "University of Bamberg",
+      "BMW (Germany)",
+      "BMW Group (Germany)"
+    ],
+    "date": "2025-03-06",
+    "doi": "10.1016/j.jii.2025.100807",
+    "cited": 155,
+    "abstract": "Failure mode and effects analysis (FMEA) is an essential tool for mitigating potential failures, particularly during the ramp-up phases of new products. However, its effectiveness is often limited by the reasoning capabilities of the FMEA tools, which are usually tabular structured. Meanwhile, large language models (LLMs) offer novel prospects for advanced natural language processing tasks. However, LLMs face challenges in tasks that require factual knowledge, a gap that retrieval-augmented generation (RAG) approaches aim to fill. RAG retrieves information from a non-parametric data store and uses a language model to generate responses. Building on this concept, we propose to enhance the non-parametric data store with a knowledge graph (KG). By integrating a KG into the RAG framework, we aim to leverage analytical and semantic question-answering capabilities for FMEA data. This paper contributes by presenting set-theoretic standardization and a schema for FMEA data, an algorithm for creating vector embeddings from the FMEA-KG, and a KG-enhanced RAG framework. Our approach is validated through a user experience design study, and we measure the precision and performance of the context retrieval recall.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W102708294",
+        "title": "DBpedia: A Nucleus for a Web of Open Data",
+        "year": "2007",
+        "venue": "Lecture notes in computer science",
+        "doi": "10.1007/978-3-540-76298-0_52",
+        "url": "https://doi.org/10.1007/978-3-540-76298-0_52",
+        "citedByCount": 6494,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1605480920",
+        "title": "The Five Whys Technique",
+        "year": "2017",
+        "venue": "Springer eBooks",
+        "doi": "10.1007/978-981-10-0983-9_32",
+        "url": "https://doi.org/10.1007/978-981-10-0983-9_32",
+        "citedByCount": 281,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W12711134",
+        "title": "Course modularization applied: The interface system and its implications for sequence control and data analysis.",
+        "year": "1973",
+        "venue": "PsycEXTRA Dataset",
+        "doi": "10.1037/e436252004-001",
+        "url": "https://doi.org/10.1037/e436252004-001",
+        "citedByCount": 77,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4406840433",
+        "title": "A Survey of Graph Retrieval-Augmented Generation for Customized Large Language Models",
+        "year": "2025",
+        "venue": "arXiv",
+        "doi": "10.48550/arxiv.2501.13958",
+        "url": "https://doi.org/10.48550/arxiv.2501.13958",
+        "citedByCount": 366,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4409385489",
+        "title": "A comprehensive survey on integrating large language models with knowledge-based methods",
+        "year": "2025",
+        "venue": "Knowledge-Based Systems",
+        "doi": "10.1016/j.knosys.2025.113503",
+        "url": "https://doi.org/10.1016/j.knosys.2025.113503",
+        "citedByCount": 157,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4410600121",
+        "title": "Document GraphRAG: Knowledge Graph Enhanced Retrieval Augmented Generation for Document Question Answering Within the Manufacturing Domain",
+        "year": "2025",
+        "venue": "Electronics",
+        "doi": "10.3390/electronics14112102",
+        "url": "https://doi.org/10.3390/electronics14112102",
+        "citedByCount": 99,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "KBS",
+    "journal": "Knowledge-Based Systems",
+    "openAlexId": "https://openalex.org/W4403680445",
+    "title": "Multi-scale feature reconstruction network for industrial anomaly detection",
+    "authors": [
+      "Ehtesham Iqbal",
+      "Samee U. Khan",
+      "Sajid Javed",
+      "Brain Moyo",
+      "Yahya Zweiri"
+    ],
+    "affiliations": [
+      "Khalifa University of Science and Technology",
+      "Advanced Research and Innovation Center (ARIC) , Khalifa University of Science and Technology, Abu Dhabi, United Arab Emirates",
+      "Department of Computer Science, Khalifa University of Science and Technology, Abu Dhabi, United Arab Emirates",
+      "Research and Development, Sanad, Abu Dhabi, United Arab Emirates"
+    ],
+    "date": "2024-10-23",
+    "doi": "10.1016/j.knosys.2024.112650",
+    "cited": 55,
+    "abstract": "Unsupervised anomaly detection techniques, which operate without prior knowledge of anomalies, have garnered significant attention in industrial inspection due to their adaptability and generalization. Therefore, knowledge-based computer vision techniques have been broadly applied to identify unusual image patterns. However, real-time industrial applications present challenges such as limited anomalous samples, inadequate defect knowledge, and complex background textures. These factors lead to difficulties in accurately identifying defect regions, and conventional auto-encoder networks often struggle to overcome these issues.To address these limitations, we propose a multi-scale feature reconstruction (MSFR) network specifically designed for domain shift scenarios. Our approach employs a pyramidal vision transformer network (PVTN) to reconstruct multi-scale feature maps, capturing discriminative features at various scales. Additionally, a pre-trained module extracts multi-level features at the same scale, and a dedicated feature matching module enhances accuracy by improving the alignment probability between features. The MSFR strategy surpasses conventional auto-encoders by filtering pixel-level information at multiple depths. Empirical evaluations were conducted using benchmark datasets such as MVTec AD and AeBAD-S. Furthermore, an extensive ablation study demonstrates the effectiveness and viability of the proposed MSFR approach for industrial anomaly detection tasks. The experimental results show that the proposed model significantly outperforms recent approaches, making it highly suitable for real-world industrial applications, particularly in manufacturing.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2117539524",
+        "title": "ImageNet Large Scale Visual Recognition Challenge",
+        "year": "2015",
+        "venue": "International Journal of Computer Vision",
+        "doi": "10.1007/s11263-015-0816-y",
+        "url": "https://doi.org/10.1007/s11263-015-0816-y",
+        "citedByCount": 48144,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1866230956",
+        "title": "MADE: Masked Autoencoder for Distribution Estimation",
+        "year": "2015",
+        "venue": "International Conference on Machine Learning",
+        "doi": "10.48550/arxiv.1502.03509",
+        "url": "https://doi.org/10.48550/arxiv.1502.03509",
+        "citedByCount": 736,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1959608418",
+        "title": "Auto-Encoding Variational Bayes",
+        "year": "2013",
+        "venue": "UvA-DARE (University of Amsterdam)",
+        "doi": "10.48550/arxiv.1312.6114",
+        "url": "https://doi.org/10.48550/arxiv.1312.6114",
+        "citedByCount": 45270,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W7113906057",
+        "title": "Anomaly detection for industrial applications: challenges, solutions, and future directions",
+        "year": "2025",
+        "venue": "International Journal of Computer Integrated Manufacturing",
+        "doi": "10.1080/0951192x.2025.2599548",
+        "url": "https://doi.org/10.1080/0951192x.2025.2599548",
+        "citedByCount": 48,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4410030971",
+        "title": "An enhanced CLKAN-RF framework for robust anomaly detection in unmanned aerial vehicle sensor data",
+        "year": "2025",
+        "venue": "Knowledge-Based Systems",
+        "doi": "10.1016/j.knosys.2025.113690",
+        "url": "https://doi.org/10.1016/j.knosys.2025.113690",
+        "citedByCount": 42,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4409581241",
+        "title": "Anomaly Detection and Localization via Reverse Distillation With Latent Anomaly Suppression",
+        "year": "2025",
+        "venue": "IEEE Transactions on Circuits and Systems for Video Technology",
+        "doi": "10.1109/tcsvt.2025.3562258",
+        "url": "https://doi.org/10.1109/tcsvt.2025.3562258",
+        "citedByCount": 32,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "INS",
+    "journal": "Information Sciences",
+    "openAlexId": "https://openalex.org/W4398166765",
+    "title": "VIRTSI: A novel trust dynamics model enhancing Artificial Intelligence collaboration with human users – Insights from a ChatGPT evaluation study",
+    "authors": [
+      "Maria K. Virvou",
+      "George A. Tsihrintzis",
+      "Evangelia-Aikaterini Tsichrintzi"
+    ],
+    "affiliations": [
+      "University of Piraeus",
+      "Department of Informatics, University of Piraeus, 80 M. Karaoli & A. Dimitriou, Piraeus 18534, Greece",
+      "National and Kapodistrian University of Athens",
+      "Department of Informatics and Telecommunications, National and Kapodistrian University of Athens, Panepistimiopolis, Ilissia, Athens, Greece"
+    ],
+    "date": "2024-05-21",
+    "doi": "10.1016/j.ins.2024.120759",
+    "cited": 65,
+    "abstract": "The rapid integration of intelligent processes and methods into information systems in the Artificial Intelligence (AI) era has led to a substantial shift towards autonomous software decision-making. This evolution necessitates robust human oversight, especially in critical domains like Healthcare, Education, and Energy. Human trust in AI plays a vital role in influencing decision-making processes of users interacting with AI. This paper presents VIRTSI (Variability and Impact of Reciprocal Trust States towards Intelligent systems), a novel rigorous computational model for human-AI Interaction. VIRTSI simulates human trust states, spanning from overtrust to distrust, through user modelling. It comprises: 1. A trust dynamics representational model based on Deterministic Finite State Automata (DFAs), illustrating transitions among cognitive trust states in response to AI-generated replies. 2. A trust evaluation model based on Confusion Matrices, originating from machine learning and Accuracy Metrics, providing a quantitative framework for analysing human trust dynamics. As a result, this is the first time that trust dynamics have been thoroughly traced in a representational model and a method has been developed to assess the impact of possibly harmful states like overtrust and distrust. An empirical study on the recently launched Large Language Model of generative AI, ChatGPT (version 3.5), provides a radical underexplored AI-generated platform for evaluating the human-AI interaction through VIRTSI. The study involved 1200 interactions of real users as well as AI experts together with experts in two very different domains of evaluation, namely software engineering and poetry. This study traces trust dynamics and the emerging human-AI interaction, in concrete examples of real user synergies with generative AI. The research reveals the vital role of maintaining normal trust states for optimal human-AI interaction and that both AI and human users need further steps towards this goal. The real-world implications of this research can guide the creation and evaluation of user interfaces with AI and the incorporation of functionalities in the development of generative AI chatbots in terms of trust by providing a new rigorous DFA representational method of trust dynamics and a corresponding new perspective of confusion matrix evaluation method of the dynamics’ impact in the efficiency of human-AI dialogues.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W2020785866",
+        "title": "Trust between humans and machines, and the design of decision aids",
+        "year": "1987",
+        "venue": "International Journal of Man-Machine Studies",
+        "doi": "10.1016/s0020-7373(87)80013-5",
+        "url": "https://doi.org/10.1016/s0020-7373(87)80013-5",
+        "citedByCount": 963,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1854663754",
+        "title": "Technology, Humanness, and Trust: Rethinking Trust in Technology",
+        "year": "2015",
+        "venue": "Journal of the Association for Information Systems",
+        "doi": "10.17705/1jais.00411",
+        "url": "https://doi.org/10.17705/1jais.00411",
+        "citedByCount": 805,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1546625433",
+        "title": "Belief Revision Process Based on Trust: Agents Evaluating Reputation of Information Sources",
+        "year": "2001",
+        "venue": "Lecture notes in computer science",
+        "doi": "10.1007/3-540-45547-7_5",
+        "url": "https://doi.org/10.1007/3-540-45547-7_5",
+        "citedByCount": 111,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4416985964",
+        "title": "Human–AI collaboration in knowledge ecosystems: a multidisciplinary review, integrative framework and future directions",
+        "year": "2025",
+        "venue": "Journal of Knowledge Management",
+        "doi": "10.1108/jkm-03-2025-0431",
+        "url": "https://doi.org/10.1108/jkm-03-2025-0431",
+        "citedByCount": 60,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4410988526",
+        "title": "Explainable Artificial Intelligence Approaches in Primary Education: A Review",
+        "year": "2025",
+        "venue": "Electronics",
+        "doi": "10.3390/electronics14112279",
+        "url": "https://doi.org/10.3390/electronics14112279",
+        "citedByCount": 29,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4405522693",
+        "title": "Artificial Intelligence Chatbots and Social Robots in Education: FEPER Framework for Efficiency, Pedagogical and Ethical Requirements",
+        "year": "2024",
+        "venue": "International Conference on Information, Intelligence, Systems & Applications (IISA)",
+        "doi": "10.1109/iisa62523.2024.10786710",
+        "url": "https://doi.org/10.1109/iisa62523.2024.10786710",
+        "citedByCount": 28,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "ASOC",
+    "journal": "Applied Soft Computing",
+    "openAlexId": "https://openalex.org/W4408310233",
+    "title": "Deep learning in produce perception of harvesting robots: A comprehensive review",
+    "authors": [
+      "Yuhao Jin",
+      "Xiaoyu Xia",
+      "Qizhong Gao",
+      "Yong Gang Yue",
+      "Eng Gee Lim"
+    ],
+    "affiliations": [
+      "University of Liverpool",
+      "Xi’an Jiaotong-Liverpool University",
+      "Department of Computer Science, University of Liverpool, Liverpool L69 3BX, UK",
+      "School of Advanced Technology, Xi’an Jiaotong-Liverpool University, Suzhou 215123, China"
+    ],
+    "date": "2025-03-11",
+    "doi": "10.1016/j.asoc.2025.112971",
+    "cited": 22,
+    "abstract": "In recent years, the global demand for produce has surged, alongside labor shortages, driving the development of agricultural automation, particularly in harvesting robots. Deep learning-based computer vision algorithms have become key to produce perception, demonstrating significant potential. We systematically review the current application of deep learning in produce perception for harvesting robots, providing an in-depth analysis of existing public datasets, with a focus on 2D produce recognition and 3D produce localization. Furthermore, we review and analyze the existing algorithms, highlighting their limitations and challenges. In addition, we explore future research directions of deep learning in produce perception, aiming to promote the continued advancement and innovation of technologies in this area.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1686810756",
+        "title": "Very Deep Convolutional Networks for Large-Scale Image Recognition",
+        "year": "2014",
+        "venue": "Oxford University Research Archive (ORA) (University of Oxford)",
+        "doi": "10.48550/arxiv.1409.1556",
+        "url": "https://doi.org/10.48550/arxiv.1409.1556",
+        "citedByCount": 125271,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1483870316",
+        "title": "You Only Look Once: Unified, Real-Time Object Detection",
+        "year": "2016",
+        "venue": "IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings - IEEE Computer Society Conference on Computer Vision and Pattern Recognition/Proceedings",
+        "doi": "10.1109/cvpr.2016.91",
+        "url": "https://doi.org/10.1109/cvpr.2016.91",
+        "citedByCount": 68000,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1536680647",
+        "title": "Fast R-CNN",
+        "year": "2015",
+        "venue": "IEEE/CVF International Conference on Computer Vision (ICCV)",
+        "doi": "10.1109/iccv.2015.169",
+        "url": "https://doi.org/10.1109/iccv.2015.169",
+        "citedByCount": 34887,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4412761890",
+        "title": "A Review of Computer Vision and Deep Learning Applications in Crop Growth Management",
+        "year": "2025",
+        "venue": "Applied Sciences",
+        "doi": "10.3390/app15158438",
+        "url": "https://doi.org/10.3390/app15158438",
+        "citedByCount": 46,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4412701436",
+        "title": "Empowering Smart Soybean Farming with Deep Learning: Progress, Challenges, and Future Perspectives",
+        "year": "2025",
+        "venue": "Agronomy",
+        "doi": "10.3390/agronomy15081831",
+        "url": "https://doi.org/10.3390/agronomy15081831",
+        "citedByCount": 26,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W7162534503",
+        "title": "DS-YOLO: An improved oriented object detection model for joint localization of mature daylily fruits and stems in unstructured environments",
+        "year": "2026",
+        "venue": "Applied Soft Computing",
+        "doi": "10.1016/j.asoc.2026.115541",
+        "url": "https://doi.org/10.1016/j.asoc.2026.115541",
+        "citedByCount": 9,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "EAAI",
+    "journal": "Engineering Applications of Artificial Intelligence",
+    "openAlexId": "https://openalex.org/W4391795643",
+    "title": "A parallel deep neural network for intelligent fault diagnosis of drilling pumps",
+    "authors": [
+      "Junyu Guo",
+      "Yulai Yang",
+      "He Li",
+      "Le Dai",
+      "Bangkui Huang"
+    ],
+    "affiliations": [
+      "Southwest Petroleum University",
+      "Oil and Gas Equipment Technology Sharing and Service Platform of Sichuan Province, Southwest Petroleum University, Chengdu, Sichuan, 610500, PR China",
+      "School of Mechatronic Engineering, Southwest Petroleum University, Chengdu, Sichuan, 610500, PR China",
+      "University of Lisbon"
+    ],
+    "date": "2024-02-12",
+    "doi": "10.1016/j.engappai.2024.108071",
+    "cited": 121,
+    "abstract": "This paper introduces a novel parallel deep neural network for fault diagnosis of drilling pumps. It integrates the Convolutional Block Attention Module with the AlexNet and synchronizes with the Anomaly Transformer model to delve meticulously into both the time and time-frequency domains of signals. The method prioritizes the singular extraction and subsequent amalgamation of features, facilitating a detailed view of diagnostic data and mitigating the risk of interference and overfitting. The integration of the anomaly attention of the Anomaly Transformer with the features of the Convolutional Block Attention Module results in a distinctive dual attention mechanism that is critical to the methodology. This mechanism emphasizes essential features in both the time domain and the time-frequency domain, improving the accuracy of fault diagnosis. Verification with on-site data underscores the preeminence of the approach over existing models, signaling improved reliability and accuracy in diagnosing faults in drilling pumps. This meticulous approach offers promising advances in the study and application of fault diagnosis in energy equipment, demonstrating increased efficiency and refined accuracy.",
+    "citations": [
+      {
+        "id": "https://openalex.org/W1686810756",
+        "title": "Very Deep Convolutional Networks for Large-Scale Image Recognition",
+        "year": "2014",
+        "venue": "Oxford University Research Archive (ORA) (University of Oxford)",
+        "doi": "10.48550/arxiv.1409.1556",
+        "url": "https://doi.org/10.48550/arxiv.1409.1556",
+        "citedByCount": 125271,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1849277567",
+        "title": "Visualizing and Understanding Convolutional Networks",
+        "year": "2014",
+        "venue": "Lecture notes in computer science",
+        "doi": "10.1007/978-3-319-10590-1_53",
+        "url": "https://doi.org/10.1007/978-3-319-10590-1_53",
+        "citedByCount": 19712,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W1538131130",
+        "title": "Convolutional networks for images, speech, and time series",
+        "year": "1998",
+        "venue": "HAL",
+        "doi": "10.5555/303568.303704",
+        "url": "https://doi.org/10.5555/303568.303704",
+        "citedByCount": 5374,
+        "relation": "references"
+      },
+      {
+        "id": "https://openalex.org/W4409327194",
+        "title": "Bearing fault diagnosis based on efficient cross space multiscale CNN transformer parallelism",
+        "year": "2025",
+        "venue": "Scientific Reports",
+        "doi": "10.1038/s41598-025-95895-x",
+        "url": "https://doi.org/10.1038/s41598-025-95895-x",
+        "citedByCount": 78,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4408515367",
+        "title": "ISONet: Reforming 1DCNN for aero-engine system inter-shaft bearing fault diagnosis via input spatial over-parameterization",
+        "year": "2025",
+        "venue": "Expert Systems with Applications",
+        "doi": "10.1016/j.eswa.2025.127248",
+        "url": "https://doi.org/10.1016/j.eswa.2025.127248",
+        "citedByCount": 65,
+        "relation": "cited_by"
+      },
+      {
+        "id": "https://openalex.org/W4410015568",
+        "title": "Review of intelligent fault diagnosis for rotating machinery under imperfect data conditions",
+        "year": "2025",
+        "venue": "Expert Systems with Applications",
+        "doi": "10.1016/j.eswa.2025.127726",
+        "url": "https://doi.org/10.1016/j.eswa.2025.127726",
+        "citedByCount": 61,
+        "relation": "cited_by"
+      }
+    ]
+  },
+  {
+    "short": "ESWA",
+    "journal": "Expert Systems with Applications",
+    "openAlexId": "https://openalex.org/W4408515367",
+    "title": "ISONet: Reforming 1DCNN for aero-engine system inter-shaft bearing fault diagnosis via input spatial over-parameterization",
+    "authors": [
+      "Qian Xiang",
+      "Xiaodan Wang",
+      "Yafei Song",
+      "Lei Lei"
+    ],
+    "affiliations": [
+      "PLA Rocket Force University of Engineering",
+      "Laboratory of Intelligent Control, PLA Rocket Force University of Engineering, Xi’an, 710025, China",
+      "Air Force Engineering University",
+      "College of Air and Missile Defense, Air Force Engineering University, Xi’an, 710051, China"
+    ],
+    "date": "2025-03-17",
+    "doi": "10.1016/j.eswa.2025.127248",
+    "cited": 65,
+    "abstract": "",
+    "citations": []
+  }
+]

@@ -6,7 +6,7 @@ export const TOPIC_META: Record<
   ResearchTopic,
   { label: string; color: string; bgClass: string; textClass: string; borderClass: string }
 > = {
-  LLM: { label: '大模型', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  LLM: { label: '大模型 (LLM)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   AgentCollaboration: {
     label: '多智能体与人智协作',
     color: '#4F46E5',
@@ -14,24 +14,24 @@ export const TOPIC_META: Record<
     textClass: 'text-indigo-700',
     borderClass: 'border-indigo-100',
   },
-  KnowledgeGraph: { label: '知识图谱', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
-  ComputerVision: { label: '计算机视觉', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
-  Multimodal: { label: '多模态', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
-  EmbodiedAI: { label: '具身智能', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  KnowledgeGraph: { label: '知识图谱 (KG)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  ComputerVision: { label: '计算机视觉 (CV)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  Multimodal: { label: '多模态 (Multimodal)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  EmbodiedAI: { label: '具身智能 (Embodied AI)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
 };
 export { TOPIC_STYLE };
 
 export const DOMAIN_META: Record<DomainCategory, { label: string; badgeClass: string; color: string }> = {
-  manufacturing: { label: '智能制造', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#0F766E' },
-  computer_science: { label: '计算机', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#4F46E5' },
+  manufacturing: { label: '智能制造与工业工程', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#0F766E' },
+  computer_science: { label: '计算机与人工智能', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#4F46E5' },
   interdisciplinary: { label: '制造与AI交叉', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#64748B' },
 };
 
 export const DATASET_SOURCE_META: Record<DatasetSourceType, { label: string; shortLabel: string; badgeClass: string }> = {
-  public: { label: '公开数据集', shortLabel: '公开数据集', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-  self_built: { label: '自建数据集', shortLabel: '自建数据集', badgeClass: 'bg-amber-50 text-amber-700 border-amber-100' },
-  hybrid: { label: '公开与自建混合', shortLabel: '混合数据集', badgeClass: 'bg-teal-50 text-teal-700 border-teal-100' },
-  unspecified: { label: '未说明', shortLabel: '未说明', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' },
+  public: { label: '公开基准数据集', shortLabel: '公开数据集', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  self_built: { label: '研究团队自建数据集', shortLabel: '自建数据集', badgeClass: 'bg-amber-50 text-amber-700 border-amber-100' },
+  hybrid: { label: '公开与自建混合验证', shortLabel: '混合数据集', badgeClass: 'bg-teal-50 text-teal-700 border-teal-100' },
+  unspecified: { label: '未披露数据集细节', shortLabel: '未说明', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' },
 };
 
 export const READING_STATUS_META: Record<ReadingStatus, { label: string; cls: string }> = {
@@ -40,17 +40,36 @@ export const READING_STATUS_META: Record<ReadingStatus, { label: string; cls: st
   mastered: { label: '已掌握', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
 };
 
-export const TRACKED_JOURNALS = [
+/**
+ * 16 Core Manufacturing, Industrial Informatics & Engineering AI Journals requested by the user
+ */
+export const CORE_MFG_AI_JOURNALS = [
+  { short: 'IJMTM', full: 'International Journal of Machine Tools and Manufacture' },
   { short: 'JMS', full: 'Journal of Manufacturing Systems' },
   { short: 'RCIM', full: 'Robotics and Computer-Integrated Manufacturing' },
-  { short: 'AEI', full: 'Advanced Engineering Informatics' },
-  { short: 'IJPR', full: 'International Journal of Production Research' },
+  { short: 'JIM', full: 'Journal of Intelligent Manufacturing' },
   { short: 'IEEE TII', full: 'IEEE Transactions on Industrial Informatics' },
+  { short: 'IEEE TASE', full: 'IEEE Transactions on Automation Science and Engineering' },
+  { short: 'AEI', full: 'Advanced Engineering Informatics' },
+  { short: 'COMPIND', full: 'Computers in Industry' },
+  { short: 'ESWA', full: 'Expert Systems with Applications' },
   { short: 'CIRP', full: 'CIRP Annals - Manufacturing Technology' },
-  { short: 'IJMTM', full: 'International Journal of Machine Tools and Manufacture' },
-  { short: 'JAS', full: 'IEEE/CAA Journal of Automatica Sinica' },
-  { short: 'INFFUS', full: 'Information Fusion' },
+  { short: 'IEEE TIE', full: 'IEEE Transactions on Industrial Electronics' },
+  { short: 'JIII', full: 'Journal of Industrial Information Integration' },
+  { short: 'KBS', full: 'Knowledge-Based Systems' },
+  { short: 'INS', full: 'Information Sciences' },
+  { short: 'ASOC', full: 'Applied Soft Computing' },
+  { short: 'EAAI', full: 'Engineering Applications of Artificial Intelligence' },
+];
+
+/**
+ * Top Computer Science, Robotics & Human-Agent Collaboration Conferences / Journals
+ */
+export const CS_TOP_VENUES = [
   { short: 'TPAMI', full: 'IEEE Transactions on Pattern Analysis and Machine Intelligence' },
+  { short: 'INFFUS', full: 'Information Fusion' },
+  { short: 'JAS', full: 'IEEE/CAA Journal of Automatica Sinica' },
+  { short: 'IJPR', full: 'International Journal of Production Research' },
   { short: 'CVPR', full: 'IEEE/CVF Conference on Computer Vision and Pattern Recognition' },
   { short: 'ICML', full: 'International Conference on Machine Learning' },
   { short: 'ICLR', full: 'International Conference on Learning Representations' },
@@ -61,8 +80,10 @@ export const TRACKED_JOURNALS = [
   { short: 'CoRL', full: 'Conference on Robot Learning' },
   { short: 'RSS', full: 'Robotics: Science and Systems' },
   { short: 'ICRA', full: 'IEEE International Conference on Robotics and Automation' },
-  { short: 'arXiv', full: 'arXiv' },
+  { short: 'arXiv', full: 'arXiv Preprints' },
 ];
+
+export const TRACKED_JOURNALS = [...CORE_MFG_AI_JOURNALS, ...CS_TOP_VENUES];
 
 export function resolveDoiUrl(doi?: string, fallbackUrl?: string): string {
   const clean = (doi || '').trim();

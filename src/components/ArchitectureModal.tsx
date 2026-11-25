@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import type { AutoSyncConfig } from '../types/paper';
 import type { StorageStats } from '../lib/api';
+import { TRACKED_JOURNALS } from '../lib/constants';
 
 interface Props {
   autoSyncConfig: AutoSyncConfig | null;
@@ -97,6 +98,24 @@ export const ArchitectureObservatory: React.FC<Props> = ({ autoSyncConfig, stora
               <span className="font-medium">{storage?.sizeKB ?? 0} KB</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className={card}>
+        <div className="mb-3 flex items-center gap-2">
+          <BookOpen className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold">自动收录的期刊与顶会（{TRACKED_JOURNALS.length}）</h2>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {TRACKED_JOURNALS.map((j) => (
+            <span
+              key={j.short}
+              title={j.full}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-800/70 dark:text-slate-200"
+            >
+              {j.short}
+            </span>
+          ))}
         </div>
       </div>
 

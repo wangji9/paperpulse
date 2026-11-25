@@ -79,7 +79,32 @@ export interface CitationRefNode {
   relation: 'references' | 'cited_by' | 'related';
 }
 
+export interface OriginalPaperFigure {
+  id: string;
+  label: string;
+  url: string;
+  captionOriginal: string;
+  analysisZh: string;
+  category: 'method' | 'experiment';
+}
+
+export interface OriginalPaperTable {
+  id: string;
+  label: string;
+  html?: string;
+  imageUrl?: string;
+  captionOriginal: string;
+  analysisZh: string;
+}
+
 export interface PaperAnatomy {
+  modelName?: string;
+  figureUrl?: string;
+  figureCaption?: string;
+  feedbackLoopLabel?: string;
+  tableAnalysis?: string;
+  paperFigures?: OriginalPaperFigure[];
+  paperTables?: OriginalPaperTable[];
   background: string;
   problem: string;
   currentStatus: string;

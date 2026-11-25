@@ -26,3 +26,56 @@
   background: rgba(148, 163, 184, 0.45);
   border-radius: 9999px;
 }
+
+/* Styling for Authentic Extracted Paper HTML Tables (arXiv HTML / ar5iv / Springer) */
+.original-paper-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-top: 2px solid #334155;
+  border-bottom: 2px solid #334155;
+}
+.dark .original-paper-table table {
+  border-top-color: #64748b;
+  border-bottom-color: #64748b;
+}
+.original-paper-table thead tr,
+.original-paper-table tr:first-child {
+  border-bottom: 1.5px solid #94a3b8;
+  background-color: rgba(241, 245, 249, 0.75);
+  font-weight: 600;
+}
+.dark .original-paper-table thead tr,
+.dark .original-paper-table tr:first-child {
+  border-bottom-color: #475569;
+  background-color: rgba(30, 41, 59, 0.75);
+}
+.original-paper-table th,
+.original-paper-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  text-align: left;
+  vertical-align: middle;
+}
+.dark .original-paper-table th,
+.dark .original-paper-table td {
+  border-bottom-color: rgba(51, 65, 85, 0.75);
+}
+.original-paper-table annotation,
+.original-paper-table annotation-xml {
+  display: none !important;
+}
+.original-paper-table svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  max-width: 1.25rem;
+  max-height: 1.25rem;
+  vertical-align: -0.15em;
+}
+.original-paper-table img {
+  display: inline-block;
+  max-height: 1.5rem;
+  width: auto;
+}

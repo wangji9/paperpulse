@@ -13,6 +13,8 @@ import type {
 import { SEED_PAPERS } from './seedData.js';
 import { getBulkSeedPapers } from './seedBulk.js';
 import { getAgentAndJournalSeedPapers } from './seedAgents.js';
+import { enrichPaperVisuals, getJournals16SeedPapers } from './seedJournals16.js';
+import { CORE_16_JOURNAL_SOURCES } from './liveFetcher.js';
 import { generateSessionToken, hashPassword, pickAvatarColor, verifyPassword } from './auth.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
@@ -118,7 +120,24 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
   intervalHours: 6,
   targetWindow: 'yesterday_today',
   trackedTopics: ['LLM', 'AgentCollaboration', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
-  trackedJournals: ['JMS', 'RCIM', 'AEI', 'IJPR', 'IEEE TII', 'CIRP', 'IJMTM', 'JAS', 'INFFUS', 'TPAMI', 'CVPR', 'ICML', 'ICLR', 'EMNLP', 'CHI', 'CoRL', 'RSS', 'ICRA', 'arXiv'],
+  trackedJournals: [
+    ...CORE_16_JOURNAL_SOURCES.map((s) => s.short),
+    'TPAMI',
+    'INFFUS',
+    'JAS',
+    'IJPR',
+    'CVPR',
+    'ICML',
+    'ICLR',
+    'EMNLP',
+    'CHI',
+    'JAIR',
+    'NHB',
+    'CoRL',
+    'RSS',
+    'ICRA',
+    'arXiv',
+  ],
   lastAutoSyncAt: null,
   nextAutoSyncAt: null,
 };
@@ -142,20 +161,52 @@ export function initDatabase(): void {
     );
   }
 
-  const LIB_VERSION = 'v4.0-multiuser-affiliations';
+  const LIB_VERSION = 'v5.0-journals16-figures-kb';
   const ver = db.prepare("SELECT value FROM settings WHERE key = 'library_version'").get() as { value: string } | undefined;
   if (!ver || ver.value !== LIB_VERSION) {
-    const seeds = [...SEED_PAPERS, ...getBulkSeedPapers(), ...getAgentAndJournalSeedPapers()];
+    const seeds = [
+      ...SEED_PAPERS,
+      ...getBulkSeedPapers(),
+      ...getAgentAndJournalSeedPapers(),
+      ...getJournals16SeedPapers(),
+    ].map(enrichPaperVisuals);
+
     for (const paper of seeds) {
       upsertPaper(paper);
     }
-    recordSyncLog('公共文献池更新', seeds.length, `同步补全作者机构单位并维护公共文献池 ${seeds.length} 篇核心文献`);
+
+    // Enrich any previously live-fetched or user-created papers non-destructively
+    const seedIds = new Set(seeds.map((s) => s.id));
+    const existingRows = db.prepare('SELECT * FROM papers').all() as Record<string, unknown>[];
+    for (const row of existingRows) {
+      const pid = String(row.id);
+      if (!seedIds.has(pid)) {
+        const hydrated = hydratePaper(row, new Map());
+        upsertPaper(enrichPaperVisuals(hydrated));
+      }
+    }
+
+    recordSyncLog(
+      '16本核心期刊与图表解析升级',
+      seeds.length,
+      `收录 IJMTM / JMS / RCIM / JIM / IEEE TII / IEEE TASE / AEI / COMPIND / ESWA / CIRP / IEEE TIE / JIII / KBS / INS / ASOC / EAAI 等16本期刊文献并补全方法架构图与实验表格解析`
+    );
     db.prepare("INSERT INTO settings (key, value) VALUES ('library_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(LIB_VERSION);
   }
 
-  const cfgRow = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get();
+  const cfgRow = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get() as { value: string } | undefined;
   if (!cfgRow) {
     saveAutoSyncConfig(DEFAULT_AUTO_SYNC);
+  } else {
+    try {
+      const parsed = JSON.parse(cfgRow.value) as AutoSyncConfig;
+      const mergedJournals = Array.from(new Set([...DEFAULT_AUTO_SYNC.trackedJournals, ...(parsed.trackedJournals || [])]));
+      if (mergedJournals.length !== (parsed.trackedJournals || []).length) {
+        saveAutoSyncConfig({ ...parsed, trackedJournals: mergedJournals });
+      }
+    } catch {
+      saveAutoSyncConfig(DEFAULT_AUTO_SYNC);
+    }
   }
 }
 
@@ -478,6 +529,9 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
         ...p.tags,
         ...(p.myPersonalTags || []),
         ...(p.collectors || []).flatMap((c) => [c.displayName, ...c.userTags, ...c.personalTags]),
+        p.anatomy.modelName || '',
+        p.anatomy.figureCaption || '',
+        p.anatomy.tableAnalysis || '',
         p.anatomy.proposedMethod,
         p.anatomy.problem,
         ...p.anatomy.dataset.names,
@@ -507,8 +561,19 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
 
 export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
   const { comments, collectors: _c, inMyKb: _i, myPersonalTags: _mt, myReadingStatus: _ms, ...rest } = paper;
-  const existing = db.prepare('SELECT id FROM papers WHERE id = ?').get(paper.id);
+  const existing = db.prepare('SELECT id, payload FROM papers WHERE id = ?').get(paper.id) as { id: string; payload: string } | undefined;
   if (existing) {
+    try {
+      const prev = JSON.parse(String(existing.payload)) as Partial<AcademicPaper>;
+      if ((!rest.anatomy.paperFigures || rest.anatomy.paperFigures.length === 0) && prev.anatomy?.paperFigures?.length) {
+        rest.anatomy = { ...rest.anatomy, paperFigures: prev.anatomy.paperFigures };
+      }
+      if ((!rest.anatomy.paperTables || rest.anatomy.paperTables.length === 0) && prev.anatomy?.paperTables?.length) {
+        rest.anatomy = { ...rest.anatomy, paperTables: prev.anatomy.paperTables };
+      }
+    } catch {
+      /* ignore */
+    }
     db.prepare(`
       UPDATE papers
       SET open_alex_id = ?, doi = ?, title = ?, published_date = ?, synced_at = ?, domain = ?, dataset_type = ?,

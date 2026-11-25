@@ -16,12 +16,11 @@ import {
 import type { AcademicPaper, EntryType, UserProfile } from '../types/paper';
 import { DOMAIN_META, TOPIC_META, generateBibtex, resolveDoiUrl, resolvePaperOriginalUrl } from '../lib/constants';
 import {
-  AblationTable,
-  ArchitectureDiagram,
-  ComparisonTable,
   DatasetProvenanceVisual,
   LOGIC_STEPS,
   LogicChainFlow,
+  OriginalFiguresSection,
+  OriginalTablesSection,
 } from './visuals/PaperVisuals';
 import { EgoCitationGraph } from './CitationGraph';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
@@ -35,6 +34,10 @@ interface DeepAnatomyModalProps {
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
   onReparse: (id: string) => Promise<void>;
+  onUploadMedia?: (
+    paperId: string,
+    payload: { kind: 'method_figure' | 'experiment_figure' | 'table_image'; dataUrl: string; analysisZh?: string }
+  ) => Promise<void>;
   onToggleMyKb: (paper: AcademicPaper) => Promise<void>;
   onSelectOtherPaper: (paper: AcademicPaper) => void;
   onImportReference: (identifier: string) => Promise<void>;
@@ -72,6 +75,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   onEdit,
   onDelete,
   onReparse,
+  onUploadMedia,
   onToggleMyKb,
   onSelectOtherPaper,
   onImportReference,
@@ -90,16 +94,21 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const allFigures = anatomy.paperFigures || [];
+  const methodFigures = allFigures.filter((f) => f.category === 'method');
+  const expFigures = allFigures.filter((f) => f.category === 'experiment');
+  const paperTables = anatomy.paperTables || [];
+
   const visible = useMemo(() => {
     const has: Record<string, boolean> = {
       'sec-bg': !!anatomy.background,
       'sec-prob': !!anatomy.problem,
       'sec-status': !!anatomy.currentStatus,
       'sec-gaps': !!anatomy.limitationsOfPriorWork,
-      'sec-method': !!anatomy.proposedMethod || anatomy.architectureModules.length > 0,
+      'sec-method': true,
       'sec-exp': !!anatomy.experimentalValidation,
       'sec-data': anatomy.dataset.sourceType !== 'unspecified' || anatomy.dataset.names.length > 0,
-      'sec-cmp': anatomy.comparisonMetrics.rows.length > 0 || anatomy.ablationStudy.items.length > 0,
+      'sec-cmp': true,
       'sec-conc': !!anatomy.conclusion,
       'sec-future': anatomy.futureAndLimitations.paperLimitations.length + anatomy.futureAndLimitations.futureDirections.length > 0,
       'sec-cite': paper.citations.length > 0,
@@ -213,7 +222,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 onClick={() => void onToggleMyKb(paper)}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium ${
                   paper.inMyKb
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    ? 'border-teal-200 bg-teal-50 text-teal-800 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-300'
                     : 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300'
                 }`}
               >
@@ -234,7 +243,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 className={btn}
               >
                 {reparsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-indigo-600" />}
-                自动解析
+                提取原文图表
               </button>
               <button type="button" onClick={handleCopyBib} className={btn}>
                 {copiedBib ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
@@ -290,16 +299,27 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
               <Text>{anatomy.limitationsOfPriorWork}</Text>
             </Section>
           )}
-          {visible['sec-method'] && (
-            <Section id="sec-method" num="05" title="提出方法" darkMode={darkMode}>
-              {anatomy.proposedMethod && <Text>{anatomy.proposedMethod}</Text>}
-              {anatomy.architectureModules.length > 0 && (
-                <div className="mt-4">
-                  <ArchitectureDiagram modules={anatomy.architectureModules} darkMode={darkMode} />
-                </div>
-              )}
-            </Section>
-          )}
+          <Section
+            id="sec-method"
+            num="05"
+            title={anatomy.modelName ? `提出方法与原文架构图（${anatomy.modelName}）` : '提出方法与原文架构图'}
+            darkMode={darkMode}
+          >
+            {anatomy.proposedMethod && <Text>{anatomy.proposedMethod}</Text>}
+            <div className="mt-4">
+              <OriginalFiguresSection
+                figures={methodFigures.length > 0 ? methodFigures : allFigures}
+                legacyFigureUrl={anatomy.figureUrl}
+                legacyCaption={anatomy.figureCaption}
+                title="论文原文方法图 / 总体架构图"
+                allowUpload={true}
+                uploadKind="method_figure"
+                onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+                darkMode={darkMode}
+              />
+            </div>
+          </Section>
+
           {visible['sec-exp'] && (
             <Section id="sec-exp" num="06" title="实验验证" darkMode={darkMode}>
               <Text>{anatomy.experimentalValidation}</Text>
@@ -310,14 +330,28 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
               <DatasetProvenanceVisual dataset={anatomy.dataset} darkMode={darkMode} />
             </Section>
           )}
-          {visible['sec-cmp'] && (
-            <Section id="sec-cmp" num="08" title="对比与消融实验" darkMode={darkMode}>
-              <div className="space-y-4">
-                <ComparisonTable comparison={anatomy.comparisonMetrics} darkMode={darkMode} />
-                <AblationTable ablation={anatomy.ablationStudy} darkMode={darkMode} />
-              </div>
-            </Section>
-          )}
+
+          <Section id="sec-cmp" num="08" title="原文实验图表与结果解析" darkMode={darkMode}>
+            <div className="space-y-4">
+              <OriginalTablesSection
+                tables={paperTables}
+                allowUpload={true}
+                onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+                darkMode={darkMode}
+              />
+              {expFigures.length > 0 && (
+                <OriginalFiguresSection
+                  figures={expFigures}
+                  title="论文原文实验结果对比图"
+                  allowUpload={false}
+                  uploadKind="experiment_figure"
+                  onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+                  darkMode={darkMode}
+                />
+              )}
+            </div>
+          </Section>
+
           {visible['sec-conc'] && (
             <Section id="sec-conc" num="09" title="研究结论" darkMode={darkMode}>
               <Text>{anatomy.conclusion}</Text>

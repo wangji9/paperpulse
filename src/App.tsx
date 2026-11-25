@@ -44,6 +44,7 @@ import {
   syncLiveFeed,
   updateAutoSyncConfig,
   updatePaperLibraryState,
+  uploadPaperMedia,
   upsertMyKbPaper,
 } from './lib/api';
 import { TOPIC_META, TRACKED_JOURNALS } from './lib/constants';
@@ -53,6 +54,7 @@ import { PaperFormModal } from './components/PaperFormModal';
 import { GlobalCitationGraph } from './components/CitationGraph';
 import { ArchitectureObservatory } from './components/ArchitectureModal';
 import { AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
+import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
 
 type ViewTab = 'pool' | 'my_kb' | 'citations' | 'users' | 'automation';
 
@@ -84,6 +86,7 @@ export default function App() {
   const [recentOnly, setRecentOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [collectedByFilter, setCollectedByFilter] = useState<string>('all');
+  const [visibleLimit, setVisibleLimit] = useState<number>(8);
 
   // Quick Import Bar
   const [quickInput, setQuickInput] = useState('');
@@ -170,14 +173,28 @@ export default function App() {
 
   const myKbCount = useMemo(() => allPoolPapers.filter((p) => p.inMyKb).length, [allPoolPapers]);
 
+  const journalCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const p of allPoolPapers) {
+      map[p.journalShort] = (map[p.journalShort] || 0) + 1;
+    }
+    return map;
+  }, [allPoolPapers]);
+
+  useEffect(() => {
+    setVisibleLimit(8);
+  }, [searchQuery, domainFilter, topicFilter, journalFilter, datasetFilter, recentOnly, statusFilter, collectedByFilter, activeTab]);
+
+  const visiblePapers = useMemo(() => papers.slice(0, visibleLimit), [papers, visibleLimit]);
+
   const groupedByDate = useMemo(() => {
     const groups: Record<string, AcademicPaper[]> = {};
-    for (const p of papers) {
+    for (const p of visiblePapers) {
       if (!groups[p.publishedDate]) groups[p.publishedDate] = [];
       groups[p.publishedDate].push(p);
     }
     return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-  }, [papers]);
+  }, [visiblePapers]);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -225,9 +242,24 @@ export default function App() {
       setPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
       setAllPoolPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
       if (selectedPaper?.id === id) setSelectedPaper(updated);
-      showToast('success', '已完成文献正文结构、作者单位与引文补全');
+      showToast('success', '已完成文献正文结构、原文图表、作者单位与引文补全');
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : '解析失败');
+    }
+  };
+
+  const handleUploadMedia = async (
+    paperId: string,
+    payload: { kind: 'method_figure' | 'experiment_figure' | 'table_image'; dataUrl: string; analysisZh?: string }
+  ) => {
+    try {
+      const updated = await uploadPaperMedia(paperId, payload);
+      setPapers((prev) => prev.map((p) => (p.id === paperId ? updated : p)));
+      setAllPoolPapers((prev) => prev.map((p) => (p.id === paperId ? updated : p)));
+      if (selectedPaper?.id === paperId) setSelectedPaper(updated);
+      showToast('success', '原文图表已添加到该文献');
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : '上传失败');
     }
   };
 
@@ -489,25 +521,28 @@ export default function App() {
         </div>
       </div>
 
-      {/* Tracked Journals (Always reachable via sidebar independent scroll!) */}
+      {/* Merged Journals & Top Venues using Short Names ONLY */}
       <div className="pb-2">
-        <div className="mb-1.5 text-sm font-semibold text-slate-500">期刊与顶会（{TRACKED_JOURNALS.length}）</div>
+        <div className="mb-1.5 text-sm font-semibold text-slate-500">
+          计算机与机器人顶会/期刊（{TRACKED_JOURNALS.length}）
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {TRACKED_JOURNALS.map((j) => {
             const active = journalFilter === j.short;
+            const cnt = journalCounts[j.short] || 0;
             return (
               <button
                 key={j.short}
                 type="button"
                 onClick={() => setJournalFilter(active ? 'all' : j.short)}
                 title={j.full}
-                className={`rounded-md border px-2 py-1 text-sm font-medium transition ${
+                className={`rounded-md border px-2 py-1 text-xs font-medium transition ${
                   active
                     ? 'border-indigo-600 bg-indigo-600 text-white'
                     : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
                 }`}
               >
-                {j.short}
+                {j.short}{cnt > 0 ? ` (${cnt})` : ''}
               </button>
             );
           })}
@@ -608,7 +643,7 @@ export default function App() {
                 }}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
                   activeTab === 'my_kb'
-                    ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
+                    ? 'bg-teal-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
@@ -805,10 +840,44 @@ export default function App() {
 
             {/* Fluid Full-Width Content Stream */}
             <section className="min-w-0 flex-1 space-y-5">
+              {/* Public Pool Context Strip vs Personal Workbench */}
+              {activeTab === 'pool' && (
+                <div
+                  className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
+                    darkMode
+                      ? 'border-indigo-900/50 bg-indigo-950/20 text-slate-200'
+                      : 'border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-white to-slate-50 text-slate-800 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="rounded-md bg-indigo-600 px-2.5 py-0.5 font-semibold text-white">公共文献池</span>
+                    <span>
+                      实时追踪 <strong>16 本制造与工程AI核心期刊</strong> 及计算机顶会，直接展示论文原文方法架构图与原文实验表格
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!currentUser) setAuthModalOpen(true);
+                      else setActiveTab('my_kb');
+                    }}
+                    className="text-sm font-semibold text-teal-700 hover:underline dark:text-teal-400"
+                  >
+                    前往我的个人知识库工作台 ({myKbCount}) →
+                  </button>
+                </div>
+              )}
+
               {/* Quick Auto-Parse Import Bar */}
               <div
                 className={`rounded-2xl border p-4 ${
-                  darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
+                  activeTab === 'my_kb'
+                    ? darkMode
+                      ? 'border-teal-900/60 bg-slate-900'
+                      : 'border-teal-200/80 bg-white shadow-sm'
+                    : darkMode
+                      ? 'border-slate-800 bg-slate-900'
+                      : 'border-slate-200 bg-white shadow-sm'
                 }`}
               >
                 <form onSubmit={handleQuickImport} className="flex flex-col gap-2.5 sm:flex-row">
@@ -818,8 +887,8 @@ export default function App() {
                     onChange={(e) => setQuickInput(e.target.value)}
                     placeholder={
                       activeTab === 'my_kb'
-                        ? '输入 arXiv 编号、DOI 或论文标题，自动解析内容与作者单位并直接存入我的知识库'
-                        : '输入 arXiv 编号、DOI 或论文标题，自动解析文献内容、作者单位与引文入库'
+                        ? '输入 arXiv 编号、DOI 或论文标题，自动解析方法框图与实验表并直接归入我的个人知识库'
+                        : '输入 arXiv 编号、DOI 或论文标题，自动解析文献内容、方法架构图、作者单位与引文入库'
                     }
                     className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 ${
                       darkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 focus:bg-white'
@@ -828,10 +897,14 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={quickImporting || !quickInput.trim()}
-                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-600"
+                    className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50 ${
+                      activeTab === 'my_kb'
+                        ? 'bg-teal-600 hover:bg-teal-700'
+                        : 'bg-slate-900 hover:bg-indigo-700 dark:bg-indigo-600'
+                    }`}
                   >
                     {quickImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                    自动解析入库
+                    {activeTab === 'my_kb' ? '解析存入个人库' : '自动解析入库'}
                   </button>
                 </form>
               </div>
@@ -841,68 +914,102 @@ export default function App() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin text-indigo-600" />
                   加载中...
                 </div>
+              ) : activeTab === 'my_kb' && currentUser ? (
+                <MyKnowledgeBaseView
+                  papers={papers}
+                  currentUser={currentUser}
+                  darkMode={darkMode}
+                  onOpenDetail={(p) => setSelectedPaper(p)}
+                  onEdit={(p) => {
+                    setEditingPaper(p);
+                    setFormOpen(true);
+                  }}
+                  onDelete={handleDelete}
+                  onReparse={handleReparse}
+                  onUploadMedia={handleUploadMedia}
+                  onToggleMyKb={handleToggleMyKb}
+                  onUpdateStatus={handleUpdateStatus}
+                  onAddEntry={handleAddEntry}
+                  onEditEntry={handleEditEntry}
+                  onDeleteEntry={handleDeleteEntry}
+                  onOpenAddModal={() => {
+                    setEditingPaper(null);
+                    setFormOpen(true);
+                  }}
+                  onBrowsePublicPool={() => setActiveTab('pool')}
+                />
               ) : papers.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center dark:border-slate-700 dark:bg-slate-900">
                   <p className="text-base font-semibold text-slate-700 dark:text-slate-200">
-                    {activeTab === 'my_kb'
-                      ? '您的个人知识库暂未收录文献，可前往「公共文献池」点击「选入我的知识库」或直接上方解析添加'
-                      : '当前筛选条件下暂无匹配文献'}
+                    当前筛选条件下暂无匹配文献
                   </p>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (activeTab === 'my_kb') setActiveTab('pool');
-                      else resetFilters();
-                    }}
+                    onClick={resetFilters}
                     className="mt-4 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
                   >
-                    {activeTab === 'my_kb' ? '浏览公共文献池' : '重置筛选'}
+                    重置筛选
                   </button>
                 </div>
               ) : (
-                groupedByDate.map(([date, list]) => (
-                  <div key={date} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-sm font-semibold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                        <Calendar className="h-4 w-4 text-indigo-600" />
-                        {date === todayStr
-                          ? `${date} · 今日新增`
-                          : date === yesterdayStr
-                            ? `${date} · 昨日新增`
-                            : date}
-                        <span className="ml-1 rounded-full bg-indigo-600 px-2 py-0.2 text-xs text-white">
-                          {list.length} 篇
-                        </span>
+                <>
+                  {groupedByDate.map(([date, list]) => (
+                    <div key={date} className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-sm font-semibold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                          <Calendar className="h-4 w-4 text-indigo-600" />
+                          {date === todayStr
+                            ? `${date} · 今日新增`
+                            : date === yesterdayStr
+                              ? `${date} · 昨日新增`
+                              : date}
+                          <span className="ml-1 rounded-full bg-indigo-600 px-2 py-0.2 text-xs text-white">
+                            {list.length} 篇
+                          </span>
+                        </div>
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                       </div>
-                      <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
-                    </div>
 
-                    {list.map((paper) => (
-                      <PaperFeedCard
-                        key={paper.id}
-                        paper={paper}
-                        currentUser={currentUser}
-                        darkMode={darkMode}
-                        onOpenDetail={(p) => setSelectedPaper(p)}
-                        onEdit={(p) => {
-                          setEditingPaper(p);
-                          setFormOpen(true);
-                        }}
-                        onDelete={handleDelete}
-                        onReparse={handleReparse}
-                        onToggleMyKb={handleToggleMyKb}
-                        onUpdateStatus={handleUpdateStatus}
-                        onAddEntry={handleAddEntry}
-                        onEditEntry={handleEditEntry}
-                        onDeleteEntry={handleDeleteEntry}
-                        onFilterByCollector={(uid) => {
-                          setCollectedByFilter(uid);
-                          setActiveTab('pool');
-                        }}
-                      />
-                    ))}
-                  </div>
-                ))
+                      {list.map((paper) => (
+                        <PaperFeedCard
+                          key={paper.id}
+                          paper={paper}
+                          currentUser={currentUser}
+                          darkMode={darkMode}
+                          onOpenDetail={(p) => setSelectedPaper(p)}
+                          onEdit={(p) => {
+                            setEditingPaper(p);
+                            setFormOpen(true);
+                          }}
+                          onDelete={handleDelete}
+                          onReparse={handleReparse}
+                          onUploadMedia={handleUploadMedia}
+                          onToggleMyKb={handleToggleMyKb}
+                          onUpdateStatus={handleUpdateStatus}
+                          onAddEntry={handleAddEntry}
+                          onEditEntry={handleEditEntry}
+                          onDeleteEntry={handleDeleteEntry}
+                          onFilterByCollector={(uid) => {
+                            setCollectedByFilter(uid);
+                            setActiveTab('pool');
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ))}
+
+                  {papers.length > visibleLimit && (
+                    <div className="flex justify-center pt-2 pb-4">
+                      <button
+                        type="button"
+                        onClick={() => setVisibleLimit((prev) => prev + 12)}
+                        className="rounded-xl border border-indigo-200 bg-white px-6 py-2.5 text-sm font-semibold text-indigo-700 shadow-2xs transition hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-slate-800"
+                      >
+                        加载更多文献（当前已展示 {visiblePapers.length} / {papers.length} 篇）
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </section>
           </div>
@@ -924,6 +1031,7 @@ export default function App() {
           }}
           onDelete={handleDelete}
           onReparse={handleReparse}
+          onUploadMedia={handleUploadMedia}
           onToggleMyKb={(p) => handleToggleMyKb(p)}
           onSelectOtherPaper={(p) => setSelectedPaper(p)}
           onImportReference={handleImportIdentifier}

@@ -37,12 +37,21 @@ import {
   reparseExistingPaper,
   translateToZh,
 } from './liveFetcher.js';
+import { PAPER_ASSETS_DIR, extractOriginalPaperMedia } from './paperMediaExtractor.js';
 
 initDatabase();
 
+process.on('unhandledRejection', (reason) => {
+  console.error('[PaperPulse] Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[PaperPulse] Uncaught Exception:', err);
+});
+
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '15mb' }));
+app.use('/paper-assets', express.static(PAPER_ASSETS_DIR));
 
 function extractUser(req: express.Request): UserProfile | null {
   const authHeader = req.headers.authorization || '';
@@ -82,6 +91,9 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
     for (const raw of combined) {
       if (!paperExistsByTitleOrDoi(raw.title, raw.doi)) {
         const paper = await rawToAcademicPaper(raw);
+        const media = await extractOriginalPaperMedia(paper);
+        paper.anatomy.paperFigures = media.paperFigures;
+        paper.anatomy.paperTables = media.paperTables;
         upsertPaper(paper);
         addedPapers.push(paper);
         if (addedPapers.length >= 5) break;
@@ -99,7 +111,7 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
     recordSyncLog(
       triggerLabel,
       addedPapers.length,
-      `自动检索昨日/今日文献（arXiv ${arxivPapers.length} 篇，OpenAlex ${oaPapers.length} 篇），新增入库 ${addedPapers.length} 篇`
+      `自动检索16本制造与AI核心期刊及arXiv/OpenAlex最新文献（候选 ${combined.length} 篇），新增入库 ${addedPapers.length} 篇`
     );
 
     return {
@@ -394,6 +406,9 @@ app.post('/api/papers/import', async (req, res) => {
     }
 
     const newPaper = await rawToAcademicPaper(raw);
+    const media = await extractOriginalPaperMedia(newPaper);
+    newPaper.anatomy.paperFigures = media.paperFigures;
+    newPaper.anatomy.paperTables = media.paperTables;
     upsertPaper(newPaper, user?.id);
     if (user && addToMyKb !== false) {
       upsertUserKbItem(user.id, newPaper.id, { personalTags });
@@ -415,10 +430,84 @@ app.post('/api/papers/:id/reparse', async (req, res) => {
       return;
     }
     const enriched = await reparseExistingPaper(existing);
+    const media = await extractOriginalPaperMedia(enriched);
+    if (media.paperFigures.length > 0) enriched.anatomy.paperFigures = media.paperFigures;
+    if (media.paperTables.length > 0) enriched.anatomy.paperTables = media.paperTables;
     const saved = upsertPaper(enriched, user?.id);
     res.json({ paper: saved });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : '自动解析失败' });
+  }
+});
+
+// Upload / Paste Original Figure or Experimental Table Image for a Paper
+app.post('/api/papers/:id/media', async (req, res) => {
+  try {
+    const user = extractUser(req);
+    const existing = getPaperById(req.params.id, user?.id);
+    if (!existing) {
+      res.status(404).json({ error: 'Paper not found' });
+      return;
+    }
+    const { kind, dataUrl, label, captionOriginal, analysisZh } = req.body as {
+      kind: 'method_figure' | 'experiment_figure' | 'table_image';
+      dataUrl: string;
+      label?: string;
+      captionOriginal?: string;
+      analysisZh?: string;
+    };
+    const m = (dataUrl || '').match(/^data:image\/([a-zA-Z0-9+.-]+);base64,([\s\S]+)$/);
+    if (!m) {
+      res.status(400).json({ error: '请上传有效的图片文件或粘贴截图' });
+      return;
+    }
+    const ext = m[1].includes('jpeg') || m[1].includes('jpg') ? 'jpg' : m[1].includes('webp') ? 'webp' : 'png';
+    const buf = Buffer.from(m[2], 'base64');
+    const safeId = existing.id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64);
+    const dir = path.join(PAPER_ASSETS_DIR, safeId);
+    fs.mkdirSync(dir, { recursive: true });
+    const fileName = `upload_${Date.now()}.${ext}`;
+    fs.writeFileSync(path.join(dir, fileName), buf);
+    const publicUrl = `/paper-assets/${safeId}/${fileName}`;
+
+    const curFigs = [...(existing.anatomy.paperFigures || [])];
+    const curTbls = [...(existing.anatomy.paperTables || [])];
+
+    if (kind === 'table_image') {
+      const idx = curTbls.length + 1;
+      curTbls.push({
+        id: `tbl-up-${Date.now()}`,
+        label: label?.trim() || `Table ${idx}`,
+        imageUrl: publicUrl,
+        captionOriginal: captionOriginal?.trim() || '',
+        analysisZh: analysisZh?.trim() || `Table ${idx} 原文实验图表解析：${(existing.anatomy.experimentalValidation || existing.anatomy.conclusion).slice(0, 120)}`,
+      });
+    } else {
+      const idx = curFigs.length + 1;
+      curFigs.push({
+        id: `fig-up-${Date.now()}`,
+        label: label?.trim() || `Figure ${idx}`,
+        url: publicUrl,
+        captionOriginal: captionOriginal?.trim() || '',
+        analysisZh:
+          analysisZh?.trim() ||
+          `Figure ${idx} 原图解析：${(kind === 'method_figure' ? existing.anatomy.proposedMethod : existing.anatomy.experimentalValidation).slice(0, 120)}`,
+        category: kind === 'experiment_figure' ? 'experiment' : 'method',
+      });
+    }
+
+    const updated: AcademicPaper = {
+      ...existing,
+      anatomy: {
+        ...existing.anatomy,
+        paperFigures: curFigs,
+        paperTables: curTbls,
+      },
+    };
+    const saved = upsertPaper(updated, user?.id);
+    res.json({ paper: saved });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : '上传图表失败' });
   }
 });
 

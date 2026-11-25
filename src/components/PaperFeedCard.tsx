@@ -6,6 +6,7 @@ import {
   Building2,
   Check,
   Copy,
+  Cpu,
   Edit3,
   ExternalLink,
   Lightbulb,
@@ -26,6 +27,7 @@ import {
   resolveDoiUrl,
   resolvePaperOriginalUrl,
 } from '../lib/constants';
+import { OriginalFiguresSection, OriginalTablesSection } from './visuals/PaperVisuals';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
 
 interface PaperFeedCardProps {
@@ -36,6 +38,10 @@ interface PaperFeedCardProps {
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
   onReparse: (id: string) => Promise<void>;
+  onUploadMedia?: (
+    paperId: string,
+    payload: { kind: 'method_figure' | 'experiment_figure' | 'table_image'; dataUrl: string; analysisZh?: string }
+  ) => Promise<void>;
   onToggleMyKb: (paper: AcademicPaper, personalTags?: string[]) => Promise<void>;
   onUpdateStatus: (id: string, patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }) => void;
   onAddEntry: (paperId: string, payload: { content: string; entryType: EntryType }) => Promise<void>;
@@ -54,6 +60,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   onEdit,
   onDelete,
   onReparse,
+  onUploadMedia,
   onToggleMyKb,
   onUpdateStatus,
   onAddEntry,
@@ -76,19 +83,36 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   const commentCount = paper.comments.filter((c) => c.entryType !== 'thought').length;
 
   const blocks = [
-    { title: '背景与问题', text: [anatomy.background, anatomy.problem].filter(Boolean).join('') },
-    { title: '现状与局限', text: anatomy.limitationsOfPriorWork || anatomy.currentStatus },
-    { title: '本文方法', text: anatomy.proposedMethod },
     {
-      title: '实验与数据集',
-      text: [anatomy.experimentalValidation, anatomy.dataset.names.length ? `数据集：${anatomy.dataset.names.join('、')}` : '']
+      num: '01',
+      title: '研究背景与核心问题',
+      text: [anatomy.background, anatomy.problem].filter(Boolean).join('\n'),
+    },
+    {
+      num: '02',
+      title: '研究现状与现存局限',
+      text: [anatomy.currentStatus, anatomy.limitationsOfPriorWork].filter(Boolean).join('\n'),
+    },
+    {
+      num: '03',
+      title: anatomy.modelName ? `提出方法（${anatomy.modelName}）` : '本文提出方法',
+      text: anatomy.proposedMethod,
+    },
+    {
+      num: '04',
+      title: '实验设计与数据集',
+      text: [
+        anatomy.experimentalValidation,
+        anatomy.dataset.names.length ? `数据集：${anatomy.dataset.names.join('、')}` : '',
+        anatomy.dataset.summary ? `构建说明：${anatomy.dataset.summary}` : '',
+      ]
         .filter(Boolean)
-        .join(' '),
+        .join('\n'),
     },
   ].filter((b) => b.text && b.text.trim());
 
-  const cmpRows = anatomy.comparisonMetrics.rows.slice(0, 3);
-  const cmpCols = anatomy.comparisonMetrics.metricNames.slice(0, 3);
+  const paperFigures = anatomy.paperFigures || [];
+  const paperTables = anatomy.paperTables || [];
 
   const handleCopyBibtex = async () => {
     try {
@@ -120,17 +144,17 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
   return (
     <article
-      className={`rounded-2xl border p-4 sm:p-6 ${
-        darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
+      className={`rounded-2xl border p-4 sm:p-6 transition-shadow hover:shadow-md ${
+        darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-sm'
       }`}
     >
       {/* Top Meta Row */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-          <span className="rounded-md bg-slate-800 px-2.5 py-0.5 font-medium text-white dark:bg-indigo-600">
+          <span className="rounded-md bg-indigo-600 px-2.5 py-0.5 font-semibold text-white">
             {paper.journalShort}
           </span>
-          <span className="font-medium">{paper.journal}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200">{paper.journal}</span>
           <span className="text-slate-300">|</span>
           <span>{paper.publishedDate}</span>
           {paper.citedByCount > 0 && (
@@ -138,6 +162,12 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
               <span className="text-slate-300">|</span>
               <span>被引 {paper.citedByCount}</span>
             </>
+          )}
+          {anatomy.modelName && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50/80 px-2 py-0.5 font-medium text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
+              <Cpu className="h-3.5 w-3.5" />
+              {anatomy.modelName}
+            </span>
           )}
         </div>
 
@@ -156,7 +186,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
                 setReparsing(false);
               }
             }}
-            title="自动解析补全正文结构、作者单位与引文"
+            title="自动提取论文原图、原表、作者单位与引文"
             className={`${iconBtn} hover:text-indigo-600`}
           >
             {reparsing ? <Loader2 className="h-4 w-4 animate-spin text-indigo-600" /> : <Sparkles className="h-4 w-4" />}
@@ -179,7 +209,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
       >
         {paper.title}
       </h2>
-      {showZhTitle && <p className="mt-1 text-base text-slate-600 dark:text-slate-300">{paper.titleZh}</p>}
+      {showZhTitle && <p className="mt-1 text-base font-medium text-slate-700 dark:text-slate-300">{paper.titleZh}</p>}
 
       {/* Authors + Clickable DOI */}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
@@ -200,7 +230,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         )}
       </div>
 
-      {/* Author Affiliations / Institutions Row */}
+      {/* Author Affiliations */}
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
         <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
         <span className="text-slate-500">作者单位：</span>
@@ -214,7 +244,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             </span>
           ))
         ) : (
-          <span className="text-slate-400">预印本未标注单位（可点击右上角解析图标补全或手动编辑）</span>
+          <span className="text-slate-400">预印本未标注单位（可点击解析图标补全或手动编辑）</span>
         )}
       </div>
 
@@ -232,21 +262,21 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         {(paper.myPersonalTags || []).map((pt) => (
           <span
             key={pt}
-            className="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-sm text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+            className="inline-flex items-center gap-1 rounded-md border border-teal-200 bg-teal-50 px-2 py-0.5 text-sm text-teal-800 dark:border-teal-800 dark:bg-teal-950/60 dark:text-teal-300"
           >
             <Tag className="h-3 w-3" /> {pt}
           </span>
         ))}
       </div>
 
-      {/* Collectors in Public Pool: Who selected this paper into their Knowledge Base + their User Tags */}
+      {/* Collectors in Public Pool */}
       {collectors.length > 0 && (
         <div
           className={`mt-3 flex flex-wrap items-center gap-2 rounded-xl border px-3.5 py-2 text-sm ${
-            darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-indigo-100 bg-indigo-50/40'
+            darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-teal-100 bg-teal-50/40'
           }`}
         >
-          <span className="inline-flex items-center gap-1.5 font-medium text-indigo-700 dark:text-indigo-300">
+          <span className="inline-flex items-center gap-1.5 font-medium text-teal-800 dark:text-teal-300">
             <Users className="h-4 w-4" />
             已选入知识库：
           </span>
@@ -255,7 +285,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
               key={col.userId}
               type="button"
               onClick={() => onFilterByCollector?.(col.userId)}
-              className="inline-flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-sm shadow-2xs hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-900"
+              className="inline-flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-sm shadow-2xs hover:border-teal-500 dark:border-slate-700 dark:bg-slate-900"
             >
               <span
                 className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
@@ -270,7 +300,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
                 </span>
               ))}
               {col.personalTags.slice(0, 2).map((pt) => (
-                <span key={pt} className="rounded bg-amber-50 px-1.5 py-0.2 text-xs text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                <span key={pt} className="rounded bg-teal-50 px-1.5 py-0.2 text-xs text-teal-700 dark:bg-teal-950 dark:text-teal-300">
                   #{pt}
                 </span>
               ))}
@@ -279,56 +309,76 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         </div>
       )}
 
-      {/* Digest */}
-      {paper.digestSummary && <p className="mt-4 text-base leading-7 text-slate-800 dark:text-slate-200">{paper.digestSummary}</p>}
+      {/* Core Digest */}
+      {paper.digestSummary && (
+        <div
+          className={`mt-4 rounded-xl border-l-4 border-indigo-600 px-4 py-3 text-base leading-7 ${
+            darkMode ? 'bg-slate-800/50 text-slate-200' : 'bg-indigo-50/40 text-slate-800'
+          }`}
+        >
+          {paper.digestSummary}
+        </div>
+      )}
 
-      {/* Content Blocks */}
+      {/* Structured 4-Part Deep Logic Grid */}
       {blocks.length > 0 && (
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           {blocks.map((b) => (
-            <div key={b.title} className={`rounded-xl p-4 ${darkMode ? 'bg-slate-800/60' : 'bg-slate-50'}`}>
-              <div className="mb-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300">{b.title}</div>
+            <div
+              key={b.num}
+              className={`rounded-xl border p-4 ${
+                darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-200/70 bg-slate-50/70'
+              }`}
+            >
+              <div className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                <span className="rounded bg-indigo-600 px-1.5 py-0.2 text-xs text-white">{b.num}</span>
+                <span>{b.title}</span>
+              </div>
               <p className="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-300">{b.text}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Comparison Table */}
-      {cmpRows.length > 0 && cmpCols.length > 0 && (
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="bg-slate-50 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
-                <th className="px-3 py-2 font-semibold">方法</th>
-                {cmpCols.map((c) => (
-                  <th key={c} className="px-3 py-2 font-semibold">
-                    {c}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {cmpRows.map((row) => (
-                <tr key={row.method} className={row.isProposed ? 'bg-indigo-50/50 font-medium dark:bg-indigo-950/30' : ''}>
-                  <td className="px-3 py-2">{row.method}</td>
-                  {cmpCols.map((c) => (
-                    <td key={c} className="px-3 py-2">
-                      {String(row.values[c] ?? '—')}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Directly Embedded Original Paper Figures (No self-drawn SVG!) */}
+      {(paperFigures.length > 0 || anatomy.figureUrl) && (
+        <div className="mt-4">
+          <OriginalFiguresSection
+            figures={paperFigures}
+            legacyFigureUrl={anatomy.figureUrl}
+            legacyCaption={anatomy.figureCaption}
+            title="论文原文方法与实验配图"
+            maxItems={2}
+            onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+            darkMode={darkMode}
+          />
         </div>
       )}
 
+      {/* Directly Embedded Original Paper Experimental Tables */}
+      {paperTables.length > 0 && (
+        <div className="mt-4">
+          <OriginalTablesSection
+            tables={paperTables}
+            maxItems={1}
+            onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+            darkMode={darkMode}
+          />
+        </div>
+      )}
+
+      {/* Conclusion & Limitations Summary */}
       {anatomy.conclusion && (
-        <p className="mt-4 text-sm leading-6 text-slate-700 dark:text-slate-300">
-          <span className="font-semibold text-slate-900 dark:text-white">结论：</span>
-          {anatomy.conclusion}
-        </p>
+        <div
+          className={`mt-4 rounded-xl border px-4 py-3 text-sm leading-6 ${
+            darkMode ? 'border-slate-800 bg-slate-800/40 text-slate-300' : 'border-slate-200/80 bg-slate-50/60 text-slate-700'
+          }`}
+        >
+          <p>
+            <span className="font-semibold text-slate-900 dark:text-white">核心结论：</span>
+            {anatomy.conclusion}
+          </p>
+        </div>
       )}
 
       {/* Actions */}
@@ -340,7 +390,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             <BookOpenCheck className="h-4 w-4" />
-            精读全文解析
+            精读全文与原文图表
           </button>
 
           {resolvePaperOriginalUrl(paper) && (
@@ -360,7 +410,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             onClick={() => void onToggleMyKb(paper)}
             className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm font-medium transition ${
               paper.inMyKb
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                ? 'border-teal-200 bg-teal-50 text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
                 : 'border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200'
             }`}
           >
@@ -378,7 +428,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
               className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
             >
               <Tag className="h-4 w-4" />
-              标签
+              个人标签
             </button>
           )}
 
@@ -410,18 +460,18 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         <form
           onSubmit={handleSavePersonalTags}
           className={`mt-3 flex flex-wrap items-center gap-2 rounded-xl border p-3 ${
-            darkMode ? 'border-slate-800 bg-slate-800/60' : 'border-slate-200 bg-slate-50'
+            darkMode ? 'border-slate-800 bg-slate-800/60' : 'border-teal-200 bg-teal-50/50'
           }`}
         >
-          <span className="text-sm font-medium">我的文献标签：</span>
+          <span className="text-sm font-medium">我的知识库标签：</span>
           <input
             type="text"
             value={personalTagInput}
             onChange={(e) => setPersonalTagInput(e.target.value)}
-            placeholder="例如：精读必看, 开题参考, 实验对比"
-            className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-900"
+            placeholder="例如：精读必看, 开题参考, 实验基线对比"
+            className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900"
           />
-          <button type="submit" className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-sm font-medium text-white hover:bg-indigo-700">
+          <button type="submit" className="rounded-lg bg-teal-600 px-3.5 py-1.5 text-sm font-medium text-white hover:bg-teal-700">
             保存标签
           </button>
         </form>

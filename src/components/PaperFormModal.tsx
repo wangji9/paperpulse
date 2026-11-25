@@ -7,7 +7,7 @@ import type {
   DomainCategory,
   ResearchTopic,
 } from '../types/paper';
-import { TOPIC_META } from '../lib/constants';
+import { CORE_MFG_AI_JOURNALS, TOPIC_META, TRACKED_JOURNALS } from '../lib/constants';
 import { createPaper, importPaperByIdentifier, updatePaper } from '../lib/api';
 
 interface PaperFormModalProps {
@@ -63,7 +63,11 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   const [abstractOriginal, setAbstractOriginal] = useState(editingPaper?.abstractOriginal || '');
   const [digestSummary, setDigestSummary] = useState(editingPaper?.digestSummary || '');
 
-  // 10-part anatomy fields
+  // 10-part anatomy fields + figure/table interpretation
+  const [modelName, setModelName] = useState(editingPaper?.anatomy.modelName || '');
+  const [figureUrl, setFigureUrl] = useState(editingPaper?.anatomy.figureUrl || '');
+  const [figureCaption, setFigureCaption] = useState(editingPaper?.anatomy.figureCaption || '');
+  const [tableAnalysis, setTableAnalysis] = useState(editingPaper?.anatomy.tableAnalysis || '');
   const [background, setBackground] = useState(editingPaper?.anatomy.background || '');
   const [problem, setProblem] = useState(editingPaper?.anatomy.problem || '');
   const [currentStatus, setCurrentStatus] = useState(editingPaper?.anatomy.currentStatus || '');
@@ -181,8 +185,13 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
         personalTags,
       };
 
-      if (background.trim() || proposedMethod.trim()) {
+      if (background.trim() || proposedMethod.trim() || modelName.trim() || figureUrl.trim()) {
         payload.anatomy = {
+          modelName: modelName.trim() || baseAnatomy?.modelName || undefined,
+          figureUrl: figureUrl.trim() || baseAnatomy?.figureUrl || undefined,
+          figureCaption: figureCaption.trim() || baseAnatomy?.figureCaption || undefined,
+          feedbackLoopLabel: baseAnatomy?.feedbackLoopLabel,
+          tableAnalysis: tableAnalysis.trim() || baseAnatomy?.tableAnalysis || undefined,
           background: background.trim() || baseAnatomy?.background || '',
           problem: problem.trim() || baseAnatomy?.problem || '',
           currentStatus: currentStatus.trim() || baseAnatomy?.currentStatus || '',
@@ -388,8 +397,24 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-semibold">期刊 / 会议全称</label>
-                  <input type="text" value={journal} onChange={(e) => setJournal(e.target.value)} className={inputClass} />
+                  <label className="mb-1 block text-sm font-semibold">期刊 / 会议全称（可直接选择16本制造核心期刊）</label>
+                  <input
+                    type="text"
+                    list="tracked-journals-list"
+                    value={journal}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setJournal(val);
+                      const matched = TRACKED_JOURNALS.find((j) => j.full.toLowerCase() === val.toLowerCase());
+                      if (matched) setJournalShort(matched.short);
+                    }}
+                    className={inputClass}
+                  />
+                  <datalist id="tracked-journals-list">
+                    {CORE_MFG_AI_JOURNALS.map((j) => (
+                      <option key={j.short} value={j.full}>{j.short}</option>
+                    ))}
+                  </datalist>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -453,6 +478,49 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
               </div>
 
               <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
+                <h3 className="mb-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">模型命名、方法图与图表解析</h3>
+                <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">核心模型 / 方法英文简称（如 CausalKGPT, FMEA-KG-RAG）</label>
+                    <input
+                      type="text"
+                      value={modelName}
+                      onChange={(e) => setModelName(e.target.value)}
+                      placeholder="例如：MSFR-PVTN / ASMDO"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">论文原图 URL（可选，支持粘贴方法框图图片链接）</label>
+                    <input
+                      type="text"
+                      value={figureUrl}
+                      onChange={(e) => setFigureUrl(e.target.value)}
+                      placeholder="https://..."
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">Fig. 1 方法框图解析说明</label>
+                    <textarea
+                      rows={2}
+                      value={figureCaption}
+                      onChange={(e) => setFigureCaption(e.target.value)}
+                      placeholder="结合论文描述解释方法框图各模块的数据流转与协同机制"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold">Table 1 实验表格结果解析</label>
+                    <textarea
+                      rows={2}
+                      value={tableAnalysis}
+                      onChange={(e) => setTableAnalysis(e.target.value)}
+                      placeholder="结合论文实验解释对比表格中本文方法相较基线的优势原因"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
                 <h3 className="mb-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">精读内容</h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>

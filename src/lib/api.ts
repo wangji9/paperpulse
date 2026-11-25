@@ -235,6 +235,26 @@ export async function reparsePaper(id: string): Promise<AcademicPaper> {
   return data.paper;
 }
 
+export async function uploadPaperMedia(
+  id: string,
+  payload: {
+    kind: 'method_figure' | 'experiment_figure' | 'table_image';
+    dataUrl: string;
+    label?: string;
+    captionOriginal?: string;
+    analysisZh?: string;
+  }
+): Promise<AcademicPaper> {
+  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/media`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '上传原文图表失败');
+  return data.paper;
+}
+
 export async function updatePaper(id: string, payload: Partial<AcademicPaper>): Promise<AcademicPaper> {
   const res = await fetch(`/api/papers/${encodeURIComponent(id)}`, {
     method: 'PUT',
