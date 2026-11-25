@@ -48,6 +48,7 @@ export const ArchitectureObservatory: React.FC<Props> = ({ autoSyncConfig, stora
               <select value={autoSyncConfig?.targetWindow || 'yesterday_today'} onChange={(e) => update({ targetWindow: e.target.value as AutoSyncConfig['targetWindow'] })} className={select}>
                 <option value="yesterday_today">昨天与今天</option>
                 <option value="last_3_days">最近三天</option>
+                <option value="current_year">优先本年度论文</option>
               </select>
             </div>
             <div className="flex items-center justify-between">

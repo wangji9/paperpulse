@@ -24,6 +24,7 @@ import {
   OriginalTablesSection,
 } from './visuals/PaperVisuals';
 import { EgoCitationGraph } from './CitationGraph';
+import { PaperKeywords } from './PaperKeywords';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
 import { PaperSocialFootprintPanel, useCardReadingTracker, useModalReadingTracker, formatDurationZh } from './SocialEngagement';
 
@@ -297,6 +298,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+          <PaperKeywords paper={paper} />
           {visible['sec-bg'] && (
             <Section id="sec-bg" num="01" title="研究背景" darkMode={darkMode}>
               <Text>{anatomy.background}</Text>

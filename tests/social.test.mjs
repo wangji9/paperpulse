@@ -101,9 +101,13 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     for (const [endpoint, method] of [['/api/papers','POST'], ['/api/papers/import','POST'], [route,'PUT'], [route,'DELETE'], [route+'/reparse','POST'], [route+'/media','POST'], ['/api/admin/library','GET'], ['/api/admin/library/delete','POST'], ['/api/admin/library/compact','POST'], ['/api/sync','POST'], ['/api/auto-sync/config','GET']]) {
       assert.equal((await request(endpoint, tb, method, method==='GET'?undefined:{})).status, 403, endpoint);
     }
-    const created = await request('/api/papers', root, 'POST', { id: 'qa-library-managed', title: '产品设计文献管理测试用于验证权限和存储', titleZh: '产品设计文献管理测试用于验证权限和存储', quickAbstract: '研究背景来自产品设计的真实任务，本条仅用于接口测试。', journal: 'Journal of Mechanical Design', journalShort: 'JMD', topics: ['ProductDesign'], anatomy: durable.anatomy, addToMyKb: false });
+    const created = await request('/api/papers', root, 'POST', { id: 'qa-library-managed', title: '产品设计文献管理测试用于验证权限和存储', titleZh: '产品设计文献管理测试用于验证权限和存储', quickAbstract: '研究背景来自产品设计的真实任务，本条仅用于接口测试。', journal: 'Journal of Mechanical Design', journalShort: 'JMD', publishedDate:'2026-06-15', keywords:['design-test-keyword'], topics: ['ProductDesign'], anatomy: durable.anatomy, addToMyKb: false });
     assert.equal(created.status, 201);
     const managedPaperId = created.data.paper.id;
+    assert.deepEqual((await request('/api/papers?q=design-test-keyword&year=2026&month=2026-06', tb)).data.papers.map(p=>p.id),[managedPaperId]);
+    assert.equal((await request('/api/papers?q=design-test-keyword&year=2025', tb)).data.total,0);
+    assert.equal((await request('/paper-assets/missing.svg', root)).status,404);
+
     const assetDir = path.join(dir, 'paper-assets', managedPaperId);
     await mkdir(assetDir, { recursive: true });
     await writeFile(path.join(assetDir, 'test-only.pdf'), Buffer.alloc(16384));

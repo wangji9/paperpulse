@@ -1,3 +1,5 @@
+import { sanitizePaperTableHtml } from './tableSafety.js';
+import { extractKeywords } from './keywords.js';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -177,7 +179,7 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
     'CVPR',
     'ICML',
     'ICLR',
-    'EMNLP',
+    'EMNLP', 'ACL', 'NeurIPS', 'ECCV',
     'CHI',
     'JAIR',
     'NHB',
@@ -278,6 +280,16 @@ export function initDatabase(): void {
     const cfg = getAutoSyncConfig();
     saveAutoSyncConfig({ ...cfg, maxStoredPapers: cfg.maxStoredPapers || 1000, trackedTopics: Array.from(new Set([...cfg.trackedTopics, ...DEFAULT_AUTO_SYNC.trackedTopics])) });
     db.prepare("INSERT INTO settings (key, value) VALUES ('design_topics_v1', '1')").run();
+  }
+
+  for (const row of db.prepare('SELECT id, payload FROM papers').all() as Array<{id:string;payload:string}>) {
+    const p=JSON.parse(row.payload) as AcademicPaper;
+    p.keywords=p.keywords?.length?p.keywords:extractKeywords(p.title,p.abstractOriginal);
+    p.keywordSource=p.keywordSource || 'extracted';
+    const pdfPath=path.join(DATA_DIR,'paper-assets',p.id.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,64),'source.pdf');
+    if(fs.existsSync(pdfPath))p.localPdfUrl=`/paper-assets/${p.id.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,64)}/source.pdf`;
+    p.anatomy.paperTables=(p.anatomy.paperTables||[]).filter(t=>!(/<object|<iframe|<embed/i.test(t.html||'') && /^(?:Fig\.?|Figure)\s*\d/i.test(t.captionOriginal))).map(t=>({...t,html:t.html?sanitizePaperTableHtml(t.html):undefined}));
+    const payload=JSON.stringify(p); if(payload!==row.payload) db.prepare('UPDATE papers SET payload=? WHERE id=?').run(payload,row.id);
   }
 
 }
@@ -858,6 +870,7 @@ export interface PaperQueryFilters {
   datasetType?: string;
   bookmarked?: boolean;
   readingStatus?: string;
+  year?: string; month?: string; dateBasis?: 'published'|'synced';
   recentOnly?: boolean;
   date?: string;
   scope?: 'pool' | 'my_kb';
@@ -906,6 +919,8 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     papers = papers.filter((p) => p.publishedDate === today || p.publishedDate === yesterday);
   }
+  if(filters.year && filters.year!=='all') papers=papers.filter(p=>(filters.dateBasis==='synced'?p.syncedAt:p.publishedDate).startsWith(filters.year!));
+  if(filters.month && filters.month!=='all') papers=papers.filter(p=>(filters.dateBasis==='synced'?p.syncedAt:p.publishedDate).startsWith(filters.month!));
   if (filters.date) {
     papers = papers.filter((p) => p.publishedDate === filters.date);
   }
@@ -923,6 +938,7 @@ export function listPapers(filters: PaperQueryFilters = {}, currentUserId?: stri
         ...p.authors,
         ...(p.affiliations || []),
         ...p.tags,
+        ...(p.keywords || []),
         ...(p.myPersonalTags || []),
         ...(p.collectors || []).flatMap((c) => [c.displayName, ...c.userTags, ...c.personalTags]),
         p.anatomy.modelName || '',
@@ -956,11 +972,14 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
     if (byDoi) return true;
   }
   const byTitle = db.prepare('SELECT id FROM papers WHERE lower(title) = lower(?)').get(title.trim());
-  return Boolean(byTitle);
+  if(byTitle)return true;
+  const key=(s:string)=>s.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+  return (db.prepare('SELECT title FROM papers').all() as Array<{title:string}>).some(p=>key(p.title)===key(title));
 }
 
 export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
   db.prepare('DELETE FROM deleted_papers WHERE lower(title) = lower(?) OR (doi != ? AND lower(doi) = lower(?))').run(paper.title, '', paper.doi || '');
+  paper = { ...paper, keywords:paper.keywords?.length?paper.keywords:extractKeywords(paper.title,paper.abstractOriginal), anatomy:{...paper.anatomy,paperTables:(paper.anatomy.paperTables||[]).map(t=>({...t,html:t.html?sanitizePaperTableHtml(t.html):undefined}))} };
   const {
     comments,
     collectors: _c,
@@ -1202,7 +1221,7 @@ export function getReadingAnalytics(userId?: string): ReadingAnalytics {
   const topics = new Map<AcademicPaper['topics'][number], { topic: AcademicPaper['topics'][number]; visits: number; seconds: number }>();
   const papers = rows.map(row => {
     const p = JSON.parse(row.payload) as AcademicPaper;
-    for (const keyword of new Set([...p.tags, ...(p.anatomy.modelName ? [p.anatomy.modelName] : [])].map(t => t.trim()).filter(Boolean))) {
+    for (const keyword of new Set([...(p.keywords || []), ...p.tags, ...(p.anatomy.modelName ? [p.anatomy.modelName] : [])].map(t => t.trim()).filter(Boolean))) {
       const key = keyword.toLowerCase(); const prev = keywords.get(key) || { keyword, visits: 0, paperCount: 0 };
       prev.visits += Number(row.visits); prev.paperCount++; keywords.set(key, prev);
     }

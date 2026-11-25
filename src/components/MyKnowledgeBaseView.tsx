@@ -320,6 +320,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                         >
                           {p.titleZh !== p.title ? p.titleZh : p.title}
                         </button>
+                        <div className="mt-2 flex flex-wrap gap-1">{(p.keywords||[]).slice(0,5).map(k=><span key={k} className="rounded bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">{k}</span>)}</div>
                         {p.affiliations?.length > 0 && (
                           <div className="mt-1 text-xs text-slate-500">{p.affiliations.slice(0, 2).join('；')}</div>
                         )}

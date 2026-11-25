@@ -1,3 +1,7 @@
+import { load } from 'cheerio';
+import { createHash } from 'node:crypto';
+import { extractKeywords } from './keywords.js';
+import { applySourceText } from './sourceText.js';
 import type {
   AblationItem,
   AcademicPaper,
@@ -23,7 +27,8 @@ export interface RawExternalPaper {
   url: string;
   citedByCount: number;
   citations: CitationRefNode[];
-  sourceOrigin: 'arxiv_live' | 'openalex_live' | 'user_created';
+  sourceOrigin: 'arxiv_live' | 'openalex_live' | 'conference_live' | 'user_created';
+  pdfUrl?: string; htmlUrl?: string; codeUrl?: string; keywords?: string[];
 }
 
 const UA = { 'User-Agent': 'PaperPulse-Library/5.0' };
@@ -572,8 +577,8 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
       s.anatomy.background = ''; s.anatomy.problem = ''; s.anatomy.proposedMethod = ''; s.anatomy.conclusion = '';
     }
   }
-  return {
-    id: raw.openAlexId ? `oa-${raw.openAlexId.split('/').pop()}` : `paper-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+  const paper: AcademicPaper = {
+    id: raw.sourceOrigin === 'conference_live' ? 'conf-'+createHash('sha256').update(raw.url).digest('hex').slice(0,20) : raw.openAlexId ? `oa-${raw.openAlexId.split('/').pop()}` : `paper-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     openAlexId: raw.openAlexId,
     title: raw.title,
     titleZh: titleZh || raw.title,
@@ -588,6 +593,9 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
     syncedAt: new Date().toISOString(),
     doi: raw.doi,
     url: raw.url,
+    pdfUrl: raw.pdfUrl, htmlUrl: raw.htmlUrl, codeUrl: raw.codeUrl,
+    keywords: extractKeywords(raw.title,raw.abstract,raw.keywords), keywordSource:raw.keywords?.length?'author':'extracted',
+    parsing: {status:raw.abstract?'abstract':'metadata', sourceUrl:raw.htmlUrl||raw.url, updatedAt:new Date().toISOString(), sections:[], warnings:[]},
     sourceOrigin: raw.sourceOrigin,
     abstractOriginal: raw.abstract,
     digestSummary: s.digestSummary,
@@ -599,6 +607,7 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
     anatomy: s.anatomy,
     comments: [],
   };
+  return applySourceText(paper, raw.abstract);
 }
 
 export async function reparseExistingPaper(paper: AcademicPaper): Promise<AcademicPaper> {
@@ -792,6 +801,7 @@ async function openAlexItemToRaw(item: Record<string, unknown>, includeCitations
     publishedDate: String(item.publication_date || new Date().toISOString().slice(0, 10)),
     doi: doi || openAlexId.split('/').pop() || '',
     url: String(item.doi || item.id || 'https://openalex.org'),
+    pdfUrl: String((item.best_oa_location as Record<string, unknown> | undefined)?.pdf_url || ((item.locations as Array<Record<string, unknown>> | undefined) || []).find(l => l.pdf_url)?.pdf_url || '') || undefined,
     citedByCount: Number(item.cited_by_count || 0),
     citations: includeCitations ? await resolveOpenAlexCitations(openAlexId, (item.referenced_works as string[] | undefined) ?? []) : [],
     sourceOrigin: 'openalex_live',
@@ -966,7 +976,18 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
     const r = await fetch(`https://api.openalex.org/works/${oaId[1].toUpperCase()}`, { headers: UA, signal: AbortSignal.timeout(8000) });
     if (r.ok) return openAlexItemToRaw((await r.json()) as Record<string, unknown>);
   }
-  const arxiv = clean.match(/(\d{4}\.\d{4,5})(?:v\d+)?/);
+  if (/^https:\/\/(?:openaccess\.thecvf\.com|aclanthology\.org|proceedings\.mlr\.press)\//i.test(clean)) {
+    try {
+      const { fetchScholarlyHtml, parseConferencePage } = await import('./conferenceFetcher.js');
+      let landing=clean;
+      if(/aclanthology/.test(clean))landing=clean.replace(/\.pdf$/,'/');
+      if(/thecvf/.test(clean))landing=clean.replace('/papers/','/html/').replace(/_paper\.pdf$/,'_paper.html');
+      const html=await fetchScholarlyHtml(landing);
+      const venue=/aclanthology/.test(clean)?'ACL':/thecvf/.test(clean)?(clean.match(/(CVPR|ICCV|ECCV)\d{4}/)?.[1] || 'CVPR'):'ML Proceedings';
+      const parsed=parseConferencePage(html,landing,venue,0); if(parsed)return parsed;
+    } catch { /* metadata registry fallback */ }
+  }
+  const arxiv = (/arxiv/i.test(clean) || /^\d{4}\.\d{4,5}(?:v\d+)?$/.test(clean)) ? clean.match(/(\d{4}\.\d{4,5})(?:v\d+)?/) : null;
   if (arxiv || clean.toLowerCase().includes('arxiv')) {
     const id = arxiv ? arxiv[1] : clean;
     try {
@@ -1025,12 +1046,27 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
     : `https://api.openalex.org/works?search=${encodeURIComponent(clean)}&per-page=1`;
   try {
     const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(9000) });
-    if (!res.ok) return null;
+    if (!res.ok) return fetchCrossrefRaw(clean);
     const data = (await res.json()) as Record<string, unknown>;
     const item = Array.isArray(data.results) ? (data.results[0] as Record<string, unknown> | undefined) : data;
     if (!item || !item.title) return null;
     return openAlexItemToRaw(item);
   } catch {
-    return null;
+    return fetchCrossrefRaw(clean);
   }
+}
+
+async function fetchCrossrefRaw(identifier: string): Promise<RawExternalPaper | null> {
+  const doi=identifier.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i,'').trim();
+  if(!doi.startsWith('10.'))return null;
+  try {
+    const response=await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`,{headers:UA,signal:AbortSignal.timeout(12000)});
+    if(!response.ok)return null;
+    const {message:m}=await response.json() as {message:Record<string,any>};
+    if(!m.title?.[0])return null;
+    const venue=String(m['container-title']?.[0]||'Crossref'); const resolved=resolveJournalShort(venue);
+    const date=(m['published-online']||m['published-print']||m.published)?.['date-parts']?.[0] || [];
+    const pdf=m.link?.find((l:Record<string,string>)=>l['content-type']==='application/pdf')?.URL;
+    return {title:m.title[0],abstract:load(m.abstract||'').text(),authors:(m.author||[]).map((a:Record<string,string>)=>[a.given,a.family].filter(Boolean).join(' ')),affiliations:(m.author||[]).flatMap((a:any)=>(a.affiliation||[]).map((x:any)=>x.name)).filter(Boolean),journal:venue,journalShort:resolved.short,publishedDate:date.map((n:number,i:number)=>i?String(n).padStart(2,'0'):String(n)).join('-'),doi,url:'https://doi.org/'+doi,pdfUrl:(m.license||[]).some((l:any)=>/creativecommons/i.test(l.URL||''))?pdf:undefined,citedByCount:m['is-referenced-by-count']||0,citations:[],sourceOrigin:'user_created'};
+  }catch{return null;}
 }

@@ -1,3 +1,5 @@
+import { parsePaperEvidence } from './paperParsing.js';
+import { fetchOpenConferencePapers } from './conferenceFetcher.js';
 import express from 'express';
 import cors from 'cors';
 import fs from 'node:fs';
@@ -101,21 +103,22 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
   syncInProgress = true;
   try {
     const cfg = getAutoSyncConfig();
-    const daysBack = cfg.targetWindow === 'last_3_days' ? 3 : 1;
+    const daysBack = cfg.targetWindow === 'current_year' ? Math.ceil((Date.now()-Date.UTC(new Date().getUTCFullYear(),0,1))/86400000) : cfg.targetWindow === 'last_3_days' ? 3 : 1;
 
-    const [arxivPapers, oaPapers] = await Promise.all([
+    const [conferences, arxivPapers, oaPapers] = await Promise.all([
+      fetchOpenConferencePapers(new Date().getUTCFullYear(),3,cfg.trackedJournals),
       fetchYesterdayTodayFromArxiv(daysBack),
       fetchYesterdayTodayFromOpenAlex(daysBack, query, cfg.trackedJournals),
     ]);
 
-    const combined = Array.from({ length: Math.max(arxivPapers.length, oaPapers.length) }, (_, i) => [oaPapers[i], arxivPapers[i]].filter(Boolean)).flat();
+    const combined = Array.from({ length: Math.max(arxivPapers.length, oaPapers.length, conferences.papers.length) }, (_, i) => [conferences.papers[i], oaPapers[i], arxivPapers[i]].filter(Boolean)).flat();
     const addedPapers: AcademicPaper[] = [];
 
     for (const raw of combined) {
       if (getDatabaseStats().totalPapers >= (cfg.maxStoredPapers || 1000)) break;
       if (!cfg.trackedJournals.includes(raw.journalShort) || isPaperSuppressed(raw.title, raw.doi)) continue;
       if (!paperExistsByTitleOrDoi(raw.title, raw.doi)) {
-        const paper = await rawToAcademicPaper(raw);
+        const paper = await parsePaperEvidence(await rawToAcademicPaper(raw));
         if (!paper.topics.some(t => cfg.trackedTopics.includes(t))) continue;
         const media = await extractOriginalPaperMedia(paper);
         paper.anatomy.paperFigures = media.paperFigures;
@@ -145,7 +148,7 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
       syncedAt: nowIso,
       addedCount: addedPapers.length,
       addedPapers,
-      source: 'arXiv + OpenAlex',
+      source: 'CVF + ACL Anthology + PMLR + arXiv + OpenAlex',
     };
   } finally {
     syncInProgress = false;
@@ -202,7 +205,7 @@ app.get('/api/auth/me', (req, res) => {
   res.json({ user });
 });
 
-app.use('/paper-assets', requireAuth, express.static(PAPER_ASSETS_DIR));
+app.use('/paper-assets', requireAuth, express.static(PAPER_ASSETS_DIR), (_req, res) => { res.status(404).json({ error: '原文资源不存在，请重新解析文献' }); });
 
 // Protect all platform data endpoints behind mandatory account authentication
 app.use('/api/users', requireAuth);
@@ -343,10 +346,11 @@ app.get('/api/papers', (req, res) => {
     date,
     scope,
     collectedBy,
-    interactedBy,
+    interactedBy, year, month, dateBasis,
   } = req.query;
   const papers = listPapers(
     {
+      year:typeof year==='string'?year:undefined, month:typeof month==='string'?month:undefined, dateBasis:dateBasis==='synced'?'synced':'published',
       q: typeof q === 'string' ? q : undefined,
       domain: typeof domain === 'string' ? domain : undefined,
       topic: typeof topic === 'string' ? topic : undefined,
@@ -425,6 +429,8 @@ app.post('/api/papers', requireAdmin, async (req, res) => {
       abstractOriginal: abstractText,
       digestSummary: body.digestSummary?.trim() || generated.digestSummary,
       tags: body.tags?.length ? body.tags : generated.tags,
+      keywords: Array.isArray(body.keywords) ? body.keywords.filter((k): k is string => typeof k === 'string').map(k=>k.trim()).filter(Boolean).slice(0,15) : undefined,
+      keywordSource: body.keywords?.length ? 'manual' : 'extracted',
       citedByCount: Number(body.citedByCount || 0),
       citations: body.citations ?? [],
       readingStatus: body.readingStatus || 'unread',
@@ -472,7 +478,7 @@ app.post('/api/papers/import', requireAdmin, async (req, res) => {
       return;
     }
 
-    const newPaper = await rawToAcademicPaper(raw);
+    const newPaper = await parsePaperEvidence(await rawToAcademicPaper(raw));
     const media = await extractOriginalPaperMedia(newPaper);
     newPaper.anatomy.paperFigures = media.paperFigures;
     newPaper.anatomy.paperTables = media.paperTables;
@@ -496,7 +502,7 @@ app.post('/api/papers/:id/reparse', requireAdmin, async (req, res) => {
       res.status(404).json({ error: 'Paper not found' });
       return;
     }
-    const enriched = await reparseExistingPaper(existing);
+    const enriched = await parsePaperEvidence(await reparseExistingPaper(existing));
     const media = await extractOriginalPaperMedia(enriched);
     if (media.paperFigures.length > 0) enriched.anatomy.paperFigures = media.paperFigures;
     if (media.paperTables.length > 0) enriched.anatomy.paperTables = media.paperTables;

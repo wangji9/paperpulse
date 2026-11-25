@@ -3,6 +3,9 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AcademicPaper, OriginalPaperFigure, OriginalPaperTable } from '../src/types/paper.js';
+import { load } from 'cheerio';
+import { sanitizePaperTableHtml } from './tableSafety.js';
+export { sanitizePaperTableHtml } from './tableSafety.js';
 import { translateToZh } from './liveFetcher.js';
 
 const execFileAsync = promisify(execFile);
@@ -37,19 +40,6 @@ function stripTags(html: string): string {
     .trim();
 }
 
-export function sanitizePaperTableHtml(rawTableHtml: string): string {
-  let clean = rawTableHtml
-    // Remove TeX source annotations inside MathML that otherwise render duplicate raw LaTeX text
-    .replace(/<annotation[\s\S]*?<\/annotation>/gi, '')
-    .replace(/<annotation-xml[\s\S]*?<\/annotation-xml>/gi, '')
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    // Convert internal citation/ref links to plain spans so clicking doesn't jump to dead anchors
-    .replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '<span>$1</span>')
-    // Strip inline styles and noisy attributes while preserving colspan/rowspan
-    .replace(/\s+(?:style|id|class|width|height|align|valign|border|cellpadding|cellspacing)=["'][^"']*["']/gi, '');
-  return clean.trim();
-}
 
 async function downloadImageToAssets(imgUrl: string, paperDir: string, urlPrefix: string, baseName: string): Promise<string | null> {
   try {
@@ -61,14 +51,21 @@ async function downloadImageToAssets(imgUrl: string, paperDir: string, urlPrefix
     if (!res.ok) return null;
     const ctype = (res.headers.get('content-type') || '').toLowerCase();
     if (ctype.includes('text/html')) return null;
-    const buf = Buffer.from(await res.arrayBuffer());
+    let buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length > 12 * 1024 * 1024) return null;
     // Skip tiny icons / badges (< 3.5 KB)
     if (buf.length < 3500) return null;
 
     let ext = '.png';
     if (ctype.includes('jpeg') || ctype.includes('jpg') || /\.jpe?g(\?|$)/i.test(imgUrl)) ext = '.jpg';
     else if (ctype.includes('webp') || /\.webp(\?|$)/i.test(imgUrl)) ext = '.webp';
-    else if (ctype.includes('svg') || /\.svg(\?|$)/i.test(imgUrl)) ext = '.svg';
+    else if (ctype.includes('svg') || /\.svg(\?|$)/i.test(imgUrl)) {
+      const $ = load(buf.toString('utf8'), { xmlMode: true });
+      if (!$('svg').length) return null;
+      $('script,foreignObject,iframe,object,embed').remove();
+      $('*').each((_,el) => { for(const key of Object.keys($(el).attr() || {})) { const value=$(el).attr(key)||''; if(/^on/i.test(key) || ((key==='href'||key==='xlink:href') && !value.startsWith('#') && !/^data:image\/(png|jpeg);base64,/i.test(value))) $(el).removeAttr(key); } });
+      buf=Buffer.from($.xml()); ext='.svg';
+    } else if (!ctype.startsWith('image/')) return null;
 
     fs.mkdirSync(paperDir, { recursive: true });
     const filename = `${baseName}${ext}`;
@@ -100,6 +97,18 @@ function resolveHtmlAssetUrl(src: string, htmlUrl: string, htmlText: string): st
   } catch {
     return src;
   }
+}
+
+async function prepareNativeTable(html: string, pageUrl: string, pageHtml: string, paperDir: string, urlPrefix: string, index: number): Promise<string> {
+  const $ = load(html, {}, false);
+  const assets = $('object[data],embed[src],img[src]').toArray().slice(0,12);
+  for (let i=0;i<assets.length;i++) {
+    const el=$(assets[i]); const src=el.attr('data')||el.attr('src')||'';
+    const url=resolveHtmlAssetUrl(src,pageUrl,pageHtml);
+    const local=/^https:\/\//.test(url)?await downloadImageToAssets(url,paperDir,urlPrefix,`table_${index}_asset_${i}`):null;
+    if(local) el.replaceWith($('<img>').attr('src',local).attr('alt',el.attr('alt')||'原文表格配图')); else el.remove();
+  }
+  return sanitizePaperTableHtml($.html());
 }
 
 function extractTopLevelFigures(html: string): Array<{ attrs: string; inner: string }> {
@@ -180,17 +189,8 @@ async function buildCaptionAnalysisZh(
   paperMethodOrExpZh: string
 ): Promise<string> {
   const cleanCap = captionEn.replace(/^(?:Figure|Fig\.?|Table|TABLE)\s*\d+\s*[:.-]?\s*/i, '').trim();
-  const zhCap = cleanCap ? await translateToZh(cleanCap, 420) : null;
-  if (zhCap) {
-    if (kind === 'method') {
-      return `${label} 原图解析：${zhCap}${paperMethodOrExpZh ? `（对应本文核心设计：${paperMethodOrExpZh.slice(0, 95)}）` : ''}`;
-    }
-    return `${label} 实验图表解析：${zhCap}`;
-  }
-  if (kind === 'method') {
-    return `${label} 原图解析：展示论文提出的核心方法总体框架与关键模块协同流程。${paperMethodOrExpZh.slice(0, 120)}`;
-  }
-  return `${label} 实验图表解析：展示原文基准对比或消融评测的实测结果。${paperMethodOrExpZh.slice(0, 120)}`;
+  const zhCap = process.env.PAPERPULSE_TRANSLATE_CAPTIONS==='0' ? null : cleanCap ? await translateToZh(cleanCap, 420) : null;
+  return zhCap ? `${label} 原文图注译文：${zhCap}` : cleanCap ? `${label} 原文图注：${cleanCap}` : `${label} 原文图表；图注暂不可用，请查看公开PDF。`;
 }
 
 /**
@@ -239,9 +239,9 @@ async function extractFromArxivHtml(
   for (let i = 0; i < figBlocks.length; i++) {
     const attrs = figBlocks[i].attrs || '';
     const inner = figBlocks[i].inner || '';
-    if (/ltx_table/i.test(attrs) || (/<table/i.test(inner) && !/<img/i.test(inner))) continue;
+    if (/ltx_table/i.test(attrs) || (/<table/i.test(inner) && !/<(?:img|object|embed)/i.test(inner))) continue;
 
-    const imgMatches = Array.from(inner.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi))
+    const imgMatches = Array.from(inner.matchAll(/<(?:img|object|embed)[^>]+(?:src|data)=["']([^"']+)["'][^>]*>/gi))
       .map((m) => m[1])
       .filter((s) => !/icon|logo|orcid|badge|cc-by|x1\.png$/i.test(s));
     if (imgMatches.length === 0) continue;
@@ -271,10 +271,6 @@ async function extractFromArxivHtml(
   // Pick up to 2 best method figures + 1 experiment figure
   candFigs.sort((a, b) => b.score - a.score);
   const pickedFigs = candFigs.slice(0, 3).sort((a, b) => a.idx - b.idx);
-  // Ensure at least first figure is categorized as 'method' so Section 05 shows the primary paper figure
-  if (pickedFigs.length > 0 && !pickedFigs.some((f) => f.cat === 'method')) {
-    pickedFigs[0].cat = 'method';
-  }
 
   for (let k = 0; k < pickedFigs.length; k++) {
     const cf = pickedFigs[k];
@@ -318,7 +314,8 @@ async function extractFromArxivHtml(
     if (/(result|comparison|main|performance|benchmark|evaluation|accuracy|sota)/i.test(low)) score += 10;
     if (/(ablation|component|variant|module)/i.test(low)) score += 8;
 
-    candTables.push({ idx: i + 1, tblHtml: sanitizePaperTableHtml(tbl), cap, score });
+    if (/^(?:Figure|Fig\.?)[ .:]*\d/i.test(cap)) continue;
+    candTables.push({ idx: i + 1, tblHtml: await prepareNativeTable(tbl, finalUrl, html, paperDir, urlPrefix, i), cap, score });
   }
 
   candTables.sort((a, b) => b.score - a.score);
@@ -405,7 +402,7 @@ async function extractFromSpringerHtml(
         tables.push({
           id: `tbl-${tNum}`,
           label: `Table ${tNum}`,
-          html: sanitizePaperTableHtml(tbls[0]),
+          html: await prepareNativeTable(tbls[0], tr.url, thtml, paperDir, urlPrefix, tNum),
           captionOriginal: cap,
           analysisZh: await buildCaptionAnalysisZh(`Table ${tNum}`, cap, 'table', expContextZh),
         });
@@ -432,7 +429,7 @@ async function extractFromPdfUrl(
   try {
     const scriptPath = path.resolve(process.cwd(), 'server', 'extract_pdf_figures.py');
     const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix], {
-      timeout: 22000,
+      timeout: 60000,
       maxBuffer: 4 * 1024 * 1024,
     });
     const parsed = JSON.parse(stdout.trim()) as {
@@ -474,12 +471,16 @@ export async function resolvePaperMediaEndpoints(paper: {
   url?: string;
   openAlexId?: string;
   title: string;
+  pdfUrl?: string; htmlUrl?: string;
 }): Promise<{ arxivId?: string; pdfUrl?: string }> {
-  const combined = `${paper.doi || ''} ${paper.url || ''}`;
+  const combined = `${paper.doi || ''} ${paper.url || ''} ${paper.pdfUrl || ''}`;
   const directArx = combined.match(/arxiv[./](?:abs\/|pdf\/|html\/)?(\d{4}\.\d{4,5})/i)?.[1];
   if (directArx) {
     return { arxivId: directArx, pdfUrl: `https://arxiv.org/pdf/${directArx}.pdf` };
   }
+
+  if (paper.pdfUrl && /^https:\/\//i.test(paper.pdfUrl)) return { pdfUrl: paper.pdfUrl };
+  if (paper.url && /^https:\/\//i.test(paper.url) && /\.pdf(?:\?|$)/i.test(paper.url)) return { pdfUrl: paper.url };
 
   // Check OpenAlex locations
   try {
@@ -550,7 +551,8 @@ export async function extractOriginalPaperMedia(paper: AcademicPaper): Promise<{
 
   // 3. Fallback / Fill missing via PyMuPDF on PDF URL
   if ((figures.length === 0 || tables.length === 0) && pdfUrl) {
-    const pdfRes = await extractFromPdfUrl(pdfUrl, paperDir, urlPrefix, methodCtx, expCtx);
+    const cached=path.join(paperDir,'source.pdf');
+    const pdfRes = await extractFromPdfUrl(fs.existsSync(cached)?cached:pdfUrl, paperDir, urlPrefix, methodCtx, expCtx);
     if (figures.length === 0 && pdfRes.figures.length > 0) figures = pdfRes.figures;
     if (tables.length === 0 && pdfRes.tables.length > 0) tables = pdfRes.tables;
   }

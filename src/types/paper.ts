@@ -202,7 +202,14 @@ export interface AcademicPaper {
   syncedAt: string;
   doi: string;
   url: string;
-  sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'user_created';
+  sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'conference_live' | 'user_created';
+  keywords?: string[];
+  keywordSource?: 'author' | 'extracted' | 'manual';
+  pdfUrl?: string;
+  codeUrl?: string;
+  localPdfUrl?: string;
+  htmlUrl?: string;
+  parsing?: { status: 'metadata' | 'abstract' | 'full_text' | 'unavailable'; sourceUrl?: string; updatedAt: string; pages?: number; sections: string[]; warnings: string[] };
   abstractOriginal: string;
   digestSummary: string;
   tags: string[];
@@ -227,7 +234,7 @@ export interface AutoSyncConfig {
   maxStoredPapers?: number;
   enabled: boolean;
   intervalHours: number;
-  targetWindow: 'yesterday_today' | 'last_3_days';
+  targetWindow: 'yesterday_today' | 'last_3_days' | 'current_year';
   trackedTopics: ResearchTopic[];
   trackedJournals: string[];
   lastAutoSyncAt: string | null;

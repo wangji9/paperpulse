@@ -54,6 +54,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   const [doi, setDoi] = useState(editingPaper?.doi || '');
   const [url, setUrl] = useState(editingPaper?.url || '');
   const [abstractOriginal, setAbstractOriginal] = useState(editingPaper?.abstractOriginal || '');
+  const [keywordInput,setKeywordInput] = useState((editingPaper?.keywords || []).join('; '));
   const [digestSummary, setDigestSummary] = useState(editingPaper?.digestSummary || '');
 
   // 10-part anatomy fields + figure/table interpretation
@@ -173,6 +174,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
         url: url.trim() || '#',
         abstractOriginal: abstractOriginal.trim(),
         digestSummary: digestSummary.trim(),
+        ...(keywordInput.trim()?{keywords:keywordInput.split(/[;；,，]/).map(k=>k.trim()).filter(Boolean).slice(0,15),keywordSource:'manual' as const}:{}),
         quickAbstract: abstractOriginal.trim() || `${background} ${problem} ${proposedMethod} ${experimentalValidation}`,
         addToMyKb: true,
         personalTags,
@@ -416,7 +418,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-semibold">发表日期</label>
-                    <input type="date" value={publishedDate} onChange={(e) => setPublishedDate(e.target.value)} className={inputClass} />
+                    <input type="text" pattern="[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?" placeholder="YYYY / YYYY-MM / YYYY-MM-DD" value={publishedDate} onChange={(e) => setPublishedDate(e.target.value)} className={inputClass} />
                   </div>
                 </div>
                 <div>

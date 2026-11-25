@@ -58,6 +58,7 @@ import { GlobalCitationGraph } from './components/CitationGraph';
 import { ArchitectureObservatory } from './components/ArchitectureModal';
 import { AuthGateScreen, AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
 import { LibraryManager } from './components/LibraryManager';
+import { PaperTimeline } from './components/PaperTimeline';
 import { PaperUpdates } from './components/PaperUpdates';
 import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
 
@@ -93,6 +94,9 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [collectedByFilter, setCollectedByFilter] = useState<string>('all');
   const [interactedByFilter, setInteractedByFilter] = useState<string>('all');
+  const [yearFilter,setYearFilter] = useState(String(new Date().getFullYear()));
+  const [monthFilter,setMonthFilter] = useState('all');
+  const [dateBasis,setDateBasis] = useState<'published'|'synced'>('published');
   const [visibleLimit, setVisibleLimit] = useState<number>(8);
 
   // Quick Import Bar
@@ -164,6 +168,9 @@ export default function App() {
         const [filteredList, fullList, syncInfo, uList] = await Promise.all([
           fetchPapers({
             q: searchQuery,
+            year: currentScope === 'pool' ? yearFilter : undefined,
+            month: currentScope === 'pool' ? monthFilter : undefined,
+            dateBasis,
             domain: domainFilter,
             topic: topicFilter,
             journal: journalFilter,
@@ -193,7 +200,7 @@ export default function App() {
       }
     },
     [
-      searchQuery,
+      searchQuery, yearFilter, monthFilter, dateBasis,
       domainFilter,
       topicFilter,
       journalFilter,
@@ -410,6 +417,7 @@ export default function App() {
   };
 
   const resetFilters = () => {
+    setYearFilter('all');setMonthFilter('all');
     setSearchQuery('');
     setDomainFilter('all');
     setTopicFilter('all');
@@ -952,6 +960,7 @@ export default function App() {
                 </div>
               )}
 
+              {activeTab === 'pool' && <PaperTimeline papers={allPoolPapers} year={yearFilter} month={monthFilter} onChange={(y,m,basis) => {setYearFilter(y);setMonthFilter(m);if(basis)setDateBasis(basis);setVisibleLimit(8);}} />}
               {activeTab === 'pool' && <PaperUpdates papers={allPoolPapers} onOpen={setSelectedPaper} />}
               {interactedByFilter !== 'all' && <div className="rounded-xl border border-indigo-200 p-3 text-sm">正在查看 {usersList.find(u => u.id === interactedByFilter)?.displayName} 的互动足迹 <button className="ml-3 text-indigo-600" onClick={() => setInteractedByFilter('all')}>清除筛选</button></div>}
               {currentUser.role === 'admin' && <>

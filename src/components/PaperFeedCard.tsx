@@ -29,6 +29,7 @@ import {
   resolvePaperOriginalUrl,
 } from '../lib/constants';
 import { OriginalFiguresSection, OriginalTablesSection } from './visuals/PaperVisuals';
+import { PaperKeywords } from './PaperKeywords';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
 import { PaperSocialFootprintPanel, useCardReadingTracker, useModalReadingTracker, formatDurationZh } from './SocialEngagement';
 
@@ -226,6 +227,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
       </h2>
       {showZhTitle && <p className="mt-1 text-base font-medium text-slate-700 dark:text-slate-300">{paper.titleZh}</p>}
 
+      <PaperKeywords paper={paper} />
       {/* Authors + Clickable DOI */}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
         <span>作者：{paper.authors.slice(0, 6).join(', ')}</span>

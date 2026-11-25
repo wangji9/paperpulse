@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Database, ImagePlus, Loader2, Maximize2, Table2, X } from 'lucide-react';
 import type { DatasetDetail, OriginalPaperFigure, OriginalPaperTable } from '../../types/paper';
+import { sanitizeTableInBrowser } from '../../lib/tablePolicy';
 import { DATASET_SOURCE_META } from '../../lib/constants';
 
 export const LOGIC_STEPS = [
@@ -239,7 +240,7 @@ export const OriginalTablesSection: React.FC<{
   const [zoomItem, setZoomItem] = useState<{ src: string; cap: string } | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const shown = maxItems ? (tables || []).slice(0, maxItems) : tables || [];
+  const shown = useMemo(() => (maxItems ? (tables || []).slice(0,maxItems) : tables || []).map(t => ({...t,html:t.html?sanitizeTableInBrowser(t.html):undefined})),[tables,maxItems]);
 
   const handleUploadFile = async (file?: File | null) => {
     if (!file || !onUploadMedia) return;

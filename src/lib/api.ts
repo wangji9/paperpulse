@@ -50,6 +50,7 @@ export interface PaperFilters {
   datasetType?: string;
   bookmarked?: boolean;
   readingStatus?: string;
+  year?: string; month?: string; dateBasis?: 'published'|'synced';
   recentOnly?: boolean;
   date?: string;
   scope?: 'pool' | 'my_kb';
@@ -187,6 +188,9 @@ export async function removeMyKbPaper(paperId: string): Promise<AcademicPaper> {
 /* ---------- Papers ---------- */
 export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicPaper[]> {
   const params = new URLSearchParams();
+  if(filters.year && filters.year!=='all')params.set('year',filters.year);
+  if(filters.month && filters.month!=='all')params.set('month',filters.month);
+  if(filters.dateBasis)params.set('dateBasis',filters.dateBasis);
   if (filters.q) params.set('q', filters.q);
   if (filters.domain && filters.domain !== 'all') params.set('domain', filters.domain);
   if (filters.topic && filters.topic !== 'all') params.set('topic', filters.topic);

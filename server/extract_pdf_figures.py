@@ -14,9 +14,9 @@ def download_pdf(url: str, dest: str) -> bool:
             "Accept": "application/pdf,*/*",
         },
     )
-    with urllib.request.urlopen(req, timeout=14) as resp:
-        data = resp.read(28 * 1024 * 1024)
-        if not data.startswith(b"%PDF"):
+    with urllib.request.urlopen(req, timeout=25) as resp:
+        data = resp.read(32 * 1024 * 1024 + 1)
+        if not data.startswith(b"%PDF") or len(data) > 32 * 1024 * 1024:
             return False
         with open(dest, "wb") as f:
             f.write(data)
@@ -102,7 +102,7 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
                         pix.save(out_file)
                         cap_clean = clean_caption(txt)
                         low = cap_clean.lower()
-                        cat = "experiment" if re.search(r"result|comparison|ablation|accuracy|performance|error|curve|benchmark|evaluation", low) and len(figures) >= 1 else "method"
+                        cat = "experiment" if re.search(r"result|comparison|ablation|accuracy|performance|error|curve|benchmark|evaluation", low) else "method"
                         figures.append({
                             "id": f"fig-{len(figures)+1}",
                             "label": f"Figure {num}",
@@ -163,7 +163,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     pdf_path = src
-    tmp_pdf = os.path.join(out_dir, "_source.pdf")
+    tmp_pdf = os.path.join(out_dir, "source.pdf")
     try:
         if src.startswith("http://") or src.startswith("https://"):
             ok = download_pdf(src, tmp_pdf)
@@ -176,11 +176,9 @@ def main():
     except Exception as e:
         print(json.dumps({"figures": [], "tables": [], "error": str(e)}))
     finally:
-        if os.path.exists(tmp_pdf):
-            try:
-                os.remove(tmp_pdf)
-            except Exception:
-                pass
+        # Keep a validated source PDF for subsequent text/media retries.
+        pass
+
 
 
 if __name__ == "__main__":
