@@ -360,18 +360,25 @@ export function listAllUsers(): UserProfile[] {
 
 export function updateUserProfile(
   userId: string,
-  patch: { displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
+  patch: { username?: string; displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
 ): UserProfile | null {
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as Record<string, unknown> | undefined;
   if (!row) return null;
 
+  const nextUsername = patch.username === undefined ? String(row.username) : patch.username.trim();
+  if (nextUsername.length < 2 || nextUsername.length > 100) throw new Error('用户名需要2–100个字符');
+  if (userId === 'usr-admin' && (nextUsername !== 'admin' || (patch.role !== undefined && patch.role !== 'admin'))) throw new Error('系统管理员的用户名和管理员权限不可更改');
+  if (patch.role !== undefined && !['admin', 'member'].includes(patch.role)) throw new Error('无效的用户权限');
+  if (db.prepare('SELECT id FROM users WHERE lower(username) = lower(?) AND id != ?').get(nextUsername, userId)) throw new Error('该用户名已被注册');
+  if (patch.newPassword !== undefined && patch.newPassword.length < 4) throw new Error('新密码至少需要4个字符');
   const nextName = patch.displayName?.trim() || String(row.display_name);
   const nextTags = patch.userTags !== undefined ? JSON.stringify(patch.userTags.map((t) => t.trim()).filter(Boolean)) : String(row.user_tags);
   const nextRole = patch.role ?? String(row.role);
-  const nextHash = patch.newPassword && patch.newPassword.length >= 4 ? hashPassword(patch.newPassword) : String(row.password_hash);
+  const nextHash = patch.newPassword ? hashPassword(patch.newPassword) : String(row.password_hash);
 
-  db.prepare('UPDATE users SET display_name = ?, user_tags = ?, role = ?, password_hash = ? WHERE id = ?')
-    .run(nextName, nextTags, nextRole, nextHash, userId);
+  db.prepare('UPDATE users SET username = ?, display_name = ?, user_tags = ?, role = ?, password_hash = ? WHERE id = ?')
+    .run(nextUsername, nextName, nextTags, nextRole, nextHash, userId);
+  if (patch.newPassword) db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
 
   const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as Record<string, unknown>;
   return mapUserRow(updated);

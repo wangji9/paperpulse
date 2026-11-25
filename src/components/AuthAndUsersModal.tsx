@@ -105,9 +105,9 @@ export const AuthGateScreen: React.FC<{
       </div>
 
       {/* Main Split Portal */}
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 py-8 lg:grid-cols-12">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-stretch gap-10 px-6 py-8 lg:grid-cols-12">
         {/* Left Feature Highlights */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="min-w-0 space-y-6 lg:col-span-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
             <Sparkles className="h-4 w-4" />
             面向智能制造与人工智能团队的社交化文献空间
@@ -150,7 +150,7 @@ export const AuthGateScreen: React.FC<{
                   darkMode ? 'border-slate-800 bg-slate-900/70' : 'border-white bg-white/85 shadow-sm'
                 }`}
               >
-                <div className="flex items-center gap-2 font-semibold">{f.icon} {f.title}</div>
+                <div className="flex items-start gap-2 font-semibold"><span className="mt-0.5 shrink-0">{f.icon}</span><span>{f.title}</span></div>
                 <p className="mt-1.5 text-xs leading-5 text-slate-600 dark:text-slate-400">{f.desc}</p>
               </div>
             ))}
@@ -158,9 +158,9 @@ export const AuthGateScreen: React.FC<{
         </div>
 
         {/* Right Login / Register Card */}
-        <div className="lg:col-span-5">
+        <div className="flex min-w-0 lg:col-span-5">
           <div
-            className={`rounded-3xl border p-6 sm:p-8 shadow-xl ${
+            className={`flex w-full flex-col justify-center rounded-3xl border p-6 sm:p-8 shadow-xl ${
               darkMode ? 'border-slate-800 bg-slate-900/95' : 'border-slate-200/90 bg-white'
             }`}
           >
@@ -495,6 +495,14 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editUserTagsStr, setEditUserTagsStr] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editDisplayName, setEditDisplayName] = useState('');
+  const [editRole, setEditRole] = useState<'member' | 'admin'>('member');
+  const [editPassword, setEditPassword] = useState('');
+  const [savingUser, setSavingUser] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const filteredUsers = users.filter(u => (roleFilter === 'all' || u.role === roleFilter) && [u.username, u.displayName, ...u.userTags].join(' ').toLowerCase().includes(userSearch.trim().toLowerCase()));
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
@@ -563,16 +571,21 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
     }
   };
 
-  const handleSaveOtherUserTags = async (u: UserProfile) => {
-    const updated = await updateUserAccount(u.id, {
-      userTags: editUserTagsStr
-        .split(/[,，]+/)
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-    if (currentUser?.id === u.id) onCurrentUserUpdated(updated);
-    setEditingUserId(null);
-    await onRefreshUsers();
+  const handleSaveUser = async (u: UserProfile) => {
+    setSavingUser(true);
+    try {
+      const updated = await updateUserAccount(u.id, {
+        username: editUsername.trim(), displayName: editDisplayName.trim(), role: editRole,
+        userTags: editUserTagsStr.split(/[,，]+/).map(t => t.trim()).filter(Boolean),
+        newPassword: editPassword || undefined,
+      });
+      if (currentUser?.id === u.id) onCurrentUserUpdated(updated);
+      setEditingUserId(null);
+      setEditPassword('');
+      await onRefreshUsers();
+      setMsg('用户资料和权限已保存' + (editPassword ? '；该用户需要使用新密码重新登录' : ''));
+    } catch (err) { setMsg(err instanceof Error ? err.message : '保存用户失败'); }
+    finally { setSavingUser(false); }
   };
 
   return (
@@ -731,8 +744,15 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
             </form>
           )}
 
+          <div className="rounded-xl bg-indigo-50 p-3 text-xs leading-6 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200">管理员：管理全部用户、分配角色、重置密码、维护公共文献和评论。普通成员：阅读公共池、维护个人知识库和本人评论；可查看团队互动，无权管理其他账户。</div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input aria-label="搜索用户" placeholder="搜索用户名、姓名或标签" value={userSearch} onChange={e => setUserSearch(e.target.value)} className={inputCls} />
+            <select aria-label="筛选用户权限" value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className={inputCls}><option value="all">全部权限</option><option value="admin">管理员</option><option value="member">普通成员</option></select>
+          </div>
+          <p className="text-xs text-slate-500">显示 {filteredUsers.length} / {users.length} 位成员</p>
           <div className="space-y-3">
-            {users.map((u) => (
+            {filteredUsers.length === 0 && <p className="py-6 text-center text-sm text-slate-500">没有符合条件的用户</p>}
+            {filteredUsers.map((u) => (
               <div
                 key={u.id}
                 className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 ${
@@ -769,35 +789,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                       </span>
                     </div>
 
-                    {editingUserId === u.id ? (
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={editUserTagsStr}
-                          onChange={(e) => setEditUserTagsStr(e.target.value)}
-                          placeholder="输入标签，逗号分隔"
-                          className="rounded-lg border border-slate-300 px-2.5 py-1 text-sm dark:border-slate-600 dark:bg-slate-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => void handleSaveOtherUserTags(u)}
-                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-sm text-white"
-                        >
-                          <Check className="h-3.5 w-3.5" /> 保存
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {u.userTags.map((t) => (
-                          <span
-                            key={t}
-                            className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="mt-1 flex flex-wrap gap-1.5">{u.userTags.map(t => <span key={t} className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">{t}</span>)}</div>
                   </div>
                 </div>
 
@@ -822,10 +814,11 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                     <>
                       <button
                         type="button"
-                        title="编辑用户标签"
+                        title="编辑用户资料与权限" aria-label={`管理用户 ${u.username}`}
                         onClick={() => {
                           setEditingUserId(u.id);
                           setEditUserTagsStr(u.userTags.join(', '));
+                          setEditUsername(u.username); setEditDisplayName(u.displayName); setEditRole(u.role); setEditPassword('');
                         }}
                         className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800"
                       >
@@ -837,8 +830,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                           title="删除用户"
                           onClick={async () => {
                             if (!window.confirm(`确认删除用户 ${u.displayName} (@${u.username}) 吗？`)) return;
-                            await deleteUserAccount(u.id);
-                            await onRefreshUsers();
+                            try { await deleteUserAccount(u.id); await onRefreshUsers(); setMsg('用户已删除'); } catch (err) { setMsg(err instanceof Error ? err.message : '删除失败'); }
                           }}
                           className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
                         >
@@ -848,6 +840,17 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
                     </>
                   )}
                 </div>
+                {editingUserId === u.id && (
+                  <form aria-label={`编辑用户 ${u.username}`} onSubmit={e => { e.preventDefault(); void handleSaveUser(u); }} className="grid w-full grid-cols-1 gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2 dark:border-slate-700">
+                    <label className="text-sm">用户名<input aria-label="编辑用户名" value={editUsername} disabled={u.id === 'usr-admin'} onChange={e => setEditUsername(e.target.value)} required minLength={2} maxLength={100} className={inputCls} /></label>
+                    <label className="text-sm">显示名称<input aria-label="编辑显示名称" value={editDisplayName} onChange={e => setEditDisplayName(e.target.value)} required className={inputCls} /></label>
+                    <label className="text-sm">权限角色<select aria-label="编辑权限角色" value={editRole} disabled={u.id === 'usr-admin'} onChange={e => setEditRole(e.target.value as 'admin' | 'member')} className={inputCls}><option value="member">普通成员</option><option value="admin">管理员</option></select></label>
+                    <label className="text-sm">重置密码<input aria-label="重置用户密码" type="password" autoComplete="new-password" value={editPassword} onChange={e => setEditPassword(e.target.value)} minLength={4} placeholder="留空保留原密码" className={inputCls} /></label>
+                    <label className="text-sm sm:col-span-2">研究方向标签<input aria-label="编辑用户标签" value={editUserTagsStr} onChange={e => setEditUserTagsStr(e.target.value)} placeholder="逗号分隔" className={inputCls} /></label>
+                    {u.id === 'usr-admin' && <p className="text-xs text-slate-500 sm:col-span-2">系统管理员保留管理员权限，不能删除或修改用户名；可更新资料和密码。</p>}
+                    <div className="flex gap-2 sm:col-span-2"><button type="submit" disabled={savingUser} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white disabled:opacity-50">{savingUser ? '正在保存…' : '保存用户'}</button><button type="button" onClick={() => { setEditingUserId(null); setEditPassword(''); }} className="rounded-lg border px-4 py-2 text-sm">取消</button></div>
+                  </form>
+                )}
               </div>
             ))}
           </div>

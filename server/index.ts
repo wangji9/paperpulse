@@ -233,23 +233,19 @@ app.put('/api/users/:id', (req, res) => {
     res.status(403).json({ error: '无权修改该用户信息' });
     return;
   }
-  const { displayName, userTags, role, newPassword } = req.body as {
-    displayName?: string;
-    userTags?: string[];
-    role?: 'admin' | 'member';
-    newPassword?: string;
-  };
-  const updated = updateUserProfile(req.params.id, {
-    displayName,
-    userTags,
-    role: actor.role === 'admin' ? role : undefined,
-    newPassword,
-  });
-  if (!updated) {
-    res.status(404).json({ error: '用户不存在' });
-    return;
+  try {
+    const { username, displayName, userTags, role, newPassword } = req.body;
+    const updated = updateUserProfile(req.params.id, {
+      username: actor.role === 'admin' ? username : undefined,
+      displayName, userTags,
+      role: actor.role === 'admin' ? role : undefined,
+      newPassword,
+    });
+    if (!updated) { res.status(404).json({ error: '用户不存在' }); return; }
+    res.json({ user: updated });
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : '更新失败' });
   }
-  res.json({ user: updated });
 });
 
 app.delete('/api/users/:id', (req, res) => {

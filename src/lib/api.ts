@@ -134,7 +134,7 @@ export async function createManagedUser(payload: {
 
 export async function updateUserAccount(
   id: string,
-  patch: { displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
+  patch: { username?: string; displayName?: string; userTags?: string[]; role?: 'admin' | 'member'; newPassword?: string }
 ): Promise<UserProfile> {
   const res = await apiFetch(`/api/users/${encodeURIComponent(id)}`, {
     method: 'PUT',

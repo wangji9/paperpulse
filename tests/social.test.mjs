@@ -12,7 +12,7 @@ test('authenticated social reading is traceable, isolated and durable', async ()
   let logs = '';
   const start = async () => {
     server = spawn(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'server/index.ts'], {
-      env: { ...process.env, DATA_DIR: dir, HOST: '127.0.0.1', PORT: String(port), DISABLE_AUTO_SYNC: '1' },
+      env: { ...process.env, DATA_DIR: dir, HOST: '127.0.0.1', PORT: String(port), DISABLE_AUTO_SYNC: '1', BOOTSTRAP_ADMIN_PASSWORD: 'test-admin-password' },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     server.stdout.on('data', b => { logs += b; });
@@ -82,6 +82,29 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     assert.equal(durable.totalDwellSeconds, 3);
     assert.equal(durable.inMyKb, true);
     assert.equal(durable.comments.length, view.comments.length);
+    const rootLogin = await request('/api/auth/login', null, 'POST', { username: 'admin', password: 'test-admin-password' });
+    assert.equal(rootLogin.status, 200);
+    const root = rootLogin.data.token;
+    assert.equal((await request('/api/users', tb, 'POST', { username: 'forbidden', password: 'test' })).status, 403);
+    const managed = await request('/api/users', root, 'POST', { username: 'managed', password: 'test-managed', role: 'member' });
+    assert.equal(managed.status, 201);
+    const managedId = managed.data.user.id;
+    const oldLogin = await request('/api/auth/login', null, 'POST', { username: 'managed', password: 'test-managed' });
+    const updated = await request('/api/users/' + managedId, root, 'PUT', { username: 'managed-renamed', displayName: '托管用户', userTags: ['测试方向'], role: 'admin', newPassword: 'updated-password' });
+    assert.equal(updated.status, 200);
+    assert.equal(updated.data.user.role, 'admin');
+    assert.equal(updated.data.user.username, 'managed-renamed');
+    assert.equal((await request('/api/users', oldLogin.data.token)).status, 401);
+    const newLogin = await request('/api/auth/login', null, 'POST', { username: 'managed-renamed', password: 'updated-password' });
+    assert.equal(newLogin.status, 200);
+    assert.equal((await request('/api/users/' + managedId, root, 'PUT', { username: 'bob' })).status, 400);
+    assert.equal((await request('/api/users/' + managedId, root, 'PUT', { newPassword: '123' })).status, 400);
+    assert.equal((await request('/api/users/usr-admin', root, 'PUT', { role: 'member' })).status, 400);
+    assert.equal((await request('/api/users/usr-admin', root, 'DELETE')).status, 400);
+    assert.equal((await request('/api/users/' + managedId, root, 'PUT', { role: 'member' })).data.user.role, 'member');
+    assert.equal((await request('/api/users/' + managedId, tb, 'DELETE')).status, 403);
+    assert.equal((await request('/api/users/' + managedId, root, 'DELETE')).status, 200);
+    assert.equal((await request('/api/users', newLogin.data.token)).status, 401);
     await request('/api/auth/logout', ta, 'POST');
     assert.equal((await request(route, ta)).status, 401);
   } finally {
