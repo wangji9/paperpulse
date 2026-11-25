@@ -72,8 +72,8 @@ export default function App() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [filteredList, fullList, syncInfo] = await Promise.all([
         fetchPapers({
@@ -105,6 +105,11 @@ export default function App() {
       void loadData();
     }, 160);
     return () => clearTimeout(timer);
+  }, [loadData]);
+
+  useEffect(() => {
+    const t = setInterval(() => void loadData(true), 30000);
+    return () => clearInterval(t);
   }, [loadData]);
 
   // Group papers by date descending
@@ -222,7 +227,7 @@ export default function App() {
     <div className={darkMode ? 'dark min-h-screen bg-slate-950 text-slate-100' : 'min-h-screen bg-[#F5F7FA] text-slate-900'}>
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-[110] flex items-center gap-2 rounded-xl border px-4 py-3 text-xs font-semibold shadow-xl ${
+          className={`fixed bottom-5 right-5 z-[110] flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold shadow-xl ${
             toast.type === 'success'
               ? 'border-emerald-200 bg-emerald-600 text-white'
               : 'border-rose-200 bg-rose-600 text-white'
@@ -246,14 +251,12 @@ export default function App() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-serif-academic text-lg font-bold tracking-tight">PaperPulse · 个人文献库</h1>
-                <span className="font-mono-code rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <h1 className=" text-lg font-bold tracking-tight">PaperPulse · 个人文献库</h1>
+                <span className=" rounded-md bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {allLibraryPapers.length} 篇
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                制造与计算机前沿精读库 · 每日自动同步昨日/今日文献 · 引文拓扑可视化
-              </p>
+              
             </div>
           </div>
 
@@ -263,8 +266,8 @@ export default function App() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="检索标题、方法、数据集、DOI..."
-              className={`w-full rounded-xl border py-2 pl-9 pr-3 text-xs outline-none transition focus:border-indigo-500 ${
+              placeholder="搜索标题、作者、方法、数据集"
+              className={`w-full rounded-xl border py-2 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-500 ${
                 darkMode
                   ? 'border-slate-800 bg-slate-900 text-white placeholder:text-slate-500'
                   : 'border-slate-200 bg-slate-50 text-slate-900 focus:bg-white'
@@ -281,38 +284,38 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('library')}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                   activeTab === 'library'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
                 <BookMarked className="h-3.5 w-3.5" />
-                文献内容流
+                文献库
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('citations')}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                   activeTab === 'citations'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
                 <GitCommitHorizontal className="h-3.5 w-3.5" />
-                引用关系图谱
+                引用图谱
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('automation')}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                   activeTab === 'automation'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
                 <Server className="h-3.5 w-3.5" />
-                自动追踪与存储
+                自动追踪
               </button>
             </div>
 
@@ -320,10 +323,10 @@ export default function App() {
               type="button"
               onClick={handleSyncLive}
               disabled={syncing}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? '检索中...' : '拉取昨日/今日文献'}
+              {syncing ? '检索中...' : '拉取最新文献'}
             </button>
 
             <button
@@ -332,7 +335,7 @@ export default function App() {
                 setEditingPaper(null);
                 setFormOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700"
             >
               <Plus className="h-3.5 w-3.5" />
               录入文献
@@ -381,26 +384,26 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100">文献库索引与筛选</span>
-                  <button type="button" onClick={resetFilters} className="text-[11px] font-medium text-indigo-600 hover:underline">
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-100">筛选</span>
+                  <button type="button" onClick={resetFilters} className="text-sm font-medium text-indigo-600 hover:underline">
                     重置
                   </button>
                 </div>
 
                 {/* Quick Views */}
                 <div className="space-y-1">
-                  <div className="mb-1 text-[11px] font-semibold text-slate-400">阅读分类</div>
+                  <div className="mb-1 text-sm font-semibold text-slate-400">阅读分类</div>
                   {[
                     { label: '全部文献', active: !recentOnly && !onlyBookmarked && statusFilter === 'all', onClick: () => { setRecentOnly(false); setOnlyBookmarked(false); setStatusFilter('all'); } },
-                    { label: `昨日与今日新收 (${yesterdayStr.slice(5)} ~ ${todayStr.slice(5)})`, active: recentOnly, onClick: () => { setRecentOnly((v) => !v); setOnlyBookmarked(false); } },
-                    { label: '我的星标收藏', active: onlyBookmarked, onClick: () => { setOnlyBookmarked((v) => !v); setRecentOnly(false); } },
+                    { label: `昨日与今日新增`, active: recentOnly, onClick: () => { setRecentOnly((v) => !v); setOnlyBookmarked(false); } },
+                    { label: '我的收藏', active: onlyBookmarked, onClick: () => { setOnlyBookmarked((v) => !v); setRecentOnly(false); } },
                     { label: '待精读队列', active: statusFilter === 'unread', onClick: () => setStatusFilter(statusFilter === 'unread' ? 'all' : 'unread') },
                   ].map((v) => (
                     <button
                       key={v.label}
                       type="button"
                       onClick={v.onClick}
-                      className={`w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition ${
+                      className={`w-full rounded-lg px-2.5 py-1.5 text-left text-sm font-medium transition ${
                         v.active
                           ? 'bg-indigo-600 text-white'
                           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
@@ -413,18 +416,18 @@ export default function App() {
 
                 {/* Domain */}
                 <div className="space-y-1">
-                  <div className="mb-1 text-[11px] font-semibold text-slate-400">领域期刊归属</div>
+                  <div className="mb-1 text-sm font-semibold text-slate-400">领域</div>
                   {[
                     { id: 'all', label: '全部领域' },
-                    { id: 'manufacturing', label: '智能制造期刊' },
-                    { id: 'computer_science', label: '计算机顶刊顶会' },
-                    { id: 'interdisciplinary', label: '制造 × AI 交叉' },
+                    { id: 'manufacturing', label: '智能制造' },
+                    { id: 'computer_science', label: '计算机' },
+                    { id: 'interdisciplinary', label: '制造与AI交叉' },
                   ].map((d) => (
                     <button
                       key={d.id}
                       type="button"
                       onClick={() => setDomainFilter(d.id)}
-                      className={`w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition ${
+                      className={`w-full rounded-lg px-2.5 py-1.5 text-left text-sm font-medium transition ${
                         domainFilter === d.id
                           ? 'bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
                           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
@@ -437,7 +440,7 @@ export default function App() {
 
                 {/* 5 Topics */}
                 <div className="space-y-1">
-                  <div className="mb-1 flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                  <div className="mb-1 flex items-center gap-1 text-sm font-semibold text-slate-400">
                     <Layers className="h-3 w-3" /> 研究方向
                   </div>
                   {(Object.keys(TOPIC_META) as ResearchTopic[]).map((t) => {
@@ -447,7 +450,7 @@ export default function App() {
                         key={t}
                         type="button"
                         onClick={() => setTopicFilter(active ? 'all' : t)}
-                        className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition ${
+                        className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm font-medium transition ${
                           active
                             ? 'bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
                             : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
@@ -462,7 +465,7 @@ export default function App() {
 
                 {/* Dataset Type */}
                 <div className="space-y-1.5">
-                  <div className="text-[11px] font-semibold text-slate-400">数据集来源</div>
+                  <div className="text-sm font-semibold text-slate-400">数据集来源</div>
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       { id: 'all', label: '全部' },
@@ -474,7 +477,7 @@ export default function App() {
                         key={ds.id}
                         type="button"
                         onClick={() => setDatasetFilter(ds.id)}
-                        className={`rounded-md border px-2 py-1 text-[11px] font-medium ${
+                        className={`rounded-md border px-2 py-1 text-sm font-medium ${
                           datasetFilter === ds.id
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                             : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
@@ -488,7 +491,7 @@ export default function App() {
 
                 {/* Tracked Journals */}
                 <div>
-                  <div className="mb-1.5 text-[11px] font-semibold text-slate-400">期刊快捷过滤</div>
+                  <div className="mb-1.5 text-sm font-semibold text-slate-400">期刊</div>
                   <div className="flex flex-wrap gap-1.5">
                     {TRACKED_JOURNALS.map((j) => {
                       const active = journalFilter === j.short;
@@ -498,7 +501,7 @@ export default function App() {
                           type="button"
                           onClick={() => setJournalFilter(active ? 'all' : j.short)}
                           title={j.full}
-                          className={`rounded-md border px-2 py-0.5 font-mono-code text-[11px] font-semibold ${
+                          className={`rounded-md border px-2 py-0.5  text-sm font-semibold ${
                             active
                               ? 'border-indigo-600 bg-indigo-600 text-white'
                               : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
@@ -521,53 +524,34 @@ export default function App() {
                   darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-xs'
                 }`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
-                      <Clock className="h-3.5 w-3.5" />
-                      每日自动追踪：{autoSyncConfig?.enabled ? `已启用（每 ${autoSyncConfig.intervalHours} 小时检索 ${yesterdayStr} ~ ${todayStr}）` : '已暂停'}
-                    </span>
-                    {autoSyncConfig?.lastAutoSyncAt && (
-                      <span className="font-mono-code text-[11px] text-slate-400">
-                        上次同步 {autoSyncConfig.lastAutoSyncAt.slice(0, 16).replace('T', ' ')}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('automation')}
-                    className="text-[11px] font-medium text-indigo-600 hover:underline"
-                  >
-                    调整追踪规则 →
-                  </button>
-                </div>
+                
 
                 <form onSubmit={handleQuickImport} className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="text"
                     value={quickInput}
                     onChange={(e) => setQuickInput(e.target.value)}
-                    placeholder="输入 arXiv ID（如 2503.20020）、DOI 或英文标题关键词，立即解析元数据与引用图谱存入我的文献库..."
-                    className={`flex-1 rounded-xl border px-3.5 py-2 text-xs outline-none focus:border-indigo-500 ${
+                    placeholder="输入 arXiv 编号、DOI 或论文标题，抓取并加入文献库"
+                    className={`flex-1 rounded-xl border px-3.5 py-2 text-sm outline-none focus:border-indigo-500 ${
                       darkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 focus:bg-white'
                     }`}
                   />
                   <button
                     type="submit"
                     disabled={quickImporting || !quickInput.trim()}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-600"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-600"
                   >
                     {quickImporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    解析并入库
+                    抓取入库
                   </button>
                 </form>
               </div>
 
               {/* Paper Stream */}
               {loading ? (
-                <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin text-indigo-600" />
-                  正在加载个人文献库...
+                  加载中...
                 </div>
               ) : papers.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center dark:border-slate-700 dark:bg-slate-900">
@@ -575,7 +559,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="mt-3 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white"
+                    className="mt-3 rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white"
                   >
                     查看全部文献
                   </button>
@@ -584,14 +568,14 @@ export default function App() {
                 groupedByDate.map(([date, list]) => (
                   <div key={date} className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 font-mono-code text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1  text-sm font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                         <Calendar className="h-3.5 w-3.5 text-indigo-600" />
                         {date === todayStr
                           ? `${date} · 今日新收`
                           : date === yesterdayStr
                             ? `${date} · 昨日新收`
                             : date}
-                        <span className="ml-1 rounded-full bg-indigo-600 px-1.5 text-[10px] text-white">
+                        <span className="ml-1 rounded-full bg-indigo-600 px-1.5 text-sm text-white">
                           {list.length} 篇
                         </span>
                       </div>
@@ -654,7 +638,7 @@ export default function App() {
           onSaved={(savedPaper, isNew) => {
             void loadData();
             setSelectedPaper(savedPaper);
-            showToast('success', isNew ? '新文献已解析并入库' : '文献十维解析已更新');
+            showToast('success', isNew ? '新文献已抓取入库' : '文献十维解析已更新');
           }}
         />
       )}

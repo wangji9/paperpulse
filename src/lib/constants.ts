@@ -1,112 +1,44 @@
 import type { AcademicPaper, DatasetSourceType, DomainCategory, ReadingStatus, ResearchTopic } from '../types/paper';
 
-export const TOPIC_META: Record<
-  ResearchTopic,
-  { label: string; labelEn: string; color: string; bgClass: string; textClass: string; borderClass: string }
-> = {
-  LLM: {
-    label: '大模型',
-    labelEn: 'LLM',
-    color: '#4F46E5',
-    bgClass: 'bg-indigo-50',
-    textClass: 'text-indigo-700',
-    borderClass: 'border-indigo-200',
-  },
-  KnowledgeGraph: {
-    label: '知识图谱',
-    labelEn: 'Knowledge Graph',
-    color: '#0891B2',
-    bgClass: 'bg-cyan-50',
-    textClass: 'text-cyan-700',
-    borderClass: 'border-cyan-200',
-  },
-  ComputerVision: {
-    label: '计算机视觉',
-    labelEn: 'Computer Vision',
-    color: '#2563EB',
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    borderClass: 'border-blue-200',
-  },
-  Multimodal: {
-    label: '多模态',
-    labelEn: 'Multimodal',
-    color: '#7C3AED',
-    bgClass: 'bg-violet-50',
-    textClass: 'text-violet-700',
-    borderClass: 'border-violet-200',
-  },
-  EmbodiedAI: {
-    label: '具身智能',
-    labelEn: 'Embodied AI',
-    color: '#059669',
-    bgClass: 'bg-emerald-50',
-    textClass: 'text-emerald-700',
-    borderClass: 'border-emerald-200',
-  },
+const TOPIC_STYLE = 'bg-indigo-50 text-indigo-700 border-indigo-100';
+
+export const TOPIC_META: Record<ResearchTopic, { label: string; color: string; bgClass: string; textClass: string; borderClass: string }> = {
+  LLM: { label: '大模型', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  KnowledgeGraph: { label: '知识图谱', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  ComputerVision: { label: '计算机视觉', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  Multimodal: { label: '多模态', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  EmbodiedAI: { label: '具身智能', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
 };
+export { TOPIC_STYLE };
 
 export const DOMAIN_META: Record<DomainCategory, { label: string; badgeClass: string; color: string }> = {
-  manufacturing: {
-    label: '智能制造期刊',
-    badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
-    color: '#D97706',
-  },
-  computer_science: {
-    label: '计算机顶刊顶会',
-    badgeClass: 'bg-sky-50 text-sky-800 border-sky-200',
-    color: '#0284C7',
-  },
-  interdisciplinary: {
-    label: '制造 × AI 交叉',
-    badgeClass: 'bg-purple-50 text-purple-800 border-purple-200',
-    color: '#7C3AED',
-  },
+  manufacturing: { label: '智能制造', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#0F766E' },
+  computer_science: { label: '计算机', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#4F46E5' },
+  interdisciplinary: { label: '制造与AI交叉', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', color: '#64748B' },
 };
 
-export const DATASET_SOURCE_META: Record<
-  DatasetSourceType,
-  { label: string; shortLabel: string; badgeClass: string; desc: string }
-> = {
-  public: {
-    label: '公开基准数据集',
-    shortLabel: '公开数据集',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    desc: '基于国际公开标准基准集评测',
-  },
-  self_built: {
-    label: '研究团队自建数据集',
-    shortLabel: '自建数据集',
-    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
-    desc: '来自真实产线/实验平台采集标注',
-  },
-  hybrid: {
-    label: '公开 + 自建混合验证',
-    shortLabel: '混合数据集',
-    badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    desc: '兼顾公开基准横向对比与自建真实域验证',
-  },
-  unspecified: {
-    label: '待精读核实数据集来源',
-    shortLabel: '待核实数据集',
-    badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
-    desc: '自动抓取文献尚未显式标注公开或自建，待精读后编辑确认',
-  },
+export const DATASET_SOURCE_META: Record<DatasetSourceType, { label: string; shortLabel: string; badgeClass: string }> = {
+  public: { label: '公开数据集', shortLabel: '公开数据集', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  self_built: { label: '自建数据集', shortLabel: '自建数据集', badgeClass: 'bg-amber-50 text-amber-700 border-amber-100' },
+  hybrid: { label: '公开与自建混合', shortLabel: '混合数据集', badgeClass: 'bg-teal-50 text-teal-700 border-teal-100' },
+  unspecified: { label: '未说明', shortLabel: '未说明', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200' },
 };
 
 export const READING_STATUS_META: Record<ReadingStatus, { label: string; cls: string }> = {
   unread: { label: '待精读', cls: 'bg-slate-100 text-slate-600 border-slate-200' },
-  reading: { label: '精读中', cls: 'bg-sky-50 text-sky-700 border-sky-200' },
-  mastered: { label: '已归档掌握', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  reading: { label: '精读中', cls: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
+  mastered: { label: '已掌握', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
 };
 
 export const TRACKED_JOURNALS = [
   { short: 'JMS', full: 'Journal of Manufacturing Systems' },
+  { short: 'IJPR', full: 'International Journal of Production Research' },
   { short: 'AEI', full: 'Advanced Engineering Informatics' },
   { short: 'RCIM', full: 'Robotics and Computer-Integrated Manufacturing' },
-  { short: 'IJMTM', full: 'Intl. J. Machine Tools & Manufacture' },
-  { short: 'InfFusion', full: 'Information Fusion' },
-  { short: 'arXiv', full: 'arXiv CS / Robotics Preprints' },
+  { short: 'CVPR', full: 'CVPR' },
+  { short: 'ICML', full: 'ICML' },
+  { short: 'CoRL', full: 'Conference on Robot Learning' },
+  { short: 'arXiv', full: 'arXiv' },
 ];
 
 export function generateBibtex(paper: AcademicPaper): string {

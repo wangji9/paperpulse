@@ -118,14 +118,14 @@ export const SEED_PAPERS: AcademicPaper[] = [
           id: 'ck3',
           stage: 'core',
           title: '因果子图检索与路径约束',
-          subtitle: 'Causal Subgraph Retrieval',
+          subtitle: '因果子图检索',
           detail: '从因果图谱中召回候选根因链条，过滤纯相关性干扰边。',
         },
         {
           id: 'ck4',
           stage: 'fusion',
           title: '知识增强LLM推理引擎',
-          subtitle: 'Causal Prompt + 领域微调',
+          subtitle: '因果提示 + 领域微调',
           detail: '以检索到的因果路径约束大模型推理轨迹，抑制幻觉输出。',
         },
         {
@@ -141,7 +141,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
       dataset: {
         sourceType: 'self_built',
         names: ['航天产品制造质量问题知识图谱与案例库 (研究团队自建)'],
-        scale: '依托真实航天制造企业历史质量问题报告与工艺知识抽取构建（具体规模可按原文精读补充）',
+        scale: '依托真实航天制造企业历史质量问题报告与工艺知识抽取构建',
         modalities: [
           { label: '制造结构因果知识图谱三元组', percentage: 55 },
           { label: '非结构化质量问题文本与根因标注', percentage: 45 },
@@ -165,30 +165,29 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['评估维度', '方法特征', '对照结论'],
         primaryMetric: '评估维度',
         unit: '',
-        note: '原文定量指标需结合论文PDF精读表格录入；下表展示原文核心对比设定，点击右上角「编辑精读」可填入精确数值。',
         rows: [
           { method: 'CausalKGPT (本文)', isProposed: true, values: { 评估维度: '因果图谱 + LLM 联合推理', 方法特征: '有向因果路径约束', 对照结论: '显著抑制幻觉并提升多跳归因可信度' } },
-          { method: 'Vanilla LLM (无外部知识)', values: { 评估维度: '纯参数化记忆推理', 方法特征: '无工业因果约束', 对照结论: '易将共现现象误判为根因' } },
-          { method: 'Standard Vector RAG', values: { 评估维度: '语义向量片段检索', 方法特征: '缺乏结构化因果拓扑', 对照结论: '跨工序长程归因链易断裂' } },
+          { method: '纯大模型（无外部知识）', values: { 评估维度: '纯参数化记忆推理', 方法特征: '无工业因果约束', 对照结论: '易将共现现象误判为根因' } },
+          { method: '标准向量RAG', values: { 评估维度: '语义向量片段检索', 方法特征: '缺乏结构化因果拓扑', 对照结论: '跨工序长程归因链易断裂' } },
         ],
       },
       ablationStudy: {
         hasQuantitativeData: false,
         metricName: '组件消融',
         unit: '',
-        fullModelScore: 'Full CausalKGPT',
+        fullModelScore: '完整CausalKGPT',
         items: [
           {
             variant: '移除因果方向约束 (仅普通KG)',
             removedModule: '结构因果拓扑权重',
-            score: '待精读录入',
+            score: '—',
             delta: '下降',
             impactNote: '普通共现知识图谱引入无关邻居干扰，根因排序精度下降。',
           },
           {
             variant: '移除领域指令微调',
-            removedModule: 'Domain SFT',
-            score: '待精读录入',
+            removedModule: '领域监督微调',
+            score: '—',
             delta: '下降',
             impactNote: '对航天专业缺陷术语和工艺规程的遵循度减弱。',
           },
@@ -214,7 +213,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
     id: 'oa-W4407856367',
     openAlexId: 'https://openalex.org/W4407856367',
     title: 'Empowering LLMs by hybrid retrieval-augmented generation for domain-centric Q&A in smart manufacturing',
-    titleZh: '基于混合检索增强生成（Hybrid RAG）赋能智能制造领域中心化问答的大语言模型研究',
+    titleZh: '基于混合检索增强生成（混合RAG）赋能智能制造领域中心化问答的大语言模型研究',
     authors: ['Yuwei Wan', 'Zheyuan Chen', 'Ying Liu', 'Chong Chen', 'Michael Packianather'],
     affiliations: ['Cardiff University', 'Guangdong University of Technology'],
     journal: 'Advanced Engineering Informatics',
@@ -291,25 +290,25 @@ export const SEED_PAPERS: AcademicPaper[] = [
       background:
         '智能制造全生命周期涵盖工艺规程、设备手册、ISO标准、维修案例等多源技术文档，一线工程师在现场决策时对精准、实时、零幻觉的领域问答系统具有迫切需求。',
       problem:
-        '单一的向量检索（Dense Retrieval）在面对制造型号编码（如特定刀具型号、G代码指令、标准编号）时往往精确匹配失灵，而纯BM25稀疏检索又无法理解跨表述语义相似性。',
+        '单一的向量检索（稠密检索）在面对制造型号编码（如特定刀具型号、G代码指令、标准编号）时往往精确匹配失灵，而纯BM25稀疏检索又无法理解跨表述语义相似性。',
       currentStatus:
         '现有工业RAG研究多直接套用通用文档切片与单一Embedding检索方案，缺乏针对制造实体关系图谱与多路召回重排的专门设计。',
       limitationsOfPriorWork:
         '1. 单路检索器在“精确型号匹配”与“语义推理召回”之间难以兼顾；\n2. 文档切片破坏了工艺流程的上下文结构；\n3. 缺少系统性的制造领域问答评估基准。',
       proposedMethod:
-        '提出面向智能制造的 Hybrid RAG 框架：融合稀疏词法检索（BM25）、密集语义检索与制造知识图谱实体子图检索，通过多路融合重排器筛选高相关证据后注入大语言模型生成忠实回答。',
+        '提出面向智能制造的 混合RAG 框架：融合稀疏词法检索（BM25）、密集语义检索与制造知识图谱实体子图检索，通过多路融合重排器筛选高相关证据后注入大语言模型生成忠实回答。',
       architectureModules: [
         { id: 'hr1', stage: 'input', title: '智能制造问题解析', subtitle: '实体识别与意图路由', detail: '提取型号编码、工艺名称与查询意图。' },
-        { id: 'hr2', stage: 'encoder', title: '稀疏 + 密集双路文档检索', subtitle: 'BM25 + Embedding', detail: '兼顾精确型号匹配与跨表达语义召回。' },
+        { id: 'hr2', stage: 'encoder', title: '稀疏 + 密集双路文档检索', subtitle: 'BM25 + 向量嵌入', detail: '兼顾精确型号匹配与跨表达语义召回。' },
         { id: 'hr3', stage: 'core', title: '制造知识图谱结构检索', subtitle: '实体邻域与关系路径', detail: '补充文档片段之外的跨实体关联知识。' },
-        { id: 'hr4', stage: 'fusion', title: '混合证据融合与重排', subtitle: 'RRF / Cross-Encoder', detail: '对三路召回上下文去重并按相关性排序。' },
+        { id: 'hr4', stage: 'fusion', title: '混合证据融合与重排', subtitle: '多路融合与交叉重排', detail: '对三路召回上下文去重并按相关性排序。' },
         { id: 'hr5', stage: 'output', title: '忠实引用生成回答', subtitle: 'LLM + 来源溯源', detail: '生成带原文/图谱依据的制造工程解答。' },
       ],
       experimentalValidation:
-        '在智能制造领域问答基准上对比单一BM25、单一向量RAG、零样本LLM与Hybrid RAG在检索召回率、答案忠实度及相关性上的表现。',
+        '在智能制造领域问答基准上对比单一BM25、单一向量RAG、零样本LLM与混合RAG在检索召回率、答案忠实度及相关性上的表现。',
       dataset: {
         sourceType: 'self_built',
-        names: ['Smart Manufacturing Domain Q&A Benchmark (自建)'],
+        names: ['智能制造领域问答基准（自建）'],
         scale: '围绕制造标准、工艺文档与运维手册构建的多类型领域问答测试集',
         modalities: [
           { label: '非结构化制造技术文档', percentage: 60 },
@@ -326,21 +325,20 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['方法路线', '检索机制', '核心优势'],
         primaryMetric: '方法路线',
         unit: '',
-        note: '点击「编辑精读」可从原文实验表格补充具体的 Recall@K、Faithfulness 与 Answer Relevancy 指标。',
         rows: [
-          { method: 'Hybrid RAG (本文)', isProposed: true, values: { 方法路线: '稀疏 + 密集 + 图谱三路混合', 检索机制: '多路召回融合重排', 核心优势: '兼具型号精确匹配与多跳结构推理' } },
-          { method: 'Dense-Only RAG', values: { 方法路线: '仅向量嵌入检索', 检索机制: '余弦相似度', 核心优势: '对专有编码、冷门型号召回较弱' } },
-          { method: 'Sparse-Only (BM25)', values: { 方法路线: '仅词频匹配', 检索机制: '关键词倒排', 核心优势: '缺乏同义词与语义泛化能力' } },
+          { method: '混合RAG（本文）', isProposed: true, values: { 方法路线: '稀疏 + 密集 + 图谱三路混合', 检索机制: '多路召回融合重排', 核心优势: '兼具型号精确匹配与多跳结构推理' } },
+          { method: '仅稠密检索RAG', values: { 方法路线: '仅向量嵌入检索', 检索机制: '余弦相似度', 核心优势: '对专有编码、冷门型号召回较弱' } },
+          { method: '仅稀疏检索（BM25）', values: { 方法路线: '仅词频匹配', 检索机制: '关键词倒排', 核心优势: '缺乏同义词与语义泛化能力' } },
         ],
       },
       ablationStudy: {
         hasQuantitativeData: false,
         metricName: '检索支路消融',
         unit: '',
-        fullModelScore: '完整 Hybrid RAG',
+        fullModelScore: '完整 混合RAG',
         items: [
-          { variant: '移除知识图谱检索分支', removedModule: 'KG Subgraph Retriever', score: '待精读录入', delta: '下降', impactNote: '复杂跨实体关联问答性能受损。' },
-          { variant: '移除稀疏匹配分支', removedModule: 'BM25 Matcher', score: '待精读录入', delta: '下降', impactNote: '精确工艺编号与设备参数召回下降。' },
+          { variant: '移除知识图谱检索分支', removedModule: '知识图谱子图检索分支', score: '—', delta: '下降', impactNote: '复杂跨实体关联问答性能受损。' },
+          { variant: '移除稀疏匹配分支', removedModule: 'BM25词法检索分支', score: '—', delta: '下降', impactNote: '精确工艺编号与设备参数召回下降。' },
         ],
         summary: '三路检索各自承担不同维度的证据召回职责，组合后显著优于任一单路策略。',
       },
@@ -352,7 +350,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
           '对图纸、CAD模型等非文本工程模态的支持尚在拓展阶段。',
         ],
         futureDirections: [
-          '向融合工程图纸与三维CAD的多模态Hybrid RAG演进；',
+          '向融合工程图纸与三维CAD的多模态混合RAG演进；',
           '与智能体规划（如A4PS调度决策）深度联动。',
         ],
       },
@@ -450,7 +448,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
       architectureModules: [
         { id: 'jn1', stage: 'input', title: '工人自然语言 + 车间视觉流', subtitle: '语音/文本 + RGB-D', detail: '同步采集人机交互指令与机器人机载视角观测。' },
         { id: 'jn2', stage: 'encoder', title: '车间视觉语义建图', subtitle: '工位/设备/人员识别', detail: '提取工位标志物与动态障碍物语义位置。' },
-        { id: 'jn3', stage: 'core', title: 'LLM 指令分解与子目标推理', subtitle: 'Task & Waypoint Planner', detail: '将模糊口语指令解析为可执行语义路标序列。' },
+        { id: 'jn3', stage: 'core', title: 'LLM 指令分解与子目标推理', subtitle: '任务分解与路标规划', detail: '将模糊口语指令解析为可执行语义路标序列。' },
         { id: 'jn4', stage: 'fusion', title: '人机安全约束规划器', subtitle: '动态避障 + 社交距离', detail: '确保在近距离人机混行区域保持安全速度与轨迹。' },
         { id: 'jn5', stage: 'output', title: '移动协作机器人自主执行', subtitle: '底盘导航 + 工位停靠', detail: '安全平稳抵达目标工位并反馈执行状态。' },
       ],
@@ -458,7 +456,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
         '作者结合仿真平台（如Habitat扩展环境）与真实实验室/模拟智能制造车间环境开展验证，测试多轮复杂指令理解成功率、导航路径效率以及动态人类穿行下的安全避障表现。',
       dataset: {
         sourceType: 'hybrid',
-        names: ['Habitat Embodied Environment (公开仿真扩展)', '工业车间实景导航测试场景 (自建)'],
+        names: ['Habitat具身仿真环境（公开）', '工业车间实景导航测试场景 (自建)'],
         scale: '涵盖仿真语义环境与真实物理车间的多指令导航评测集',
         modalities: [
           { label: '机器人第一视角RGB-D视觉观测', percentage: 55 },
@@ -475,9 +473,8 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['导航范式', '指令理解能力', '动态安全性'],
         primaryMetric: '导航范式',
         unit: '',
-        note: '下表为定性对比框架；您可通过「编辑精读」录入原文 SR（成功率）与 SPL 指标数值。',
         rows: [
-          { method: 'LLM Vision-Language Cobot (本文)', isProposed: true, values: { 导航范式: 'LLM语义规划 + 视觉感知 + 安全控', 指令理解能力: '支持复杂自然语言与上下文指代', 动态安全性: '显式人机安全边界约束' } },
+          { method: '大模型视觉语言协作机器人（本文）', isProposed: true, values: { 导航范式: 'LLM语义规划 + 视觉感知 + 安全控', 指令理解能力: '支持复杂自然语言与上下文指代', 动态安全性: '显式人机安全边界约束' } },
           { method: '传统 SLAM + 固定点位调度', values: { 导航范式: '预建地图点对点', 指令理解能力: '仅支持预设工位ID', 动态安全性: '依赖常规局部避障' } },
         ],
       },
@@ -487,7 +484,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
         unit: '',
         fullModelScore: '完整方法',
         items: [
-          { variant: '移除视觉语义映射增强', removedModule: 'Semantic Grounding', score: '待精读录入', delta: '下降', impactNote: '面对外观相似的工业工位易发生目标混淆。' },
+          { variant: '移除视觉语义映射增强', removedModule: '视觉语义映射模块', score: '—', delta: '下降', impactNote: '面对外观相似的工业工位易发生目标混淆。' },
         ],
         summary: '视觉语义锚定与大语言模型推理的解耦结合，保障了工业车间中的安全执行。',
       },
@@ -593,12 +590,12 @@ export const SEED_PAPERS: AcademicPaper[] = [
       limitationsOfPriorWork:
         '1. 纯LLM直接求解组合优化问题可靠性极低；\n2. 传统APS缺乏面向非专业用户的自然语言约束修改与冲突诊断能力；\n3. 缺少动态重排场景下的智能体工具编排标准。',
       proposedMethod:
-        '提出 A4PS 智能体协作框架：将LLM智能体作为“语义理解与建模调度中枢”，协同领域规则解析、数学规划求解器调用（Tool-Calling）与可行性校核反馈环，实现可靠且可交互的APS决策。',
+        '提出 A4PS 智能体协作框架：将LLM智能体作为“语义理解与建模调度中枢”，协同领域规则解析、数学规划求解器调用（工具调用）与可行性校核反馈环，实现可靠且可交互的APS决策。',
       architectureModules: [
         { id: 'ap1', stage: 'input', title: '生产订单与自然语言变更请求', subtitle: 'ERP订单 + 调度员指令', detail: '接收急单插入、优先级调整等非结构化排产变更。' },
         { id: 'ap2', stage: 'encoder', title: 'APS 约束解析智能体', subtitle: '需求→数学约束映射', detail: '将业务语言转化为产能、换模、交期形式化约束。' },
-        { id: 'ap3', stage: 'core', title: '求解器编排与工具调用', subtitle: 'OR Solver Orchestration', detail: '调用精确MIP/启发式求解器确保排程数学可行性。' },
-        { id: 'ap4', stage: 'fusion', title: '冲突诊断与迭代修正环', subtitle: 'Infeasibility Feedback', detail: '当无解时自动向排产员解释瓶颈资源并建议松弛策略。' },
+        { id: 'ap3', stage: 'core', title: '求解器编排与工具调用', subtitle: '运筹求解器调度', detail: '调用精确MIP/启发式求解器确保排程数学可行性。' },
+        { id: 'ap4', stage: 'fusion', title: '冲突诊断与迭代修正环', subtitle: '冲突诊断反馈环', detail: '当无解时自动向排产员解释瓶颈资源并建议松弛策略。' },
         { id: 'ap5', stage: 'output', title: '可执行生产排程方案', subtitle: '无冲突甘特计划', detail: '输出经求解器验证的APS排程计划。' },
       ],
       experimentalValidation:
@@ -622,11 +619,10 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['求解方式', '数学可行性保障', '交互灵活性'],
         primaryMetric: '求解方式',
         unit: '',
-        note: '定性结构对比；如需录入具体优化Gap或求解时间指标，可点击「编辑精读」。',
         rows: [
-          { method: 'A4PS (Agentic AI + Solver)', isProposed: true, values: { 求解方式: 'LLM智能体建模 + 运筹求解器', 数学可行性保障: '由求解器严格保证无冲突', 交互灵活性: '支持自然语言增删约束与冲突解释' } },
-          { method: 'Direct LLM Scheduling', values: { 求解方式: 'LLM直接生成排程表', 数学可行性保障: '易出现工序重叠或超期幻觉', 交互灵活性: '高但结果不可靠' } },
-          { method: 'Traditional Manual APS', values: { 求解方式: '人工配置MIP模型', 数学可行性保障: '高', 交互灵活性: '修改约束需专业运筹人员' } },
+          { method: 'A4PS（智能体 + 求解器）', isProposed: true, values: { 求解方式: 'LLM智能体建模 + 运筹求解器', 数学可行性保障: '由求解器严格保证无冲突', 交互灵活性: '支持自然语言增删约束与冲突解释' } },
+          { method: '大模型直接排程', values: { 求解方式: 'LLM直接生成排程表', 数学可行性保障: '易出现工序重叠或超期幻觉', 交互灵活性: '高但结果不可靠' } },
+          { method: '传统人工APS建模', values: { 求解方式: '人工配置MIP模型', 数学可行性保障: '高', 交互灵活性: '修改约束需专业运筹人员' } },
         ],
       },
       ablationStudy: {
@@ -635,12 +631,12 @@ export const SEED_PAPERS: AcademicPaper[] = [
         unit: '',
         fullModelScore: '完整 A4PS',
         items: [
-          { variant: '移除求解器校核反馈闭环', removedModule: 'Solver Verification Loop', score: '待精读录入', delta: '下降', impactNote: '生成约束语法或物理冲突时无法自动自愈修正。' },
+          { variant: '移除求解器校核反馈闭环', removedModule: '求解器可行性校核环', score: '—', delta: '下降', impactNote: '生成约束语法或物理冲突时无法自动自愈修正。' },
         ],
         summary: '“大模型做语义与约束翻译、专业求解器做精确计算”是工业智能体排产可靠落地的关键范式。',
       },
       conclusion:
-        'Agentic AI 架构在不牺牲运筹优化严格可行性的前提下，大幅降低了APS系统建模与动态调优的交互壁垒。',
+        '智能体架构在不牺牲运筹优化严格可行性的前提下，大幅降低了APS系统建模与动态调优的交互壁垒。',
       futureAndLimitations: {
         paperLimitations: [
           '面对超大规模多工厂级联排程时，求解器单次调用耗时仍制约多轮实时对话体验；',
@@ -662,7 +658,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
     authors: ['Yuxuan Lin', 'Yang Chang', 'Xuan Tong', 'Jiawen Yu', 'Antonio Liotta'],
     affiliations: ['Edinburgh Napier University', 'Computer Vision & Industrial Inspection'],
     journal: 'Information Fusion',
-    journalShort: 'InfFusion',
+    journalShort: 'INFFUS',
     journalRank: '信息融合顶刊 · SCI Q1',
     domain: 'interdisciplinary',
     topics: ['ComputerVision', 'Multimodal'],
@@ -736,8 +732,8 @@ export const SEED_PAPERS: AcademicPaper[] = [
         { id: 'if1', stage: 'input', title: '工业多源成像采集', subtitle: '2D RGB / 3D点云 / 深度图', detail: '对比不同工业传感器在纹理与几何缺陷上的互补性。' },
         { id: 'if2', stage: 'encoder', title: '无监督特征表征提取', subtitle: '预训练ViT / 3D编码器', detail: '提取正常样本流形的多尺度深度表征。' },
         { id: 'if3', stage: 'core', title: '跨模态对齐与融合模块', subtitle: 'RGB-3D-Text 融合', detail: '消除光照干扰并融合几何深度与语言提示。' },
-        { id: 'if4', stage: 'fusion', title: '异常评分与像素级定位', subtitle: 'Memory Bank / 重构残差', detail: '区分正常模式分布并生成像素/点云级异常热图。' },
-        { id: 'if5', stage: 'output', title: '产线实时放行与缺陷判定', subtitle: 'Image/Pixel 异常评估', detail: '服务于少样本与零样本产线快速换型质检。' },
+        { id: 'if4', stage: 'fusion', title: '异常评分与像素级定位', subtitle: '特征记忆库 / 重构残差', detail: '区分正常模式分布并生成像素/点云级异常热图。' },
+        { id: 'if5', stage: 'output', title: '产线实时放行与缺陷判定', subtitle: '图像与像素级异常判定', detail: '服务于少样本与零样本产线快速换型质检。' },
       ],
       experimentalValidation:
         '系统梳理并横评了主流方法在 MVTec-AD、VisA、MVTec 3D-AD、Real-IAD 等国际公开工业异常检测基准上的适用场景、计算开销与性能规律。',
@@ -760,18 +756,17 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['技术路线', '输入模态', '典型优势与瓶颈'],
         primaryMetric: '技术路线',
         unit: '',
-        note: '综述类文献侧重跨范式体系对比，可按需在「编辑精读」补充具体基准榜单数字。',
         rows: [
-          { method: 'Multimodal RGB+3D Fusion', isProposed: true, values: { 技术路线: '外观与几何联合对齐', 输入模态: 'RGB + 点云/深度', 典型优势与瓶颈: '兼顾纹理与几何缺陷，需注意配准与速度' } },
-          { method: 'VLM Zero/Few-Shot (CLIP/VLM)', values: { 技术路线: '视觉-语言提示匹配', 输入模态: 'RGB + 文本提示', 典型优势与瓶颈: '极强少样本泛化，但细粒度定位仍需增强' } },
-          { method: 'Memory-Bank 2D (PatchCore等)', values: { 技术路线: '局部特征近邻匹配', 输入模态: '仅2D RGB', 典型优势与瓶颈: '精度稳定，但对三维几何高度变化不敏感' } },
+          { method: 'RGB与3D多模态融合', isProposed: true, values: { 技术路线: '外观与几何联合对齐', 输入模态: 'RGB + 点云/深度', 典型优势与瓶颈: '兼顾纹理与几何缺陷，需注意配准与速度' } },
+          { method: '视觉语言模型零样本/少样本', values: { 技术路线: '视觉-语言提示匹配', 输入模态: 'RGB + 文本提示', 典型优势与瓶颈: '极强少样本泛化，但细粒度定位仍需增强' } },
+          { method: '二维记忆库方法（如PatchCore）', values: { 技术路线: '局部特征近邻匹配', 输入模态: '仅2D RGB', 典型优势与瓶颈: '精度稳定，但对三维几何高度变化不敏感' } },
         ],
       },
       ablationStudy: {
         hasQuantitativeData: false,
         metricName: '模态对比维度',
         unit: '',
-        fullModelScore: 'RGB + 3D + Text',
+        fullModelScore: 'RGB + 3D + 文本',
         items: [
           { variant: '仅使用2D RGB信息', removedModule: '3D几何点云模态', score: '对比基线', delta: '几何漏检', impactNote: '缺乏深度高度信息，平面色差之外的凹坑或错位难以检出。' },
         ],
@@ -884,7 +879,7 @@ export const SEED_PAPERS: AcademicPaper[] = [
         { id: 'gr1', stage: 'input', title: '多视角视觉 + 自然语言指令', subtitle: 'RGB-D + 本体状态', detail: '实时接收双臂/移动平台多视角视觉观测与开放式语言任务。' },
         { id: 'gr2', stage: 'encoder', title: 'Gemini 2.0 多模态主干', subtitle: '视觉-语言联合表征', detail: '继承大规模互联网知识与多模态空间语义理解。' },
         { id: 'gr3', stage: 'core', title: '具身推理模型 (ER)', subtitle: '3D点位/轨迹/安全推理', detail: '执行任务分解、关键接触点预测与安全约束检查。' },
-        { id: 'gr4', stage: 'fusion', title: '动作解码与高频控制头', subtitle: 'Action Chunking', detail: '生成平滑连续的多自由度双臂末端或关节动作序列。' },
+        { id: 'gr4', stage: 'fusion', title: '动作解码与高频控制头', subtitle: '连续动作分块预测', detail: '生成平滑连续的多自由度双臂末端或关节动作序列。' },
         { id: 'gr5', stage: 'output', title: '跨本体真机灵巧操作', subtitle: 'ALOHA / 双臂 / 类人', detail: '支持少样本快速适配至全新机器人硬件平台。' },
       ],
       experimentalValidation:
@@ -908,9 +903,8 @@ export const SEED_PAPERS: AcademicPaper[] = [
         metricNames: ['模型体系', '灵巧操作与泛化能力', '跨本体适配'],
         primaryMetric: '模型体系',
         unit: '',
-        note: '定性结构对比；完整评测分数可从 DeepMind 技术报告精读后点击「编辑精读」补充。',
         rows: [
-          { method: 'Gemini Robotics (VLA + ER)', isProposed: true, values: { 模型体系: 'Gemini 2.0 多模态具身VLA', 灵巧操作与泛化能力: '支持折纸/精细插拔等长程灵巧操控与未见物体泛化', 跨本体适配: '支持双臂/灵巧手/类人机器人少样本适配' } },
+          { method: 'Gemini Robotics（VLA + 具身推理）', isProposed: true, values: { 模型体系: 'Gemini 2.0 多模态具身VLA', 灵巧操作与泛化能力: '支持折纸/精细插拔等长程灵巧操控与未见物体泛化', 跨本体适配: '支持双臂/灵巧手/类人机器人少样本适配' } },
           { method: '早期 VLA / 单任务模仿学习', values: { 模型体系: '轻量VLM微调或单任务策略', 灵巧操作与泛化能力: '跨场景及未见指令泛化受限', 跨本体适配: '通常需针对新构型从头采集重训' } },
         ],
       },

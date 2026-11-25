@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../src/types/paper.js';
 import { SEED_PAPERS } from './seedData.js';
+import { getBulkSeedPapers } from './seedBulk.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -72,18 +73,15 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
 };
 
 export function initDatabase(): void {
-  // If old synthetic placeholder records exist, migrate cleanly to authentic real papers
-  const legacyCheck = db.prepare("SELECT id FROM papers WHERE id = 'paper-jms-2026-llm-kg'").get();
-  if (legacyCheck) {
-    db.exec('DELETE FROM comments; DELETE FROM papers; DELETE FROM sync_logs;');
-  }
-
-  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM papers').get() as { cnt: number };
-  if (countRow.cnt === 0) {
-    for (const paper of SEED_PAPERS) {
+  const LIB_VERSION = 'v3.2-zh-complete';
+  const ver = db.prepare("SELECT value FROM settings WHERE key = 'library_version'").get() as { value: string } | undefined;
+  if (!ver || ver.value !== LIB_VERSION) {
+    const seeds = [...SEED_PAPERS, ...getBulkSeedPapers()];
+    for (const paper of seeds) {
       upsertPaper(paper);
     }
-    recordSyncLog('curated_real_seed', SEED_PAPERS.length, 'Initialized library with verified real OpenAlex/DOI papers & citation graphs');
+    recordSyncLog('文献库升级', seeds.length, `同步更新 ${seeds.length} 篇核心文献全中文深度解析`);
+    db.prepare("INSERT INTO settings (key, value) VALUES ('library_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(LIB_VERSION);
   }
 
   const cfgRow = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get();
@@ -329,3 +327,4 @@ export function getDatabaseStats() {
     recentSyncs,
   };
 }
+

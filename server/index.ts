@@ -63,9 +63,10 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
 
     for (const raw of combined) {
       if (!paperExistsByTitleOrDoi(raw.title, raw.doi)) {
-        const paper = rawToAcademicPaper(raw);
+        const paper = await rawToAcademicPaper(raw);
         upsertPaper(paper);
         addedPapers.push(paper);
+        if (addedPapers.length >= 5) break;
       }
     }
 
@@ -80,7 +81,7 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
     recordSyncLog(
       triggerLabel,
       addedPapers.length,
-      `自动拉取昨日/今日文献（arXiv ${arxivPapers.length} 篇 + OpenAlex ${oaPapers.length} 篇），新增去重入库 ${addedPapers.length} 篇`
+      `自动检索昨日/今日文献（arXiv ${arxivPapers.length} 篇，OpenAlex ${oaPapers.length} 篇），新增入库 ${addedPapers.length} 篇`
     );
 
     return {
@@ -148,7 +149,6 @@ app.post('/api/papers', (req, res) => {
       affiliations: body.affiliations ?? ['Research Lab'],
       journal: body.journal || 'Personal Academic Library',
       journalShort: body.journalShort || 'Custom',
-      journalRank: body.journalRank || '自主录入',
       publishedDate: body.publishedDate || new Date().toISOString().slice(0, 10),
       doi: body.doi || `local-${Date.now()}`,
       url: body.url || '#',
@@ -161,12 +161,12 @@ app.post('/api/papers', (req, res) => {
       id: body.id || `paper-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       openAlexId: body.openAlexId,
       title: body.title.trim(),
-      titleZh: body.titleZh?.trim() || generated.titleZh,
+      titleZh: body.titleZh?.trim() || body.title.trim(),
       authors: body.authors?.length ? body.authors : ['Research Team'],
       affiliations: body.affiliations?.length ? body.affiliations : ['Research Lab'],
       journal: body.journal?.trim() || 'Personal Academic Library',
       journalShort: body.journalShort?.trim() || 'Custom',
-      journalRank: body.journalRank?.trim() || '自主录入',
+      journalRank: body.journalRank?.trim() || '',
       domain: body.domain || generated.domain,
       topics: body.topics?.length ? body.topics : generated.topics,
       publishedDate: body.publishedDate || new Date().toISOString().slice(0, 10),
@@ -213,7 +213,7 @@ app.post('/api/papers/import', async (req, res) => {
       return;
     }
 
-    const newPaper = rawToAcademicPaper(raw);
+    const newPaper = await rawToAcademicPaper(raw);
     const saved = upsertPaper(newPaper);
     recordSyncLog(raw.sourceOrigin, 1, `导入文献：${raw.title.slice(0, 60)}`);
     res.status(201).json({ paper: saved, alreadyExists: false });
