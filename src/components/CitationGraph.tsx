@@ -426,10 +426,12 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [importingId, setImportingId] = useState<string | null>(null);
 
-  // Viewport transform (pan & zoom)
+  // Viewport transform (pan & zoom) & responsive container dimensions
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [simTick, setSimTick] = useState(0);
+  const [canvasSize, setCanvasSize] = useState({ w: 1160, h: 760 });
 
+  const canvasWrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const simRef = useRef<ReturnType<typeof forceSimulation<KGNode>> | null>(null);
   const nodesRef = useRef<KGNode[]>([]);
@@ -445,8 +447,34 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
     origPanY: number;
   }>({ mode: 'none', startX: 0, startY: 0, origPanX: 0, origPanY: 0 });
 
-  const W = 1080;
-  const H = 640;
+  const W = canvasSize.w;
+  const H = canvasSize.h;
+
+  // Observe live container width & height so the graph fills 100% of any viewport size
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    if (!el) return;
+    const updateSize = () => {
+      const rect = el.getBoundingClientRect();
+      const nextW = Math.max(320, Math.round(rect.width));
+      const nextH = Math.max(360, Math.round(rect.height));
+      setCanvasSize((prev) => (Math.abs(prev.w - nextW) > 4 || Math.abs(prev.h - nextH) > 4 ? { w: nextW, h: nextH } : prev));
+    };
+    updateSize();
+    const ro = new ResizeObserver(() => updateSize());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Re-center force simulation smoothly when viewport height/width changes
+  useEffect(() => {
+    const sim = simRef.current;
+    if (!sim) return;
+    sim.force('center', forceCenter(W / 2, H / 2));
+    sim.force('x', forceX(W / 2).strength(0.05));
+    sim.force('y', forceY(H / 2).strength(0.06));
+    sim.alpha(0.22).restart();
+  }, [W, H]);
 
   const buildGraph = useMemo(() => {
     const nodes: KGNode[] = [];
@@ -760,12 +788,12 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border p-4 sm:p-6 ${
+      className={`flex flex-1 flex-col rounded-2xl border p-3.5 sm:p-4 lg:h-full lg:min-h-0 ${
         darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
       }`}
     >
       {/* Top Toolbar */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-2.5 flex shrink-0 flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
             <Network className="h-5 w-5 text-indigo-600" />
@@ -849,7 +877,7 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
       </div>
 
       {/* Legend Bar */}
-      <div className="mb-3 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+      <div className="mb-2.5 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-slate-600 dark:text-slate-300">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-full bg-[#0F766E]" /> 智能制造文献
         </span>
@@ -876,10 +904,11 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
         <span className="ml-auto text-slate-400">支持鼠标滚轮缩放、画布平移与拖拽任意节点</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        {/* Interactive Force Canvas */}
+      <div className="grid grid-cols-1 gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-12">
+        {/* Interactive Force Canvas (Fills 100% of remaining viewport height & adapts on resize) */}
         <div
-          className={`overflow-hidden rounded-2xl border lg:col-span-9 ${
+          ref={canvasWrapRef}
+          className={`h-[64dvh] min-h-[420px] overflow-hidden rounded-2xl border lg:col-span-9 lg:h-full lg:min-h-0 ${
             darkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-[#F8FAFC]'
           }`}
         >
@@ -890,7 +919,7 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onWheel={handleWheel}
-            className="h-[460px] w-full cursor-grab select-none active:cursor-grabbing sm:h-[600px]"
+            className="block h-full w-full cursor-grab select-none active:cursor-grabbing"
             style={{ touchAction: 'none' }}
           >
             <defs>
@@ -1034,7 +1063,7 @@ export const GlobalCitationGraph: React.FC<GlobalProps> = ({
 
         {/* Right Entity Inspector Panel */}
         <div
-          className={`flex flex-col justify-between rounded-2xl border p-5 lg:col-span-3 ${
+          className={`flex flex-col justify-between rounded-2xl border p-4 sm:p-5 lg:col-span-3 lg:h-full lg:min-h-0 lg:overflow-y-auto ${
             darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-200 bg-slate-50/70'
           }`}
         >

@@ -552,7 +552,13 @@ export default function App() {
   );
 
   return (
-    <div className={darkMode ? 'dark min-h-screen bg-slate-950 text-slate-100' : 'min-h-screen bg-[#F5F7FA] text-slate-900'}>
+    <div
+      className={`${activeTab === 'citations' ? 'lg:h-dvh lg:overflow-hidden ' : ''}${
+        darkMode
+          ? 'dark flex min-h-dvh flex-col bg-slate-950 text-slate-100'
+          : 'flex min-h-dvh flex-col bg-[#F5F7FA] text-slate-900'
+      }`}
+    >
       {toast && (
         <div
           className={`fixed bottom-5 right-5 z-[120] flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold shadow-xl ${
@@ -790,8 +796,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Full-Width Responsive Main Container (Zero Side Blank Gaps) */}
-      <main className="w-full px-3 py-4 sm:px-5 sm:py-5 lg:px-6">
+      {/* Full-Width & Viewport-Adaptive Main Container */}
+      <main
+        className={
+          activeTab === 'citations'
+            ? 'flex w-full flex-1 flex-col px-3 py-2.5 sm:px-4 sm:py-3 lg:min-h-0 lg:overflow-hidden lg:px-5'
+            : 'w-full flex-1 px-3 py-4 sm:px-5 sm:py-5 lg:px-6'
+        }
+      >
         {activeTab === 'citations' ? (
           <GlobalCitationGraph
             papers={allPoolPapers}
