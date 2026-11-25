@@ -50,9 +50,21 @@ export const CORE_16_JOURNAL_SOURCES: Array<{ id: string; short: string; full: s
   { id: 'S900972176', short: 'EAAI', full: 'Engineering Applications of Artificial Intelligence' },
 ];
 
-const SOURCE_ID_MAP = new Map(CORE_16_JOURNAL_SOURCES.map((s) => [s.id, s]));
+export const DESIGN_JOURNAL_SOURCES = [
+  { id: 'S88457320', short: 'JMD', full: 'Journal of Mechanical Design' },
+  { id: 'S152445846', short: 'DS', full: 'Design Studies' },
+  { id: 'S123543520', short: 'RED', full: 'Research in Engineering Design' },
+  { id: 'S4210171473', short: 'CAD', full: 'Computer-Aided Design' },
+  { id: 'S4210193102', short: 'AI EDAM', full: 'Artificial Intelligence for Engineering Design, Analysis and Manufacturing' },
+  { id: 'S4210173131', short: 'Design Science', full: 'Design Science' },
+  { id: 'S65690446', short: 'IJPR', full: 'International Journal of Production Research' },
+];
+export const ALL_JOURNAL_SOURCES = [...CORE_16_JOURNAL_SOURCES, ...DESIGN_JOURNAL_SOURCES];
+
+const SOURCE_ID_MAP = new Map(ALL_JOURNAL_SOURCES.map((s) => [s.id, s]));
 
 const JOURNAL_NAME_SHORT_MAP: Array<[RegExp, string]> = [
+  [/journal of mechanical design/i, 'JMD'], [/^design studies$/i, 'DS'], [/research in engineering design/i, 'RED'], [/computer-aided design/i, 'CAD'], [/artificial intelligence for engineering design/i, 'AI EDAM'], [/^design science$/i, 'Design Science'],
   [/international journal of machine tools and manufacture/i, 'IJMTM'],
   [/journal of manufacturing systems/i, 'JMS'],
   [/robotics and computer-integrated manufacturing/i, 'RCIM'],
@@ -126,19 +138,24 @@ export async function translateToZh(text: string, maxTotalChars = 1100): Promise
 }
 
 /* ---------- Classification & Technical English Term Extraction ---------- */
-function detectTopics(text: string): ResearchTopic[] {
+export function detectTopics(text: string): ResearchTopic[] {
   const lower = text.toLowerCase();
   const topics: ResearchTopic[] = [];
   if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|retrieval-augmented|language model)/.test(lower)) {
     topics.push('LLM');
   }
   if (
-    /(multi-agent|multiagent|agentic|human-agent|human-ai|human-in-the-loop|human-robot|human-cyber-physical|hcps|agent team|agent collaboration|autonomous agent|digital intelligent assistant)/.test(
+    /(multi-agent|multiagent|agentic|agent team|agent collaboration|autonomous agent|多智能体)/.test(
       lower
     )
   ) {
     topics.push('AgentCollaboration');
   }
+  if (/(human[- ](?:ai|agent|robot)|human-in-the-loop|human-cyber-physical|hcps|human.*collaborat|人智协作|人机协作)/.test(lower)) topics.push('HumanAICollaboration');
+  if (/(product design|engineering design|industrial design|conceptual design|design cognition|design creativity|design ideation|产品设计|设计认知|创新设计)/.test(lower)) topics.push('ProductDesign');
+  if (/(generative design|design optim|topology optim|design synthesis|design automation|生成式设计|设计优化)/.test(lower)) topics.push('DesignOptimization');
+  if (/(interaction design|user experience|usability|user-centered|user centred|交互设计|用户体验)/.test(lower)) topics.push('InteractionDesign');
+  if (/(sustainable design|circular design|eco-design|ecodesign|design for sustainability|可持续设计|循环设计)/.test(lower)) topics.push('SustainableDesign');
   if (/(knowledge graph|ontology|triple|heterogeneous graph|graph neural|kgqa|causal graph|knowledge-based)/.test(lower)) {
     topics.push('KnowledgeGraph');
   }
@@ -158,7 +175,7 @@ function detectTopics(text: string): ResearchTopic[] {
 function detectDomain(text: string, journal: string): DomainCategory {
   const combined = `${text} ${journal}`.toLowerCase();
   const isMfg =
-    /(manufactur|machining|cnc|industrial|factory|assembly|wafer|weld|additive|scheduling|fault|prognostic|maintenance|shop-floor|drilling|fmea|cirp|rcim|jms|machine tools)/.test(
+    /(manufactur|machining|cnc|industrial|factory|assembly|wafer|weld|additive|scheduling|fault|prognostic|maintenance|shop-floor|drilling|fmea|cirp|rcim|jms|machine tools|engineering design|product design|mechanical design)/.test(
       combined
     );
   const isCS =
@@ -383,7 +400,8 @@ export function buildStructuredAnatomy(
 
   const topicZh: Record<ResearchTopic, string> = {
     LLM: '大模型',
-    AgentCollaboration: '多智能体与人智协作',
+    AgentCollaboration: '多智能体协作',
+    HumanAICollaboration: '人智协作', ProductDesign: '产品设计', DesignOptimization: '生成式设计与设计优化', InteractionDesign: '交互设计与用户体验', SustainableDesign: '可持续与循环设计',
     KnowledgeGraph: '知识图谱',
     ComputerVision: '计算机视觉',
     Multimodal: '多模态',
@@ -542,6 +560,18 @@ export async function rawToAcademicPaper(raw: RawExternalPaper): Promise<Academi
     translateToZh(raw.abstract, 1100),
   ]);
   const s = buildStructuredAnatomy(raw, abstractZh);
+  if (DESIGN_JOURNAL_SOURCES.some(j => j.short === raw.journalShort && j.short !== 'IJPR')) {
+    s.topics = Array.from(new Set([...s.topics.filter(t => t !== 'LLM' || /large language|\bllm\b/i.test(raw.title + raw.abstract)), 'ProductDesign' as ResearchTopic]));
+    s.tags = Array.from(new Set([...s.tags.filter(t => t !== '大模型' || s.topics.includes('LLM')), '产品设计']));
+    // Only retain source-derived sentences; do not synthesize design experiments or figures.
+    s.anatomy.architectureModules = []; s.anatomy.figureCaption = ''; s.anatomy.feedbackLoopLabel = ''; s.anatomy.tableAnalysis = '';
+    s.anatomy.comparisonMetrics = { hasQuantitativeData: false, metricNames: [], primaryMetric: '', unit: '', rows: [] };
+    s.anatomy.ablationStudy = { hasQuantitativeData: false, metricName: '', unit: '', fullModelScore: '', items: [], summary: '' };
+    if (!raw.abstract.trim()) {
+      s.digestSummary = '已收录期刊元数据；来源未提供摘要，研究背景、问题、方法和结论待补充原文后解析。';
+      s.anatomy.background = ''; s.anatomy.problem = ''; s.anatomy.proposedMethod = ''; s.anatomy.conclusion = '';
+    }
+  }
   return {
     id: raw.openAlexId ? `oa-${raw.openAlexId.split('/').pop()}` : `paper-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     openAlexId: raw.openAlexId,
@@ -657,7 +687,7 @@ export async function reparseExistingPaper(paper: AcademicPaper): Promise<Academ
 export function isRelevant(text: string): boolean {
   const t = text.toLowerCase();
   const domain =
-    /(manufactur|industr|robot|embodied|assembly|defect|anomaly|digital twin|fault diagnos|machining|fmea|shop-floor|multi-agent|multiagent|human-agent|human-ai|hcps)/.test(
+    /(manufactur|industr|robot|embodied|assembly|defect|anomaly|digital twin|fault diagnos|machining|fmea|shop-floor|product design|engineering design|generative design|interaction design|sustainable design|multi-agent|multiagent|human-agent|human-ai|hcps)/.test(
       t
     );
   const tech =
@@ -717,10 +747,10 @@ export async function resolveOpenAlexCitations(workId: string, refUrls: string[]
   try {
     const ids = refUrls.slice(0, 3).map((u) => u.split('/').pop()).filter(Boolean);
     if (ids.length) {
-      const r = await fetch(`https://api.openalex.org/works?filter=ids.openalex:${ids.join('|')}`, { headers: UA });
+      const r = await fetch(`https://api.openalex.org/works?filter=ids.openalex:${ids.join('|')}`, { headers: UA, signal: AbortSignal.timeout(8000) });
       if (r.ok) ((await r.json()) as { results?: Array<Record<string, unknown>> }).results?.forEach((x) => nodes.push(toNode(x, 'references')));
     }
-    const c = await fetch(`https://api.openalex.org/works?filter=cites:${shortId}&sort=cited_by_count:desc&per-page=3`, { headers: UA });
+    const c = await fetch(`https://api.openalex.org/works?filter=cites:${shortId}&sort=cited_by_count:desc&per-page=3`, { headers: UA, signal: AbortSignal.timeout(8000) });
     if (c.ok) ((await c.json()) as { results?: Array<Record<string, unknown>> }).results?.forEach((x) => nodes.push(toNode(x, 'cited_by')));
   } catch {
     /* ignore */
@@ -728,7 +758,7 @@ export async function resolveOpenAlexCitations(workId: string, refUrls: string[]
   return nodes.filter((n) => n.title);
 }
 
-async function openAlexItemToRaw(item: Record<string, unknown>): Promise<RawExternalPaper> {
+async function openAlexItemToRaw(item: Record<string, unknown>, includeCitations = true): Promise<RawExternalPaper> {
   const src = (item.primary_location as Record<string, unknown> | undefined)?.source as Record<string, unknown> | undefined;
   const rawJournalName = String(src?.display_name || 'arXiv');
   const srcId = String(src?.id || '');
@@ -763,7 +793,7 @@ async function openAlexItemToRaw(item: Record<string, unknown>): Promise<RawExte
     doi: doi || openAlexId.split('/').pop() || '',
     url: String(item.doi || item.id || 'https://openalex.org'),
     citedByCount: Number(item.cited_by_count || 0),
-    citations: await resolveOpenAlexCitations(openAlexId, (item.referenced_works as string[] | undefined) ?? []),
+    citations: includeCitations ? await resolveOpenAlexCitations(openAlexId, (item.referenced_works as string[] | undefined) ?? []) : [],
     sourceOrigin: 'openalex_live',
   };
 }
@@ -815,8 +845,37 @@ export async function fetchLatestFromCore16Journals(daysBack = 7): Promise<RawEx
   return out;
 }
 
-export async function fetchYesterdayTodayFromOpenAlex(daysBack = 1, customQuery?: string): Promise<RawExternalPaper[]> {
-  const [core16Papers, generalPapers] = await Promise.all([
+export async function fetchLatestDesignPapers(daysBack = 90, journals?: string[]): Promise<RawExternalPaper[]> {
+  const selected = DESIGN_JOURNAL_SOURCES.filter(s => !journals || journals.includes(s.short));
+  const groups: RawExternalPaper[][] = [];
+  for (let offset = 0; offset < selected.length; offset += 3) {
+    const batch = await Promise.all(selected.slice(offset, offset + 3).map(async source => {
+      const w = dateWindow(daysBack);
+      const designQuery = source.short === 'IJPR' ? ',title_and_abstract.search:("product design" OR "design optimization" OR "human-ai" OR "multi-agent" OR "design process")' : '';
+      const filter = `primary_location.source.id:${source.id},from_publication_date:${w.from},to_publication_date:${w.to}${designQuery}`;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const res = await fetch(`https://api.openalex.org/works?filter=${encodeURIComponent(filter)}&sort=publication_date:desc&per-page=2`, { headers: UA, signal: AbortSignal.timeout(20000) });
+          if (res.ok) {
+            const data = await res.json() as { results?: Array<Record<string, unknown>> };
+            return await Promise.all((data.results || []).filter(p => p.title && p.doi).map(item => openAlexItemToRaw(item, false)));
+          }
+          if (res.status !== 429 && res.status < 500) return [];
+        } catch { /* bounded retry for slow or unavailable journal metadata */ }
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 600));
+      }
+      return [];
+    }));
+    groups.push(...batch);
+  }
+
+  // Interleave sources, so high-volume journals do not crowd out design journals.
+  return [0, 1].flatMap(i => groups.flatMap(g => g[i] ? [g[i]] : []));
+}
+
+export async function fetchYesterdayTodayFromOpenAlex(daysBack = 1, customQuery?: string, journals?: string[]): Promise<RawExternalPaper[]> {
+  const [designPapers, core16Papers, generalPapers] = await Promise.all([
+    customQuery ? Promise.resolve([]) : fetchLatestDesignPapers(Math.max(90, daysBack), journals),
     customQuery ? Promise.resolve([]) : fetchLatestFromCore16Journals(Math.max(daysBack, 7)),
     (async () => {
       const topicFilter = customQuery?.trim()
@@ -853,13 +912,13 @@ export async function fetchYesterdayTodayFromOpenAlex(daysBack = 1, customQuery?
     })(),
   ]);
 
-  return [...core16Papers, ...generalPapers];
+  return [...designPapers, ...core16Papers, ...generalPapers];
 }
 
 export async function fetchYesterdayTodayFromArxiv(daysBack = 1): Promise<RawExternalPaper[]> {
   const w = dateWindow(daysBack);
   const query =
-    '(cat:cs.CV OR cat:cs.RO OR cat:cs.CL OR cat:cs.AI OR cat:cs.MA OR cat:cs.HC) AND (manufacturing OR industrial OR "knowledge graph" OR "vision-language" OR embodied OR defect OR "multi-agent" OR "human-agent")';
+    '(cat:cs.CV OR cat:cs.RO OR cat:cs.CL OR cat:cs.AI OR cat:cs.MA OR cat:cs.HC) AND (manufacturing OR industrial OR "knowledge graph" OR "vision-language" OR embodied OR defect OR "multi-agent" OR "human-agent" OR "product design" OR "generative design" OR "human-ai")';
   try {
     const res = await fetch(
       `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&sortBy=submittedDate&sortOrder=descending&max_results=25`,
@@ -904,7 +963,7 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
   const clean = identifier.trim();
   const oaId = clean.match(/(?:openalex\.org\/)?(W\d{6,})/i);
   if (oaId) {
-    const r = await fetch(`https://api.openalex.org/works/${oaId[1].toUpperCase()}`, { headers: UA });
+    const r = await fetch(`https://api.openalex.org/works/${oaId[1].toUpperCase()}`, { headers: UA, signal: AbortSignal.timeout(8000) });
     if (r.ok) return openAlexItemToRaw((await r.json()) as Record<string, unknown>);
   }
   const arxiv = clean.match(/(\d{4}\.\d{4,5})(?:v\d+)?/);
@@ -929,7 +988,7 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
         let citedByCount = 0;
         let citations: CitationRefNode[] = [];
         try {
-          const oa = await fetch(`https://api.openalex.org/works/https://doi.org/10.48550/arXiv.${id}`, { headers: UA });
+          const oa = await fetch(`https://api.openalex.org/works/https://doi.org/10.48550/arXiv.${id}`, { headers: UA, signal: AbortSignal.timeout(8000) });
           if (oa.ok) {
             const j = (await oa.json()) as Record<string, unknown>;
             const oaRaw = await openAlexItemToRaw(j);

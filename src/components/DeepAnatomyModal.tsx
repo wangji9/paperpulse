@@ -243,6 +243,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 {paper.inMyKb ? <BookmarkCheck className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
                 {paper.inMyKb ? '已在知识库' : '加入知识库'}
               </button>
+              {currentUser?.role === 'admin' && <>
               <button
                 type="button"
                 disabled={reparsing}
@@ -259,15 +260,18 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 {reparsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-indigo-600" />}
                 提取原文图表
               </button>
+              </>}
               <button type="button" onClick={handleCopyBib} className={btn}>
                 {copiedBib ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                 引用
               </button>
+              {currentUser?.role === 'admin' && <>
               <button type="button" onClick={() => onEdit(paper)} className={btn}>
                 <Edit3 className="h-4 w-4" />
                 编辑
               </button>
-              {(!currentUser || currentUser.role === 'admin' || paper.inMyKb) && (
+              </>}
+              {currentUser?.role === 'admin' && (
                 <button type="button" onClick={() => onDelete(paper.id)} className={`${btn} text-rose-600`} title="删除">
                   <Trash2 className="h-4 w-4" />
                 </button>

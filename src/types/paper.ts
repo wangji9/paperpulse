@@ -6,7 +6,12 @@ export type ResearchTopic =
   | 'ComputerVision'
   | 'Multimodal'
   | 'EmbodiedAI'
-  | 'AgentCollaboration';
+  | 'AgentCollaboration'
+  | 'HumanAICollaboration'
+  | 'ProductDesign'
+  | 'DesignOptimization'
+  | 'InteractionDesign'
+  | 'SustainableDesign';
 
 export type DatasetSourceType = 'public' | 'self_built' | 'hybrid' | 'unspecified';
 
@@ -219,6 +224,7 @@ export interface AcademicPaper {
 }
 
 export interface AutoSyncConfig {
+  maxStoredPapers?: number;
   enabled: boolean;
   intervalHours: number;
   targetWindow: 'yesterday_today' | 'last_3_days';
@@ -226,4 +232,22 @@ export interface AutoSyncConfig {
   trackedJournals: string[];
   lastAutoSyncAt: string | null;
   nextAutoSyncAt: string | null;
+}
+
+export interface ReadingAnalytics {
+  scopeLabel: string;
+  totalVisits: number;
+  totalSeconds: number;
+  readPaperCount: number;
+  collectionCount: number;
+  likeCount: number;
+  commentCount: number;
+  papers: Array<{ id: string; title: string; journal: string; visits: number; seconds: number; topics: ResearchTopic[] }>;
+  keywords: Array<{ keyword: string; visits: number; paperCount: number }>;
+  topics: Array<{ topic: ResearchTopic; visits: number; seconds: number }>;
+  timeline: Array<{ date: string; visits: number; seconds: number }>;
+}
+export interface LibraryInventory {
+  totalPapers: number; databaseBytes: number; assetBytes: number; maxStoredPapers: number;
+  papers: Array<{ id: string; title: string; journal: string; publishedDate: string; syncedAt: string; bytes: number; assetBytes: number; visits: number; collectors: number }>;
 }

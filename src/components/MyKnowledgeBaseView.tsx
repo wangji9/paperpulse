@@ -92,13 +92,13 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
   );
 
   const exportMarkdownMatrix = async () => {
-    const header = `| 序号 | 论文标题 | 期刊/年份 | 核心模型/方法 | 数据集 | 关键结论 | 我的思考 |\n|---|---|---|---|---|---|---|`;
+    const header = `| 序号 | 论文标题 | 期刊/年份 | 研究背景 | 核心问题 | 核心模型/方法 | 数据集 | 关键结论 | 我的思考 |\n|---|---|---|---|---|---|---|---|---|`;
     const rows = filteredPapers.map((p, i) => {
       const myThought =
-        p.comments.find((c) => c.entryType === 'thought' && (!c.userId || c.userId === currentUser.id))?.content || '—';
+        p.comments.find((c) => c.entryType === 'thought' && c.userId === currentUser.id)?.content || '—';
       const ds = p.anatomy.dataset.names.join(', ') || DATASET_SOURCE_META[p.anatomy.dataset.sourceType].shortLabel;
       const model = p.anatomy.modelName || p.anatomy.proposedMethod.slice(0, 36);
-      return `| ${i + 1} | ${p.title.replace(/\|/g, ' ')} | ${p.journalShort} (${p.publishedDate.slice(0, 4)}) | ${model.replace(/\|/g, ' ')} | ${ds.replace(/\|/g, ' ')} | ${p.anatomy.conclusion.slice(0, 50).replace(/\|/g, ' ')} | ${myThought.replace(/\n|\|/g, ' ')} |`;
+      return `| ${i + 1} | ${p.title.replace(/\|/g, ' ')} | ${p.journalShort} (${p.publishedDate.slice(0, 4)}) | ${p.anatomy.background.replace(/\n|\|/g, ' ')} | ${p.anatomy.problem.replace(/\n|\|/g, ' ')} | ${model.replace(/\|/g, ' ')} | ${ds.replace(/\|/g, ' ')} | ${p.anatomy.conclusion.slice(0, 50).replace(/\|/g, ' ')} | ${myThought.replace(/\n|\|/g, ' ')} |`;
     });
     const md = `# ${currentUser.displayName} 的个人文献知识库综述矩阵\n\n${header}\n${rows.join('\n')}`;
     try {
@@ -208,7 +208,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
               className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
             >
               <Plus className="h-4 w-4" />
-              新增个人文献
+              {currentUser.role === 'admin' ? '新增文献' : '从公共池收藏'}
             </button>
           </div>
         </div>
@@ -259,7 +259,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
             您的个人知识库当前还没有收录文献
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            可从管理员维护的「公共文献池」挑选感兴趣的论文，或直接录入您的课题文献
+            可从管理员维护的「公共文献池」挑选感兴趣的论文，建立独立的阅读与研究记录
           </p>
           <div className="mt-4 flex justify-center gap-3">
             <button
@@ -274,7 +274,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
               onClick={onOpenAddModal}
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
             >
-              直接导入新文献
+              {currentUser.role === 'admin' ? '直接导入新文献' : '浏览公共文献'}
             </button>
           </div>
         </div>
@@ -286,20 +286,22 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
           }`}
         >
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
+            <table className="w-full min-w-[1900px] table-fixed border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b-2 border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-200">
                   <th className="w-72 px-4 py-3 font-semibold">文献标题与来源</th>
-                  <th className="w-44 px-4 py-3 font-semibold">提出模型 / 核心机制</th>
-                  <th className="w-60 px-4 py-3 font-semibold">解决痛点</th>
+                  <th className="w-64 px-4 py-3 font-semibold">研究背景</th>
+                  <th className="w-60 px-4 py-3 font-semibold">核心问题</th>
+                  <th className="w-64 px-4 py-3 font-semibold">方法 / 核心机制</th>
                   <th className="w-56 px-4 py-3 font-semibold">数据集与验证结果</th>
+                  <th className="w-64 px-4 py-3 font-semibold">研究结论</th>
                   <th className="w-60 px-4 py-3 font-semibold">我的思考与标签</th>
                   <th className="w-32 px-4 py-3 font-semibold">进度与操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredPapers.map((p) => {
-                  const myThoughts = p.comments.filter((c) => c.entryType === 'thought');
+                  const myThoughts = p.comments.filter((c) => c.entryType === 'thought' && c.userId === currentUser.id);
                   const dsMeta = DATASET_SOURCE_META[p.anatomy.dataset.sourceType] || DATASET_SOURCE_META.unspecified;
                   const statusMeta = READING_STATUS_META[p.readingStatus] || READING_STATUS_META.unread;
                   return (
@@ -323,6 +325,11 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                         )}
                       </td>
 
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300"><p className="whitespace-pre-line leading-6">{p.anatomy.background || '尚未解析研究背景'}</p></td>
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
+                        {p.anatomy.problem || '尚未解析核心问题'}
+                      </td>
+
                       <td className="px-4 py-3.5">
                         {p.anatomy.modelName && (
                           <span className="mb-1 inline-block rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
@@ -330,14 +337,8 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                           </span>
                         )}
                         <p className="text-slate-700 dark:text-slate-300">
-                          {p.anatomy.proposedMethod.slice(0, 88)}
-                          {p.anatomy.proposedMethod.length > 88 ? '…' : ''}
+                          {p.anatomy.proposedMethod || '尚未解析方法'}
                         </p>
-                      </td>
-
-                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
-                        {p.anatomy.problem.slice(0, 88)}
-                        {p.anatomy.problem.length > 88 ? '…' : ''}
                       </td>
 
                       <td className="px-4 py-3.5">
@@ -354,6 +355,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                         </div>
                       </td>
 
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300"><p className="whitespace-pre-line leading-6">{p.anatomy.conclusion || '尚未解析研究结论'}</p></td>
                       <td className="px-4 py-3.5">
                         <div className="flex flex-wrap gap-1">
                           {(p.myPersonalTags || []).map((pt) => (
@@ -479,6 +481,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                       >
                         {p.titleZh !== p.title ? p.titleZh : p.title}
                       </h4>
+                      <dl className="mt-3 space-y-2 text-xs leading-5">{[['背景',p.anatomy.background],['问题',p.anatomy.problem],['方法',p.anatomy.proposedMethod],['结论',p.anatomy.conclusion]].map(([k,v])=><div key={k}><dt className="font-semibold text-indigo-600">{k}</dt><dd className="line-clamp-3 text-slate-600 dark:text-slate-300">{v || '尚未解析'}</dd></div>)}</dl>
                       {p.anatomy.modelName && (
                         <div className="mt-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
                           模型：{p.anatomy.modelName}

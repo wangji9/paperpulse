@@ -8,12 +8,17 @@ export const TOPIC_META: Record<
 > = {
   LLM: { label: '大模型 (LLM)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   AgentCollaboration: {
-    label: '多智能体与人智协作',
+    label: '多智能体协作',
     color: '#4F46E5',
     bgClass: 'bg-indigo-50',
     textClass: 'text-indigo-700',
     borderClass: 'border-indigo-100',
   },
+  HumanAICollaboration: { label: '人智协作', color: '#0f766e', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  ProductDesign: { label: '产品设计与设计认知', color: '#be185d', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  DesignOptimization: { label: '生成式设计与设计优化', color: '#7c3aed', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  InteractionDesign: { label: '交互设计与用户体验', color: '#0369a1', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
+  SustainableDesign: { label: '可持续与循环设计', color: '#15803d', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   KnowledgeGraph: { label: '知识图谱 (KG)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   ComputerVision: { label: '计算机视觉 (CV)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
   Multimodal: { label: '多模态 (Multimodal)', color: '#4F46E5', bgClass: 'bg-indigo-50', textClass: 'text-indigo-700', borderClass: 'border-indigo-100' },
@@ -69,7 +74,6 @@ export const CS_TOP_VENUES = [
   { short: 'TPAMI', full: 'IEEE Transactions on Pattern Analysis and Machine Intelligence' },
   { short: 'INFFUS', full: 'Information Fusion' },
   { short: 'JAS', full: 'IEEE/CAA Journal of Automatica Sinica' },
-  { short: 'IJPR', full: 'International Journal of Production Research' },
   { short: 'CVPR', full: 'IEEE/CVF Conference on Computer Vision and Pattern Recognition' },
   { short: 'ICML', full: 'International Conference on Machine Learning' },
   { short: 'ICLR', full: 'International Conference on Learning Representations' },
@@ -83,7 +87,16 @@ export const CS_TOP_VENUES = [
   { short: 'arXiv', full: 'arXiv Preprints' },
 ];
 
-export const TRACKED_JOURNALS = [...CORE_MFG_AI_JOURNALS, ...CS_TOP_VENUES];
+export const DESIGN_JOURNALS = [
+  { short: 'JMD', full: 'Journal of Mechanical Design' },
+  { short: 'DS', full: 'Design Studies' },
+  { short: 'RED', full: 'Research in Engineering Design' },
+  { short: 'CAD', full: 'Computer-Aided Design' },
+  { short: 'AI EDAM', full: 'Artificial Intelligence for Engineering Design, Analysis and Manufacturing' },
+  { short: 'Design Science', full: 'Design Science' },
+  { short: 'IJPR', full: 'International Journal of Production Research' },
+];
+export const TRACKED_JOURNALS = [...CORE_MFG_AI_JOURNALS, ...DESIGN_JOURNALS, ...CS_TOP_VENUES];
 
 export function resolveDoiUrl(doi?: string, fallbackUrl?: string): string {
   const clean = (doi || '').trim();

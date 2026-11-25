@@ -9,6 +9,8 @@ import {
   deletePaper,
   deleteUserById,
   getAutoSyncConfig,
+  getReadingAnalytics,
+  compactDatabase,
   getDatabaseStats,
   getPaperById,
   getUserByToken,
@@ -18,6 +20,7 @@ import {
   loginUser,
   logoutSession,
   paperExistsByTitleOrDoi,
+  isPaperSuppressed,
   recordPaperReading,
   recordSyncLog,
   registerUser,
@@ -40,6 +43,7 @@ import {
   reparseExistingPaper,
   translateToZh,
 } from './liveFetcher.js';
+import { getLibraryInventory, removePaperAssets } from './libraryStorage.js';
 import { PAPER_ASSETS_DIR, extractOriginalPaperMedia } from './paperMediaExtractor.js';
 
 initDatabase();
@@ -73,6 +77,11 @@ const requireAuth: express.RequestHandler = (req, res, next) => {
   next();
 };
 
+const requireAdmin: express.RequestHandler = (req, res, next) => {
+  if (extractUser(req)?.role !== 'admin') { res.status(403).json({ error: '仅管理员可管理公共文献池和平台设置' }); return; }
+  next();
+};
+
 let syncInProgress = false;
 
 export async function runAutoDailySync(triggerLabel: string, query?: string): Promise<{
@@ -96,18 +105,22 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
 
     const [arxivPapers, oaPapers] = await Promise.all([
       fetchYesterdayTodayFromArxiv(daysBack),
-      fetchYesterdayTodayFromOpenAlex(daysBack, query),
+      fetchYesterdayTodayFromOpenAlex(daysBack, query, cfg.trackedJournals),
     ]);
 
-    const combined = [...arxivPapers, ...oaPapers];
+    const combined = Array.from({ length: Math.max(arxivPapers.length, oaPapers.length) }, (_, i) => [oaPapers[i], arxivPapers[i]].filter(Boolean)).flat();
     const addedPapers: AcademicPaper[] = [];
 
     for (const raw of combined) {
+      if (getDatabaseStats().totalPapers >= (cfg.maxStoredPapers || 1000)) break;
+      if (!cfg.trackedJournals.includes(raw.journalShort) || isPaperSuppressed(raw.title, raw.doi)) continue;
       if (!paperExistsByTitleOrDoi(raw.title, raw.doi)) {
         const paper = await rawToAcademicPaper(raw);
+        if (!paper.topics.some(t => cfg.trackedTopics.includes(t))) continue;
         const media = await extractOriginalPaperMedia(paper);
         paper.anatomy.paperFigures = media.paperFigures;
         paper.anatomy.paperTables = media.paperTables;
+        if (isPaperSuppressed(raw.title, raw.doi)) continue;
         upsertPaper(paper);
         addedPapers.push(paper);
         if (addedPapers.length >= 5) break;
@@ -125,7 +138,7 @@ export async function runAutoDailySync(triggerLabel: string, query?: string): Pr
     recordSyncLog(
       triggerLabel,
       addedPapers.length,
-      `自动检索16本制造与AI核心期刊及arXiv/OpenAlex最新文献（候选 ${combined.length} 篇），新增入库 ${addedPapers.length} 篇`
+      `自动检索制造、产品设计与AI期刊及arXiv/OpenAlex最新文献（候选 ${combined.length} 篇），新增入库 ${addedPapers.length} 篇`
     );
 
     return {
@@ -198,8 +211,9 @@ app.use('/api/papers', requireAuth);
 app.use('/api/sync', requireAuth);
 app.use('/api/auto-sync', requireAuth);
 
-app.get('/api/users', (_req, res) => {
-  res.json({ users: listAllUsers() });
+app.get('/api/users', (req, res) => {
+  const actor = extractUser(req)!;
+  res.json({ users: actor.role === 'admin' ? listAllUsers() : [actor] });
 });
 
 app.post('/api/users', (req, res) => {
@@ -229,13 +243,13 @@ app.post('/api/users', (req, res) => {
 
 app.put('/api/users/:id', (req, res) => {
   const actor = extractUser(req);
-  if (!actor || (actor.id !== req.params.id && actor.role !== 'admin')) {
+  if (!actor || (actor.id !== String(req.params.id) && actor.role !== 'admin')) {
     res.status(403).json({ error: '无权修改该用户信息' });
     return;
   }
   try {
     const { username, displayName, userTags, role, newPassword } = req.body;
-    const updated = updateUserProfile(req.params.id, {
+    const updated = updateUserProfile(String(req.params.id), {
       username: actor.role === 'admin' ? username : undefined,
       displayName, userTags,
       role: actor.role === 'admin' ? role : undefined,
@@ -254,13 +268,31 @@ app.delete('/api/users/:id', (req, res) => {
     res.status(403).json({ error: '仅管理员可删除用户' });
     return;
   }
-  const ok = deleteUserById(req.params.id);
+  const ok = deleteUserById(String(req.params.id));
   if (!ok) {
     res.status(400).json({ error: '无法删除默认管理员或用户不存在' });
     return;
   }
   res.json({ deleted: true });
 });
+
+app.get('/api/analytics', requireAuth, (req, res) => {
+  const actor = extractUser(req)!;
+  const requested = typeof req.query.userId === 'string' ? req.query.userId : actor.id;
+  if (actor.role !== 'admin' && requested !== actor.id) { res.status(403).json({ error: '只能查看本人的阅读统计' }); return; }
+  if (requested !== 'all' && !listAllUsers().some(u => u.id === requested)) { res.status(404).json({ error: '用户不存在' }); return; }
+  res.json({ analytics: getReadingAnalytics(requested === 'all' ? undefined : requested) });
+});
+app.use('/api/admin', requireAuth, requireAdmin);
+app.get('/api/admin/library', (_req, res) => res.json(getLibraryInventory()));
+app.post('/api/admin/library/delete', (req, res) => {
+  const ids = req.body.ids;
+  if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => typeof id !== 'string')) { res.status(400).json({ error: '每次请选择1–100篇文献' }); return; }
+  const deleted: string[] = [];
+  for (const id of new Set(ids as string[])) if (deletePaper(id)) { removePaperAssets(id); deleted.push(id); }
+  res.json({ deleted, inventory: getLibraryInventory() });
+});
+app.post('/api/admin/library/compact', (_req, res) => { compactDatabase(); res.json(getLibraryInventory()); });
 
 /* ---------- Personal Knowledge Base Selection APIs ---------- */
 app.post('/api/kb/:paperId', (req, res) => {
@@ -270,12 +302,12 @@ app.post('/api/kb/:paperId', (req, res) => {
     return;
   }
   const { personalTags, readingStatus } = (req.body as { personalTags?: string[]; readingStatus?: ReadingStatus }) || {};
-  const ok = upsertUserKbItem(user.id, req.params.paperId, { personalTags, readingStatus });
+  const ok = upsertUserKbItem(user.id, String(req.params.paperId), { personalTags, readingStatus });
   if (!ok) {
     res.status(404).json({ error: '文献不存在' });
     return;
   }
-  res.json({ paper: getPaperById(req.params.paperId, user.id) });
+  res.json({ paper: getPaperById(String(req.params.paperId), user.id) });
 });
 
 app.delete('/api/kb/:paperId', (req, res) => {
@@ -284,8 +316,8 @@ app.delete('/api/kb/:paperId', (req, res) => {
     res.status(401).json({ error: '请先登录' });
     return;
   }
-  removeUserKbItem(user.id, req.params.paperId);
-  res.json({ paper: getPaperById(req.params.paperId, user.id) });
+  removeUserKbItem(user.id, String(req.params.paperId));
+  res.json({ paper: getPaperById(String(req.params.paperId), user.id) });
 });
 
 /* ---------- Health & Papers CRUD ---------- */
@@ -335,7 +367,7 @@ app.get('/api/papers', (req, res) => {
 
 app.get('/api/papers/:id', (req, res) => {
   const user = extractUser(req);
-  const paper = getPaperById(req.params.id, user?.id);
+  const paper = getPaperById(String(req.params.id), user?.id);
   if (!paper) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -344,7 +376,7 @@ app.get('/api/papers/:id', (req, res) => {
 });
 
 // Create paper (also auto-parses abstract into Chinese structured anatomy & adds to user's KB if logged in)
-app.post('/api/papers', async (req, res) => {
+app.post('/api/papers', requireAdmin, async (req, res) => {
   try {
     const user = extractUser(req);
     const body = req.body as Partial<AcademicPaper> & { quickAbstract?: string; addToMyKb?: boolean; personalTags?: string[] };
@@ -412,7 +444,7 @@ app.post('/api/papers', async (req, res) => {
 });
 
 // Import by DOI / arXiv ID / OpenAlex ID / Keyword (auto-parses content, affiliations & citations; adds to user's KB if logged in)
-app.post('/api/papers/import', async (req, res) => {
+app.post('/api/papers/import', requireAdmin, async (req, res) => {
   try {
     const user = extractUser(req);
     const { identifier, addToMyKb, personalTags } = req.body as {
@@ -456,10 +488,10 @@ app.post('/api/papers/import', async (req, res) => {
 });
 
 // Auto-reparse & enrich paper content, affiliations, and citations
-app.post('/api/papers/:id/reparse', async (req, res) => {
+app.post('/api/papers/:id/reparse', requireAdmin, async (req, res) => {
   try {
     const user = extractUser(req);
-    const existing = getPaperById(req.params.id, user?.id);
+    const existing = getPaperById(String(req.params.id), user?.id);
     if (!existing) {
       res.status(404).json({ error: 'Paper not found' });
       return;
@@ -476,10 +508,10 @@ app.post('/api/papers/:id/reparse', async (req, res) => {
 });
 
 // Upload / Paste Original Figure or Experimental Table Image for a Paper
-app.post('/api/papers/:id/media', async (req, res) => {
+app.post('/api/papers/:id/media', requireAdmin, async (req, res) => {
   try {
     const user = extractUser(req);
-    const existing = getPaperById(req.params.id, user?.id);
+    const existing = getPaperById(String(req.params.id), user?.id);
     if (!existing) {
       res.status(404).json({ error: 'Paper not found' });
       return;
@@ -546,9 +578,9 @@ app.post('/api/papers/:id/media', async (req, res) => {
   }
 });
 
-app.put('/api/papers/:id', (req, res) => {
+app.put('/api/papers/:id', requireAdmin, (req, res) => {
   const user = extractUser(req);
-  const existing = getPaperById(req.params.id, user?.id);
+  const existing = getPaperById(String(req.params.id), user?.id);
   if (!existing) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -570,7 +602,7 @@ app.put('/api/papers/:id', (req, res) => {
 app.patch('/api/papers/:id/status', (req, res) => {
   const user = extractUser(req);
   const { isBookmarked, readingStatus } = req.body as { isBookmarked?: boolean; readingStatus?: ReadingStatus };
-  const updated = updatePaperLibraryState(req.params.id, { isBookmarked, readingStatus }, user?.id);
+  const updated = updatePaperLibraryState(String(req.params.id), { isBookmarked, readingStatus }, user?.id);
   if (!updated) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -578,20 +610,15 @@ app.patch('/api/papers/:id/status', (req, res) => {
   res.json({ paper: updated });
 });
 
-app.delete('/api/papers/:id', (req, res) => {
+app.delete('/api/papers/:id', requireAdmin, (req, res) => {
   const user = extractUser(req);
-  if (user && user.role !== 'admin') {
-    // Non-admin removes from their own knowledge base instead of deleting from public pool
-    removeUserKbItem(user.id, req.params.id);
-    res.json({ deletedFromKbOnly: true, id: req.params.id });
-    return;
-  }
-  const ok = deletePaper(req.params.id);
+  const ok = deletePaper(String(req.params.id));
   if (!ok) {
     res.status(404).json({ error: 'Paper not found' });
     return;
   }
-  res.json({ deleted: true, id: req.params.id });
+  removePaperAssets(String(req.params.id));
+  res.json({ deleted: true, id: String(req.params.id) });
 });
 
 /* ---------- Social Reading Traces, Likes & Comments CRUD ---------- */
@@ -606,7 +633,7 @@ app.post('/api/papers/:id/read', (req, res) => {
     incrementVisit?: boolean;
     addDwellSeconds?: number;
   }) || {};
-  const paper = recordPaperReading(user.id, req.params.id, { incrementVisit, addDwellSeconds, visitId, elapsedSeconds });
+  const paper = recordPaperReading(user.id, String(req.params.id), { incrementVisit, addDwellSeconds, visitId, elapsedSeconds });
   if (!paper) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -620,7 +647,7 @@ app.post('/api/papers/:id/like', (req, res) => {
     res.status(401).json({ error: '请先登录' });
     return;
   }
-  const paper = togglePaperLike(user.id, req.params.id);
+  const paper = togglePaperLike(user.id, String(req.params.id));
   if (!paper) {
     res.status(404).json({ error: 'Paper not found' });
     return;
@@ -643,7 +670,7 @@ app.post('/api/papers/:id/comments', (req, res) => {
     return;
   }
   const comment = addComment({
-    paperId: req.params.id,
+    paperId: String(req.params.id),
     entryType,
     user,
     author,
@@ -665,7 +692,7 @@ app.post('/api/papers/:id/comments/:commentId/like', (req, res) => {
     res.status(401).json({ error: '请先登录' });
     return;
   }
-  const comment = toggleCommentLike(user.id, req.params.id, req.params.commentId);
+  const comment = toggleCommentLike(user.id, String(req.params.id), String(req.params.commentId));
   if (!comment) {
     res.status(404).json({ error: '评论不存在' });
     return;
@@ -681,7 +708,7 @@ app.put('/api/papers/:id/comments/:commentId', (req, res) => {
       res.status(400).json({ error: '内容不能为空' });
       return;
     }
-    const updated = updateComment(req.params.id, req.params.commentId, { content, entryType }, user);
+    const updated = updateComment(String(req.params.id), String(req.params.commentId), { content, entryType }, user);
     if (!updated) {
       res.status(404).json({ error: '条目不存在' });
       return;
@@ -695,7 +722,7 @@ app.put('/api/papers/:id/comments/:commentId', (req, res) => {
 app.delete('/api/papers/:id/comments/:commentId', (req, res) => {
   try {
     const user = extractUser(req);
-    const ok = deleteComment(req.params.id, req.params.commentId, user);
+    const ok = deleteComment(String(req.params.id), String(req.params.commentId), user);
     if (!ok) {
       res.status(404).json({ error: '条目不存在' });
       return;
@@ -707,7 +734,7 @@ app.delete('/api/papers/:id/comments/:commentId', (req, res) => {
 });
 
 /* ---------- Auto-Sync ---------- */
-app.post('/api/sync', async (req, res) => {
+app.post('/api/sync', requireAdmin, async (req, res) => {
   const { query } = (req.body as { query?: string }) ?? {};
   try {
     const result = await runAutoDailySync('manual_live_sync', query);
@@ -720,13 +747,14 @@ app.post('/api/sync', async (req, res) => {
   }
 });
 
-app.get('/api/auto-sync/config', (_req, res) => {
+app.get('/api/auto-sync/config', requireAdmin, (_req, res) => {
   res.json({ config: getAutoSyncConfig(), storage: getDatabaseStats() });
 });
 
-app.put('/api/auto-sync/config', (req, res) => {
+app.put('/api/auto-sync/config', requireAdmin, (req, res) => {
   const current = getAutoSyncConfig();
   const patch = req.body as Partial<AutoSyncConfig>;
+  if (patch.maxStoredPapers !== undefined && (!Number.isInteger(patch.maxStoredPapers) || patch.maxStoredPapers < 1 || patch.maxStoredPapers > 100000)) { res.status(400).json({ error: '自动入库上限需要为1–100000的整数' }); return; }
   const saved = saveAutoSyncConfig({ ...current, ...patch });
   res.json({ config: saved });
 });

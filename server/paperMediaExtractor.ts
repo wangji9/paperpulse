@@ -7,7 +7,7 @@ import { translateToZh } from './liveFetcher.js';
 
 const execFileAsync = promisify(execFile);
 
-export const PAPER_ASSETS_DIR = path.resolve(process.cwd(), 'data', 'paper-assets');
+export const PAPER_ASSETS_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'), 'paper-assets');
 if (!fs.existsSync(PAPER_ASSETS_DIR)) {
   fs.mkdirSync(PAPER_ASSETS_DIR, { recursive: true });
 }

@@ -17,14 +17,7 @@ interface PaperFormModalProps {
   onSaved: (paper: AcademicPaper, isNew: boolean) => void;
 }
 
-const ALL_TOPICS: ResearchTopic[] = [
-  'LLM',
-  'AgentCollaboration',
-  'KnowledgeGraph',
-  'ComputerVision',
-  'Multimodal',
-  'EmbodiedAI',
-];
+const ALL_TOPICS = Object.keys(TOPIC_META) as ResearchTopic[];
 
 export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   editingPaper,
@@ -397,7 +390,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-semibold">期刊 / 会议全称（可直接选择16本制造核心期刊）</label>
+                  <label className="mb-1 block text-sm font-semibold">期刊 / 会议全称（可选择制造、设计和AI期刊）</label>
                   <input
                     type="text"
                     list="tracked-journals-list"

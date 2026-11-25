@@ -10,13 +10,14 @@ import type {
   PaperLikerBadge,
   PaperReaderTrace,
   ReadingStatus,
+  ReadingAnalytics,
   UserProfile,
 } from '../src/types/paper.js';
 import { SEED_PAPERS } from './seedData.js';
 import { getBulkSeedPapers } from './seedBulk.js';
 import { getAgentAndJournalSeedPapers } from './seedAgents.js';
 import { enrichPaperVisuals, getJournals16SeedPapers } from './seedJournals16.js';
-import { CORE_16_JOURNAL_SOURCES } from './liveFetcher.js';
+import { ALL_JOURNAL_SOURCES, detectTopics } from './liveFetcher.js';
 import { generateSessionToken, hashPassword, pickAvatarColor, verifyPassword } from './auth.js';
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
@@ -134,6 +135,9 @@ db.exec(`
     notes TEXT
   );
 
+  CREATE TABLE IF NOT EXISTS deleted_papers (
+    id TEXT PRIMARY KEY, title TEXT NOT NULL, doi TEXT, deleted_at TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -160,11 +164,12 @@ ensureColumns();
 
 const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
   enabled: true,
+  maxStoredPapers: 1000,
   intervalHours: 6,
   targetWindow: 'yesterday_today',
-  trackedTopics: ['LLM', 'AgentCollaboration', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
+  trackedTopics: ['LLM', 'AgentCollaboration', 'HumanAICollaboration', 'ProductDesign', 'DesignOptimization', 'InteractionDesign', 'SustainableDesign', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
   trackedJournals: [
-    ...CORE_16_JOURNAL_SOURCES.map((s) => s.short),
+    ...ALL_JOURNAL_SOURCES.map((s) => s.short),
     'TPAMI',
     'INFFUS',
     'JAS',
@@ -225,7 +230,7 @@ export function initDatabase(): void {
     ].map(enrichPaperVisuals);
 
     for (const paper of seeds) {
-      upsertPaper(paper);
+      if (!isPaperSuppressed(paper.title, paper.doi)) upsertPaper(paper);
     }
 
     // Enrich any previously live-fetched or user-created papers non-destructively
@@ -261,6 +266,20 @@ export function initDatabase(): void {
       saveAutoSyncConfig(DEFAULT_AUTO_SYNC);
     }
   }
+  if (!db.prepare("SELECT value FROM settings WHERE key = 'design_topics_v1'").get()) {
+    for (const row of db.prepare('SELECT id, payload FROM papers').all() as Array<{ id: string; payload: string }>) {
+      const paper = JSON.parse(row.payload) as AcademicPaper;
+      const text = [paper.title, paper.abstractOriginal, paper.digestSummary].join(' ');
+      const detected = detectTopics(text);
+      const prior = (paper.topics || []).filter(t => t !== 'AgentCollaboration' || detected.includes('AgentCollaboration') || !detected.includes('HumanAICollaboration'));
+      paper.topics = Array.from(new Set([...prior, ...detected.filter(t => t !== 'LLM' || prior.includes('LLM'))]));
+      db.prepare('UPDATE papers SET payload = ? WHERE id = ?').run(JSON.stringify(paper), row.id);
+    }
+    const cfg = getAutoSyncConfig();
+    saveAutoSyncConfig({ ...cfg, maxStoredPapers: cfg.maxStoredPapers || 1000, trackedTopics: Array.from(new Set([...cfg.trackedTopics, ...DEFAULT_AUTO_SYNC.trackedTopics])) });
+    db.prepare("INSERT INTO settings (key, value) VALUES ('design_topics_v1', '1')").run();
+  }
+
 }
 
 /* ---------- User & Auth Operations ---------- */
@@ -927,6 +946,10 @@ export function getPaperById(id: string, currentUserId?: string): AcademicPaper 
   return row ? hydratePaper(row, getSocialHydrationContext(), currentUserId) : null;
 }
 
+export function isPaperSuppressed(title: string, doi?: string): boolean {
+  return Boolean(db.prepare('SELECT id FROM deleted_papers WHERE lower(title) = lower(?) OR (? != ? AND lower(doi) = lower(?))').get(title.trim(), doi || '', '', doi || ''));
+}
+
 export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
   if (doi && doi.trim()) {
     const byDoi = db.prepare('SELECT id FROM papers WHERE lower(doi) = lower(?)').get(doi.trim());
@@ -937,6 +960,7 @@ export function paperExistsByTitleOrDoi(title: string, doi?: string): boolean {
 }
 
 export function upsertPaper(paper: AcademicPaper, currentUserId?: string): AcademicPaper {
+  db.prepare('DELETE FROM deleted_papers WHERE lower(title) = lower(?) OR (doi != ? AND lower(doi) = lower(?))').run(paper.title, '', paper.doi || '');
   const {
     comments,
     collectors: _c,
@@ -1049,6 +1073,9 @@ export function updatePaperLibraryState(
 }
 
 export function deletePaper(id: string): boolean {
+  const paper = db.prepare('SELECT title, doi FROM papers WHERE id = ?').get(id) as { title: string; doi: string } | undefined;
+  if (!paper) return false;
+  db.prepare('INSERT OR REPLACE INTO deleted_papers (id, title, doi, deleted_at) VALUES (?, ?, ?, ?)').run(id, paper.title, paper.doi, new Date().toISOString());
   db.prepare('DELETE FROM comment_likes WHERE comment_id IN (SELECT id FROM comments WHERE paper_id = ?)').run(id);
   db.prepare('DELETE FROM comments WHERE paper_id = ?').run(id);
   db.prepare('DELETE FROM user_kb WHERE paper_id = ?').run(id);
@@ -1166,3 +1193,30 @@ export function getDatabaseStats() {
     recentSyncs,
   };
 }
+
+export function getReadingAnalytics(userId?: string): ReadingAnalytics {
+  const where = userId ? ' WHERE pr.user_id = ?' : '';
+  const args = userId ? [userId] : [];
+  const rows = db.prepare(`SELECT p.id, p.payload, SUM(pr.visit_count) as visits, SUM(pr.total_dwell_seconds) as seconds FROM paper_reads pr JOIN papers p ON p.id = pr.paper_id${where} GROUP BY p.id ORDER BY visits DESC, seconds DESC`).all(...args) as Array<{ id: string; payload: string; visits: number; seconds: number }>;
+  const keywords = new Map<string, { keyword: string; visits: number; paperCount: number }>();
+  const topics = new Map<AcademicPaper['topics'][number], { topic: AcademicPaper['topics'][number]; visits: number; seconds: number }>();
+  const papers = rows.map(row => {
+    const p = JSON.parse(row.payload) as AcademicPaper;
+    for (const keyword of new Set([...p.tags, ...(p.anatomy.modelName ? [p.anatomy.modelName] : [])].map(t => t.trim()).filter(Boolean))) {
+      const key = keyword.toLowerCase(); const prev = keywords.get(key) || { keyword, visits: 0, paperCount: 0 };
+      prev.visits += Number(row.visits); prev.paperCount++; keywords.set(key, prev);
+    }
+    for (const topic of p.topics) {
+      const prev = topics.get(topic) || { topic, visits: 0, seconds: 0 };
+      prev.visits += Number(row.visits); prev.seconds += Number(row.seconds); topics.set(topic, prev);
+    }
+    return { id: p.id, title: p.titleZh || p.title, journal: p.journalShort, visits: Number(row.visits), seconds: Number(row.seconds), topics: p.topics };
+  });
+  const count = (table: string) => (db.prepare(`SELECT COUNT(*) as c FROM ${table}${userId ? ' WHERE user_id = ?' : ''}`).get(...args) as { c: number }).c;
+  const timeline = db.prepare(`SELECT substr(started_at,1,10) as date, COUNT(*) as visits, SUM(elapsed_seconds) as seconds FROM reading_sessions${userId ? ' WHERE user_id = ?' : ''} GROUP BY date ORDER BY date DESC LIMIT 30`).all(...args) as ReadingAnalytics['timeline'];
+  return { scopeLabel: userId ? (db.prepare('SELECT display_name FROM users WHERE id = ?').get(userId) as { display_name: string } | undefined)?.display_name || '我的阅读' : '全体成员', totalVisits: papers.reduce((s,p) => s+p.visits,0), totalSeconds: papers.reduce((s,p) => s+p.seconds,0), readPaperCount: papers.length, collectionCount: count('user_kb'), likeCount: count('paper_likes'), commentCount: count('comments'), papers, keywords: [...keywords.values()].sort((a,b)=>b.visits-a.visits).slice(0,40), topics: [...topics.values()], timeline: timeline.reverse() };
+}
+
+export function compactDatabase(): void { db.exec('PRAGMA wal_checkpoint(TRUNCATE); VACUUM; PRAGMA wal_checkpoint(TRUNCATE);'); }
+
+export function listPaperIds(): string[] { return (db.prepare('SELECT id FROM papers').all() as Array<{ id: string }>).map(p => p.id); }

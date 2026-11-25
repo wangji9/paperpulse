@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -85,6 +85,44 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     const rootLogin = await request('/api/auth/login', null, 'POST', { username: 'admin', password: 'test-admin-password' });
     assert.equal(rootLogin.status, 200);
     const root = rootLogin.data.token;
+    const ownDirectory = (await request('/api/users', tb)).data.users;
+    assert.deepEqual(ownDirectory.map(u => u.id), [b.data.user.id]);
+    assert.ok((await request('/api/users', root)).data.users.length >= 3);
+    const aAnalytics = (await request('/api/analytics', ta)).data.analytics;
+    const bAnalytics = (await request('/api/analytics', tb)).data.analytics;
+    assert.equal(aAnalytics.totalVisits, 1);
+    assert.equal(aAnalytics.totalSeconds, 3);
+    assert.equal(aAnalytics.collectionCount, 1);
+    assert.equal(bAnalytics.totalVisits, 0);
+    assert.equal(bAnalytics.papers.length, 0);
+    assert.equal((await request('/api/analytics?userId=' + a.data.user.id, tb)).status, 403);
+    assert.equal((await request('/api/analytics?userId=all', tb)).status, 403);
+    assert.equal((await request('/api/analytics?userId=all', root)).data.analytics.totalVisits, 1);
+    for (const [endpoint, method] of [['/api/papers','POST'], ['/api/papers/import','POST'], [route,'PUT'], [route,'DELETE'], [route+'/reparse','POST'], [route+'/media','POST'], ['/api/admin/library','GET'], ['/api/admin/library/delete','POST'], ['/api/admin/library/compact','POST'], ['/api/sync','POST'], ['/api/auto-sync/config','GET']]) {
+      assert.equal((await request(endpoint, tb, method, method==='GET'?undefined:{})).status, 403, endpoint);
+    }
+    const created = await request('/api/papers', root, 'POST', { id: 'qa-library-managed', title: '产品设计文献管理测试用于验证权限和存储', titleZh: '产品设计文献管理测试用于验证权限和存储', quickAbstract: '研究背景来自产品设计的真实任务，本条仅用于接口测试。', journal: 'Journal of Mechanical Design', journalShort: 'JMD', topics: ['ProductDesign'], anatomy: durable.anatomy, addToMyKb: false });
+    assert.equal(created.status, 201);
+    const managedPaperId = created.data.paper.id;
+    const assetDir = path.join(dir, 'paper-assets', managedPaperId);
+    await mkdir(assetDir, { recursive: true });
+    await writeFile(path.join(assetDir, 'test-only.pdf'), Buffer.alloc(16384));
+    const edited = await request('/api/papers/' + managedPaperId, root, 'PUT', { titleZh: '修改后的产品设计测试文献' });
+    assert.equal(edited.data.paper.titleZh, '修改后的产品设计测试文献');
+    const inventory = (await request('/api/admin/library', root)).data;
+    assert.equal(inventory.papers.find(p => p.id === managedPaperId).assetBytes, 16384);
+    assert.ok(inventory.databaseBytes > 0);
+    assert.equal((await request('/api/auto-sync/config', root, 'PUT', { maxStoredPapers: 200 })).data.config.maxStoredPapers, 200);
+    assert.equal((await request('/api/auto-sync/config', root, 'PUT', { maxStoredPapers: 0 })).status, 400);
+    assert.ok((await request('/api/auto-sync/config', root)).data.config.trackedJournals.includes('JMD'));
+    assert.ok((await request('/api/auto-sync/config', root)).data.config.trackedTopics.includes('HumanAICollaboration'));
+    assert.equal((await request('/api/admin/library/delete', root, 'POST', { ids: [] })).status, 400);
+    const removedPapers = await request('/api/admin/library/delete', root, 'POST', { ids: [managedPaperId] });
+    assert.deepEqual(removedPapers.data.deleted, [managedPaperId]);
+    await assert.rejects(access(assetDir));
+    assert.equal((await request('/api/papers/' + managedPaperId, root)).status, 404);
+    assert.equal((await request('/api/admin/library/compact', root, 'POST')).status, 200);
+
     assert.equal((await request('/api/users', tb, 'POST', { username: 'forbidden', password: 'test' })).status, 403);
     const managed = await request('/api/users', root, 'POST', { username: 'managed', password: 'test-managed', role: 'member' });
     assert.equal(managed.status, 201);

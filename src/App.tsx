@@ -57,9 +57,11 @@ import { PaperFormModal } from './components/PaperFormModal';
 import { GlobalCitationGraph } from './components/CitationGraph';
 import { ArchitectureObservatory } from './components/ArchitectureModal';
 import { AuthGateScreen, AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
+import { LibraryManager } from './components/LibraryManager';
+import { PaperUpdates } from './components/PaperUpdates';
 import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
 
-type ViewTab = 'pool' | 'my_kb' | 'citations' | 'users' | 'automation';
+type ViewTab = 'pool' | 'my_kb' | 'citations' | 'users' | 'automation' | 'library';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -130,7 +132,8 @@ export default function App() {
   };
 
   const refreshAuthAndUsers = useCallback(async () => {
-    const [me, uList] = await Promise.all([fetchCurrentUser(), fetchUsersList()]);
+    const me = await fetchCurrentUser();
+    const uList = me ? await fetchUsersList() : [];
     setCurrentUser(me);
     setUsersList(uList);
     setAuthReady(true);
@@ -145,6 +148,10 @@ export default function App() {
     window.addEventListener('paperpulse-auth-required', reset);
     return () => window.removeEventListener('paperpulse-auth-required', reset);
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'users' && currentUser) void refreshAuthAndUsers();
+  }, [activeTab, currentUser?.id, refreshAuthAndUsers]);
 
   const currentScope: 'pool' | 'my_kb' = activeTab === 'my_kb' ? 'my_kb' : 'pool';
 
@@ -168,15 +175,17 @@ export default function App() {
             interactedBy: interactedByFilter,
           }),
           fetchPapers({ scope: 'pool' }),
-          fetchAutoSyncStatus(),
+          currentUser.role === 'admin' ? fetchAutoSyncStatus() : Promise.resolve(null),
           fetchUsersList(),
         ]);
         if (requestToken !== getAuthToken()) return;
         setPapers(filteredList);
         setAllPoolPapers(fullList);
-        setAutoSyncConfig(syncInfo.config);
-        setStorageStats(syncInfo.storage);
+        setAutoSyncConfig(syncInfo?.config || null);
+        setStorageStats(syncInfo?.storage || null);
         setUsersList(uList);
+        const freshMe = uList.find(u => u.id === currentUser.id);
+        if (freshMe) setCurrentUser(freshMe);
       } catch (err) {
         if (!silent) showToast('error', err instanceof Error ? err.message : '数据加载失败');
       } finally {
@@ -195,6 +204,7 @@ export default function App() {
       collectedByFilter,
       interactedByFilter,
       currentUser?.id,
+      currentUser?.role,
       showToast,
     ]
   );
@@ -344,7 +354,8 @@ export default function App() {
         : '确认从公共文献池永久删除该文献吗？';
     if (!window.confirm(msg)) return;
     try {
-      await apiDeletePaper(id);
+      if (currentUser?.role === 'admin') await apiDeletePaper(id);
+      else await removeMyKbPaper(id);
       if (selectedPaper?.id === id) setSelectedPaper(null);
       await loadData();
       showToast('success', '操作成功');
@@ -617,11 +628,11 @@ export default function App() {
 
       {/* Full-Width Edge-to-Edge Responsive Header */}
       <header
-        className={`sticky top-0 z-40 w-full border-b backdrop-blur-md ${
+        className={`app-header-scroll sticky top-0 z-40 w-full border-b backdrop-blur-md ${
           darkMode ? 'border-slate-800 bg-slate-950/95' : 'border-slate-200/90 bg-white/95'
         }`}
       >
-        <div className="flex w-full flex-wrap items-center justify-between gap-2.5 px-3 py-2.5 sm:px-5 lg:px-6">
+        <div className="app-header-row items-center justify-between gap-4 px-4 py-2.5">
           {/* Brand + Mobile Filter Drawer Trigger */}
           <div className="flex items-center gap-2.5">
             {(activeTab === 'pool' || activeTab === 'my_kb') && (
@@ -640,14 +651,14 @@ export default function App() {
             </div>
             <div className="flex items-center gap-2">
               <h1 className="text-base font-semibold tracking-tight sm:text-lg">PaperPulse 文献平台</h1>
-              <span className="hidden rounded-md bg-slate-100 px-2 py-0.5 text-sm font-medium text-slate-600 sm:inline-block dark:bg-slate-800 dark:text-slate-300">
+              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-sm font-medium text-slate-600 inline-block dark:bg-slate-800 dark:text-slate-300">
                 池 {allPoolPapers.length} 篇
               </span>
             </div>
           </div>
 
           {/* Search Input */}
-          <div className="relative order-3 w-full md:order-2 md:w-64 xl:w-80">
+          <div className="app-header-search relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -663,9 +674,9 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs & User Bar */}
-          <div className="order-2 flex max-w-full flex-wrap items-center gap-2 md:order-3">
+          <div className="flex flex-nowrap items-center gap-2">
             <div
-              className={`flex max-w-full overflow-x-auto rounded-xl border p-1 ${
+              className={`flex shrink-0 flex-nowrap rounded-xl border p-1 ${
                 darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-100/80'
               }`}
             >
@@ -720,8 +731,10 @@ export default function App() {
                 }`}
               >
                 <Users className="h-4 w-4" />
-                用户管理
+                {currentUser.role === 'admin' ? '用户管理' : '我的账户'}
               </button>
+              {currentUser.role === 'admin' && <>
+              <button type="button" onClick={() => setActiveTab('library')} className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold ${activeTab === 'library' ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800' : 'text-slate-600 dark:text-slate-400'}`}><BookMarked className="h-4 w-4" />文献管理</button>
               <button
                 type="button"
                 onClick={() => setActiveTab('automation')}
@@ -734,13 +747,15 @@ export default function App() {
                 <Server className="h-4 w-4" />
                 自动追踪
               </button>
+              </>}
             </div>
 
+            {currentUser.role === 'admin' && <>
             <button
               type="button"
               onClick={handleSyncLive}
               disabled={syncing}
-              className="hidden items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 xl:inline-flex dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
             >
               <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? '检索中' : '拉取最新'}
@@ -755,8 +770,10 @@ export default function App() {
               className="inline-flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">添加文献</span>
+              <span>添加文献</span>
             </button>
+
+            </>}
 
             {/* User Login / Avatar Pill */}
             {currentUser ? (
@@ -861,8 +878,12 @@ export default function App() {
             onSelectPaper={(p) => setSelectedPaper(p)}
             onImportReference={handleImportIdentifier}
           />
+        ) : activeTab === 'library' && currentUser.role === 'admin' ? (
+          <LibraryManager onAdd={() => { setEditingPaper(null); setFormOpen(true); }} onOpen={id => { const p = allPoolPapers.find(p => p.id === id); if(p) setSelectedPaper(p); }} onEdit={id => { const p = allPoolPapers.find(p => p.id === id); if(p) { setEditingPaper(p); setFormOpen(true); } }} onChanged={() => loadData(true)} />
         ) : activeTab === 'users' ? (
           <UserManagementPanel
+            key={currentUser.id}
+            onOpenPaper={id => { const p = allPoolPapers.find(p => p.id === id); if(p) setSelectedPaper(p); }}
             onFilterByInteraction={uid => { setInteractedByFilter(uid); setCollectedByFilter('all'); setActiveTab('pool'); }}
             currentUser={currentUser}
             users={usersList}
@@ -894,7 +915,7 @@ export default function App() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
             {/* Desktop Independent Scrollable Sticky Sidebar (All Journals Reachable on Scroll!) */}
             <aside
-              className={`hidden w-72 shrink-0 rounded-2xl border p-4 lg:sticky lg:top-[68px] lg:block lg:max-h-[calc(100vh-84px)] lg:overflow-y-auto xl:w-80 ${
+              className={`${activeTab === 'my_kb' ? 'hidden' : 'hidden lg:block'} w-60 shrink-0 rounded-2xl border p-4 lg:sticky lg:top-[88px] lg:max-h-[calc(100vh-104px)] lg:overflow-y-auto xl:w-64 ${
                 darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
               }`}
             >
@@ -915,7 +936,7 @@ export default function App() {
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="rounded-md bg-indigo-600 px-2.5 py-0.5 font-semibold text-white">公共文献池</span>
                     <span>
-                      实时追踪 <strong>16 本制造与工程AI核心期刊</strong> 及计算机顶会，直接展示论文原文方法架构图与原文实验表格
+                      追踪 <strong>制造 · 产品设计 · 人工智能期刊</strong> 与计算机顶会，包含 JMD、Design Studies、IJPR 等来源
                     </span>
                   </div>
                   <button
@@ -931,7 +952,9 @@ export default function App() {
                 </div>
               )}
 
+              {activeTab === 'pool' && <PaperUpdates papers={allPoolPapers} onOpen={setSelectedPaper} />}
               {interactedByFilter !== 'all' && <div className="rounded-xl border border-indigo-200 p-3 text-sm">正在查看 {usersList.find(u => u.id === interactedByFilter)?.displayName} 的互动足迹 <button className="ml-3 text-indigo-600" onClick={() => setInteractedByFilter('all')}>清除筛选</button></div>}
+              {currentUser.role === 'admin' && <>
               {/* Quick Auto-Parse Import Bar */}
               <div
                 className={`rounded-2xl border p-4 ${
@@ -973,6 +996,8 @@ export default function App() {
                 </form>
               </div>
 
+              </>}
+
               {loading ? (
                 <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin text-indigo-600" />
@@ -991,13 +1016,14 @@ export default function App() {
                   }}
                   onDelete={handleDelete}
                   onReparse={handleReparse}
-                  onUploadMedia={handleUploadMedia}
+                  onUploadMedia={currentUser.role === 'admin' ? handleUploadMedia : undefined}
                   onToggleMyKb={handleToggleMyKb}
                   onUpdateStatus={handleUpdateStatus}
                   onAddEntry={handleAddEntry}
                   onEditEntry={handleEditEntry}
                   onDeleteEntry={handleDeleteEntry}
                   onOpenAddModal={() => {
+                    if (currentUser.role !== 'admin') { setActiveTab('pool'); return; }
                     setEditingPaper(null);
                     setFormOpen(true);
                   }}
@@ -1052,7 +1078,7 @@ export default function App() {
                           }}
                           onDelete={handleDelete}
                           onReparse={handleReparse}
-                          onUploadMedia={handleUploadMedia}
+                          onUploadMedia={currentUser.role === 'admin' ? handleUploadMedia : undefined}
                           onToggleMyKb={handleToggleMyKb}
                           onUpdateStatus={handleUpdateStatus}
                           onAddEntry={handleAddEntry}
@@ -1104,7 +1130,7 @@ export default function App() {
           }}
           onDelete={handleDelete}
           onReparse={handleReparse}
-          onUploadMedia={handleUploadMedia}
+          onUploadMedia={currentUser.role === 'admin' ? handleUploadMedia : undefined}
           onToggleMyKb={(p) => handleToggleMyKb(p)}
           onSelectOtherPaper={(p) => setSelectedPaper(p)}
           onImportReference={handleImportIdentifier}

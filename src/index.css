@@ -79,3 +79,12 @@
   max-height: 1.5rem;
   width: auto;
 }
+
+/* Navigation has a stable single row at every screen width. */
+.app-header-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.app-header-row { display: flex; flex-wrap: nowrap; width: 100%; min-width: max-content; white-space: nowrap; }
+.app-header-row > * { flex-shrink: 0; }
+.app-header-row button, .app-header-row h1 { white-space: nowrap; }
+.app-header-search { flex: 0 0 256px; width: 256px; min-width: 256px; max-width: 256px; }
+@keyframes paper-update { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { [aria-label="文献更新动态"] button { animation: none !important; } }

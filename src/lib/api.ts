@@ -1,5 +1,7 @@
 import type {
   AcademicPaper,
+  ReadingAnalytics,
+  LibraryInventory,
   AutoSyncConfig,
   EntryType,
   PaperComment,
@@ -424,4 +426,21 @@ export async function updateAutoSyncConfig(patch: Partial<AutoSyncConfig>): Prom
   if (!res.ok) throw new Error('更新配置失败');
   const data = (await res.json()) as { config: AutoSyncConfig };
   return data.config;
+}
+
+export async function fetchReadingAnalytics(userId?: string): Promise<ReadingAnalytics> {
+  const res = await apiFetch('/api/analytics' + (userId ? '?userId=' + encodeURIComponent(userId) : ''), { headers: authHeaders() });
+  const data = await res.json(); if (!res.ok) throw new Error(data.error || '读取统计失败'); return data.analytics;
+}
+export async function fetchLibraryInventory(): Promise<LibraryInventory> {
+  const res = await apiFetch('/api/admin/library', { headers: authHeaders() });
+  if (!res.ok) throw new Error('读取文献存储失败'); return res.json();
+}
+export async function deleteLibraryPapers(ids: string[]): Promise<LibraryInventory> {
+  const res = await apiFetch('/api/admin/library/delete', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ ids }) });
+  const data = await res.json(); if (!res.ok) throw new Error(data.error || '删除失败'); return data.inventory;
+}
+export async function compactLibrary(): Promise<LibraryInventory> {
+  const res = await apiFetch('/api/admin/library/compact', { method: 'POST', headers: authHeaders() });
+  if (!res.ok) throw new Error('压缩数据库失败'); return res.json();
 }

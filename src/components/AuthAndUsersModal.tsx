@@ -27,6 +27,7 @@ import {
   registerAccount,
   updateUserAccount,
 } from '../lib/api';
+import { ReadingDashboard } from './ReadingDashboard';
 import { formatDurationZh } from './SocialEngagement';
 
 /**
@@ -125,8 +126,8 @@ export const AuthGateScreen: React.FC<{
             {[
               {
                 icon: <BookOpen className="h-5 w-5 text-indigo-600" />,
-                title: '16本制造顶刊 + AI顶会原图直出',
-                desc: '自动追踪 IJMTM、JMS、RCIM、IEEE TII 等核心期刊，直接嵌入论文原图与原始实验表。',
+                title: '制造 · 产品设计 · AI文献',
+                desc: '追踪 JMD、Design Studies、IJPR 与制造、AI期刊，支持原文图表展示。',
               },
               {
                 icon: <Clock className="h-5 w-5 text-teal-600" />,
@@ -468,6 +469,7 @@ interface UserManagementPanelProps {
   onCurrentUserUpdated: (user: UserProfile) => void;
   onFilterByUser: (userId: string) => void;
   onFilterByInteraction?: (userId: string) => void;
+  onOpenPaper?: (id: string) => void;
   onOpenAuth: () => void;
 }
 
@@ -479,6 +481,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
   onCurrentUserUpdated,
   onFilterByUser,
   onFilterByInteraction,
+  onOpenPaper,
   onOpenAuth,
 }) => {
   const [myDisplayName, setMyDisplayName] = useState(currentUser?.displayName || '');
@@ -598,7 +601,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left: Current User Profile */}
-        <div className={`lg:col-span-5 ${cardCls}`}>
+        <div className={`${currentUser?.role === 'admin' ? 'lg:col-span-5' : 'lg:col-span-12'} ${cardCls}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-lg font-semibold">
               <UserCheck className="h-5 w-5 text-indigo-600" />
@@ -676,7 +679,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
         </div>
 
         {/* Right: Member Reading Footprints & Directory */}
-        <div className={`space-y-6 lg:col-span-7 ${cardCls}`}>
+        {currentUser?.role === 'admin' && <div className={`space-y-6 lg:col-span-7 ${cardCls}`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-lg font-semibold">
               <Users className="h-5 w-5 text-indigo-600" />
@@ -854,8 +857,9 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </div>}
       </div>
+      {currentUser && <ReadingDashboard key={currentUser.id} currentUser={currentUser} users={users} onOpenPaper={onOpenPaper} />}
     </div>
   );
 };

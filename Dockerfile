@@ -5,11 +5,11 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm config set registry https://registry.npmmirror.com && npm install --no-audit --no-fund
 
-COPY tsconfig.json vite.config.ts index.html ./
+COPY tsconfig.json tsconfig.server.json vite.config.ts index.html ./
 COPY src ./src
 COPY server ./server
 
-RUN npm run build
+RUN npm run typecheck && npm run build
 
 FROM docker.m.daocloud.io/library/node:22-bookworm-slim AS runner
 

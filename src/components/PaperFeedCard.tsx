@@ -188,6 +188,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
           <button type="button" onClick={handleCycleStatus} className={`${chip} font-medium ${statusInfo.cls}`}>
             {statusInfo.label}
           </button>
+          {currentUser?.role === 'admin' && <>
           <button
             type="button"
             disabled={reparsing}
@@ -207,7 +208,8 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
           <button type="button" onClick={() => onEdit(paper)} title="编辑" className={`${iconBtn} hover:text-indigo-600`}>
             <Edit3 className="h-4 w-4" />
           </button>
-          {(!currentUser || currentUser.role === 'admin' || paper.inMyKb) && (
+          </>}
+          {currentUser?.role === 'admin' && (
             <button type="button" onClick={() => onDelete(paper.id)} title="删除" className={`${iconBtn} hover:text-rose-600`}>
               <Trash2 className="h-4 w-4" />
             </button>
