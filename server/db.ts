@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AcademicPaper, PaperComment } from '../src/types/paper.js';
+import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../src/types/paper.js';
 import { SEED_PAPERS } from './seedData.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
@@ -16,16 +16,16 @@ db.exec(`
   PRAGMA journal_mode = WAL;
   CREATE TABLE IF NOT EXISTS papers (
     id TEXT PRIMARY KEY,
+    open_alex_id TEXT,
     doi TEXT,
     title TEXT NOT NULL,
     published_date TEXT NOT NULL,
     synced_at TEXT NOT NULL,
     domain TEXT NOT NULL,
     dataset_type TEXT NOT NULL,
-    likes INTEGER DEFAULT 0,
-    is_liked INTEGER DEFAULT 0,
+    cited_by_count INTEGER DEFAULT 0,
+    reading_status TEXT DEFAULT 'unread',
     is_bookmarked INTEGER DEFAULT 0,
-    reposts INTEGER DEFAULT 0,
     payload TEXT NOT NULL
   );
 
@@ -46,44 +46,68 @@ db.exec(`
     added_count INTEGER NOT NULL,
     notes TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
+function ensureColumns(): void {
+  const cols = (db.prepare('PRAGMA table_info(papers)').all() as Array<{ name: string }>).map((c) => c.name);
+  if (!cols.includes('open_alex_id')) db.exec('ALTER TABLE papers ADD COLUMN open_alex_id TEXT;');
+  if (!cols.includes('cited_by_count')) db.exec('ALTER TABLE papers ADD COLUMN cited_by_count INTEGER DEFAULT 0;');
+  if (!cols.includes('reading_status')) db.exec("ALTER TABLE papers ADD COLUMN reading_status TEXT DEFAULT 'unread';");
+}
+ensureColumns();
+
+const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
+  enabled: true,
+  intervalHours: 6,
+  targetWindow: 'yesterday_today',
+  trackedTopics: ['LLM', 'KnowledgeGraph', 'ComputerVision', 'Multimodal', 'EmbodiedAI'],
+  trackedJournals: ['JMS', 'RCIM', 'IJMTM', 'AEI', 'IEEE TII', 'TPAMI', 'CVPR', 'CoRL', 'arXiv'],
+  lastAutoSyncAt: null,
+  nextAutoSyncAt: null,
+};
+
 export function initDatabase(): void {
+  // If old synthetic placeholder records exist, migrate cleanly to authentic real papers
+  const legacyCheck = db.prepare("SELECT id FROM papers WHERE id = 'paper-jms-2026-llm-kg'").get();
+  if (legacyCheck) {
+    db.exec('DELETE FROM comments; DELETE FROM papers; DELETE FROM sync_logs;');
+  }
+
   const countRow = db.prepare('SELECT COUNT(*) as cnt FROM papers').get() as { cnt: number };
   if (countRow.cnt === 0) {
-    const insertPaper = db.prepare(`
-      INSERT INTO papers (id, doi, title, published_date, synced_at, domain, dataset_type, likes, is_liked, is_bookmarked, reposts, payload)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const insertComment = db.prepare(`
-      INSERT INTO comments (id, paper_id, author, role, content, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-
     for (const paper of SEED_PAPERS) {
-      const { comments, ...rest } = paper;
-      insertPaper.run(
-        paper.id,
-        paper.doi,
-        paper.title,
-        paper.publishedDate,
-        paper.syncedAt,
-        paper.domain,
-        paper.anatomy.dataset.sourceType,
-        paper.likes,
-        paper.isLiked ? 1 : 0,
-        paper.isBookmarked ? 1 : 0,
-        paper.reposts,
-        JSON.stringify(rest)
-      );
-      for (const c of comments) {
-        insertComment.run(c.id, paper.id, c.author, c.role, c.content, c.createdAt);
-      }
+      upsertPaper(paper);
     }
-
-    db.prepare('INSERT INTO sync_logs (synced_at, source, added_count, notes) VALUES (?, ?, ?, ?)')
-      .run(new Date().toISOString(), 'initial_seed', SEED_PAPERS.length, 'Initialized curated SCI Q1 & CCF-A dataset');
+    recordSyncLog('curated_real_seed', SEED_PAPERS.length, 'Initialized library with verified real OpenAlex/DOI papers & citation graphs');
   }
+
+  const cfgRow = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get();
+  if (!cfgRow) {
+    saveAutoSyncConfig(DEFAULT_AUTO_SYNC);
+  }
+}
+
+export function getAutoSyncConfig(): AutoSyncConfig {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'auto_sync_config'").get() as { value: string } | undefined;
+  if (!row) return DEFAULT_AUTO_SYNC;
+  try {
+    return { ...DEFAULT_AUTO_SYNC, ...(JSON.parse(row.value) as Partial<AutoSyncConfig>) };
+  } catch {
+    return DEFAULT_AUTO_SYNC;
+  }
+}
+
+export function saveAutoSyncConfig(config: AutoSyncConfig): AutoSyncConfig {
+  db.prepare(`
+    INSERT INTO settings (key, value) VALUES ('auto_sync_config', ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `).run(JSON.stringify(config));
+  return config;
 }
 
 function hydratePaper(row: Record<string, unknown>): AcademicPaper {
@@ -94,10 +118,10 @@ function hydratePaper(row: Record<string, unknown>): AcademicPaper {
 
   return {
     ...base,
-    likes: Number(row.likes ?? base.likes ?? 0),
-    isLiked: Boolean(row.is_liked),
+    openAlexId: row.open_alex_id ? String(row.open_alex_id) : base.openAlexId,
+    citedByCount: Number(row.cited_by_count ?? base.citedByCount ?? 0),
+    readingStatus: (row.reading_status ? String(row.reading_status) : base.readingStatus || 'unread') as ReadingStatus,
     isBookmarked: Boolean(row.is_bookmarked),
-    reposts: Number(row.reposts ?? base.reposts ?? 0),
     comments: commentsRows,
   };
 }
@@ -109,12 +133,14 @@ export interface PaperQueryFilters {
   journal?: string;
   datasetType?: string;
   bookmarked?: boolean;
+  readingStatus?: string;
+  recentOnly?: boolean;
   date?: string;
 }
 
 export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
   const rows = db
-    .prepare('SELECT * FROM papers ORDER BY synced_at DESC, published_date DESC')
+    .prepare('SELECT * FROM papers ORDER BY published_date DESC, synced_at DESC')
     .all() as Record<string, unknown>[];
 
   let papers = rows.map(hydratePaper);
@@ -134,6 +160,14 @@ export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
   if (filters.bookmarked) {
     papers = papers.filter((p) => p.isBookmarked);
   }
+  if (filters.readingStatus && filters.readingStatus !== 'all') {
+    papers = papers.filter((p) => p.readingStatus === filters.readingStatus);
+  }
+  if (filters.recentOnly) {
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    papers = papers.filter((p) => p.publishedDate === today || p.publishedDate === yesterday);
+  }
   if (filters.date) {
     papers = papers.filter((p) => p.publishedDate === filters.date);
   }
@@ -146,7 +180,8 @@ export function listPapers(filters: PaperQueryFilters = {}): AcademicPaper[] {
         p.journal,
         p.journalShort,
         p.doi,
-        p.weiboSummary,
+        p.digestSummary,
+        p.abstractOriginal,
         ...p.authors,
         ...p.tags,
         p.anatomy.proposedMethod,
@@ -182,65 +217,63 @@ export function upsertPaper(paper: AcademicPaper): AcademicPaper {
   if (existing) {
     db.prepare(`
       UPDATE papers
-      SET doi = ?, title = ?, published_date = ?, synced_at = ?, domain = ?, dataset_type = ?,
-          likes = ?, is_liked = ?, is_bookmarked = ?, reposts = ?, payload = ?
+      SET open_alex_id = ?, doi = ?, title = ?, published_date = ?, synced_at = ?, domain = ?, dataset_type = ?,
+          cited_by_count = ?, reading_status = ?, is_bookmarked = ?, payload = ?
       WHERE id = ?
     `).run(
+      paper.openAlexId || null,
       paper.doi,
       paper.title,
       paper.publishedDate,
       paper.syncedAt,
       paper.domain,
       paper.anatomy.dataset.sourceType,
-      paper.likes,
-      paper.isLiked ? 1 : 0,
+      paper.citedByCount || 0,
+      paper.readingStatus || 'unread',
       paper.isBookmarked ? 1 : 0,
-      paper.reposts,
       JSON.stringify(rest),
       paper.id
     );
   } else {
     db.prepare(`
-      INSERT INTO papers (id, doi, title, published_date, synced_at, domain, dataset_type, likes, is_liked, is_bookmarked, reposts, payload)
+      INSERT INTO papers (id, open_alex_id, doi, title, published_date, synced_at, domain, dataset_type, cited_by_count, reading_status, is_bookmarked, payload)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       paper.id,
+      paper.openAlexId || null,
       paper.doi,
       paper.title,
       paper.publishedDate,
       paper.syncedAt,
       paper.domain,
       paper.anatomy.dataset.sourceType,
-      paper.likes,
-      paper.isLiked ? 1 : 0,
+      paper.citedByCount || 0,
+      paper.readingStatus || 'unread',
       paper.isBookmarked ? 1 : 0,
-      paper.reposts,
       JSON.stringify(rest)
     );
+  }
+  if (comments && comments.length > 0) {
+    const insC = db.prepare('INSERT OR IGNORE INTO comments (id, paper_id, author, role, content, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+    for (const c of comments) {
+      insC.run(c.id, paper.id, c.author, c.role, c.content, c.createdAt);
+    }
   }
   return getPaperById(paper.id)!;
 }
 
-export function engagePaper(id: string, action: 'like' | 'bookmark' | 'repost'): AcademicPaper | null {
+export function updatePaperLibraryState(
+  id: string,
+  patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }
+): AcademicPaper | null {
   const row = db.prepare('SELECT * FROM papers WHERE id = ?').get(id) as Record<string, unknown> | undefined;
   if (!row) return null;
 
-  let likes = Number(row.likes);
-  let isLiked = Number(row.is_liked);
-  let isBookmarked = Number(row.is_bookmarked);
-  let reposts = Number(row.reposts);
+  const nextBookmarked = patch.isBookmarked !== undefined ? (patch.isBookmarked ? 1 : 0) : Number(row.is_bookmarked);
+  const nextStatus = patch.readingStatus ?? String(row.reading_status || 'unread');
 
-  if (action === 'like') {
-    isLiked = isLiked ? 0 : 1;
-    likes = isLiked ? likes + 1 : Math.max(0, likes - 1);
-  } else if (action === 'bookmark') {
-    isBookmarked = isBookmarked ? 0 : 1;
-  } else if (action === 'repost') {
-    reposts += 1;
-  }
-
-  db.prepare('UPDATE papers SET likes = ?, is_liked = ?, is_bookmarked = ?, reposts = ? WHERE id = ?')
-    .run(likes, isLiked, isBookmarked, reposts, id);
+  db.prepare('UPDATE papers SET is_bookmarked = ?, reading_status = ? WHERE id = ?')
+    .run(nextBookmarked, nextStatus, id);
 
   return getPaperById(id);
 }
@@ -257,8 +290,8 @@ export function addComment(paperId: string, author: string, role: string, conten
   const comment: PaperComment = {
     id: `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     paperId,
-    author: author.trim() || '匿名学者',
-    role: role.trim() || '研究员',
+    author: author.trim() || '个人笔记',
+    role: role.trim() || '精读批注',
     content: content.trim(),
     createdAt: new Date().toISOString(),
   };
@@ -277,7 +310,7 @@ export function recordSyncLog(source: string, addedCount: number, notes: string)
     .run(new Date().toISOString(), source, addedCount, notes);
 }
 
-export function getSyncLogs(limit = 10): Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }> {
+export function getSyncLogs(limit = 12): Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }> {
   return db
     .prepare('SELECT id, synced_at as syncedAt, source, added_count as addedCount, notes FROM sync_logs ORDER BY id DESC LIMIT ?')
     .all(limit) as Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }>;
@@ -287,7 +320,7 @@ export function getDatabaseStats() {
   const stats = fs.existsSync(DB_PATH) ? fs.statSync(DB_PATH) : null;
   const totalPapers = (db.prepare('SELECT COUNT(*) as c FROM papers').get() as { c: number }).c;
   const totalComments = (db.prepare('SELECT COUNT(*) as c FROM comments').get() as { c: number }).c;
-  const recentSyncs = getSyncLogs(5);
+  const recentSyncs = getSyncLogs(8);
   return {
     dbPath: DB_PATH,
     sizeKB: stats ? Math.round((stats.size / 1024) * 10) / 10 : 0,

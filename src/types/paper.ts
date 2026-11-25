@@ -7,7 +7,9 @@ export type ResearchTopic =
   | 'Multimodal'
   | 'EmbodiedAI';
 
-export type DatasetSourceType = 'public' | 'self_built' | 'hybrid';
+export type DatasetSourceType = 'public' | 'self_built' | 'hybrid' | 'unspecified';
+
+export type ReadingStatus = 'unread' | 'reading' | 'mastered';
 
 export interface ArchitectureModule {
   id: string;
@@ -29,15 +31,27 @@ export interface DatasetDetail {
 export interface ComparisonMetricRow {
   method: string;
   isProposed?: boolean;
-  values: Record<string, number>;
+  values: Record<string, string | number>;
 }
 
 export interface AblationItem {
   variant: string;
   removedModule: string;
-  score: number;
-  delta: number;
+  score: string;
+  delta: string;
   impactNote: string;
+}
+
+export interface CitationRefNode {
+  id: string; // OpenAlex ID, DOI, or arXiv ID
+  title: string;
+  year: string;
+  venue: string;
+  authors?: string;
+  doi?: string;
+  url?: string;
+  citedByCount?: number;
+  relation: 'references' | 'cited_by' | 'related';
 }
 
 export interface PaperAnatomy {
@@ -50,16 +64,18 @@ export interface PaperAnatomy {
   experimentalValidation: string;
   dataset: DatasetDetail;
   comparisonMetrics: {
+    hasQuantitativeData: boolean;
     metricNames: string[];
     primaryMetric: string;
     unit: string;
-    higherIsBetter: boolean;
     rows: ComparisonMetricRow[];
+    note?: string;
   };
   ablationStudy: {
+    hasQuantitativeData: boolean;
     metricName: string;
     unit: string;
-    fullModelScore: number;
+    fullModelScore: string;
     items: AblationItem[];
     summary: string;
   };
@@ -81,34 +97,38 @@ export interface PaperComment {
 
 export interface AcademicPaper {
   id: string;
+  openAlexId?: string;
   title: string;
   titleZh: string;
   authors: string[];
   affiliations: string[];
   journal: string;
   journalShort: string;
-  journalRank: string; // e.g., "SCI Q1 · IF 12.3" or "CCF-A · 顶会"
+  journalRank: string;
   domain: DomainCategory;
   topics: ResearchTopic[];
   publishedDate: string; // YYYY-MM-DD
-  syncedAt: string; // ISO timestamp for Weibo-like feed ordering
+  syncedAt: string; // ISO timestamp
   doi: string;
   url: string;
-  sourceOrigin: 'curated' | 'arxiv_live' | 'openalex_live' | 'user_created';
-  weiboSummary: string; // 2-3 sentence dynamic feed hook
-  keyHighlightMetric: string; // e.g., "+6.4% mAP / 98.2% 准确率"
+  sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'user_created';
+  abstractOriginal: string;
+  digestSummary: string;
   tags: string[];
-  likes: number;
-  isLiked: boolean;
+  citedByCount: number; // Real OpenAlex citation count (0 if preprint / unindexed)
+  citations: CitationRefNode[]; // Real upstream references & downstream citing/related papers
+  readingStatus: ReadingStatus;
   isBookmarked: boolean;
-  reposts: number;
   anatomy: PaperAnatomy;
   comments: PaperComment[];
 }
 
-export interface SyncStatus {
-  lastSyncAt: string;
-  totalPapers: number;
-  todayAdded: number;
-  sources: { name: string; status: 'online' | 'syncing'; count: number }[];
+export interface AutoSyncConfig {
+  enabled: boolean;
+  intervalHours: number;
+  targetWindow: 'yesterday_today' | 'last_3_days';
+  trackedTopics: ResearchTopic[];
+  trackedJournals: string[];
+  lastAutoSyncAt: string | null;
+  nextAutoSyncAt: string | null;
 }

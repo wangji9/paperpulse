@@ -8,6 +8,7 @@ import {
   Copy,
   Edit3,
   ExternalLink,
+  GitCommitHorizontal,
   Lightbulb,
   MessageSquare,
   Send,
@@ -17,21 +18,25 @@ import {
   X,
 } from 'lucide-react';
 import type { AcademicPaper } from '../types/paper';
-import { DOMAIN_META, TOPIC_META, formatRelativeTime, generateBibtex } from '../lib/constants';
+import { DOMAIN_META, TOPIC_META, generateBibtex } from '../lib/constants';
 import {
-  AblationChart,
+  AblationTable,
   ArchitectureDiagram,
-  ComparisonChart,
+  ComparisonTable,
   DatasetProvenanceVisual,
   LogicChainFlow,
 } from './visuals/PaperVisuals';
+import { EgoCitationGraph } from './CitationGraph';
 
 interface DeepAnatomyModalProps {
   paper: AcademicPaper;
+  libraryPapers: AcademicPaper[];
   darkMode: boolean;
   onClose: () => void;
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
+  onSelectOtherPaper: (paper: AcademicPaper) => void;
+  onImportReference: (identifier: string) => Promise<void>;
   onAddComment: (paperId: string, author: string, role: string, content: string) => Promise<void>;
   onDeleteComment: (paperId: string, commentId: string) => Promise<void>;
 }
@@ -41,7 +46,6 @@ const SectionCard: React.FC<{
   num: string;
   title: string;
   subtitleEn: string;
-  accentColor?: string;
   icon: React.ReactNode;
   darkMode: boolean;
   children: React.ReactNode;
@@ -70,18 +74,19 @@ const SectionCard: React.FC<{
 
 export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   paper,
+  libraryPapers,
   darkMode,
   onClose,
   onEdit,
   onDelete,
+  onSelectOtherPaper,
+  onImportReference,
   onAddComment,
   onDeleteComment,
 }) => {
   const [activeStep, setActiveStep] = useState('sec-bg');
   const [copiedBib, setCopiedBib] = useState(false);
-  const [commentAuthor, setCommentAuthor] = useState('李研究员');
-  const [commentRole, setCommentRole] = useState('智能制造博士生');
-  const [commentText, setCommentText] = useState('');
+  const [noteText, setNoteText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -108,13 +113,13 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
     }
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleNoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!noteText.trim()) return;
     setSubmitting(true);
     try {
-      await onAddComment(paper.id, commentAuthor, commentRole, commentText.trim());
-      setCommentText('');
+      await onAddComment(paper.id, '个人笔记', '精读批注', noteText.trim());
+      setNoteText('');
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +153,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 <span className="rounded-md bg-slate-900 px-2 py-0.5 font-mono-code text-xs font-bold text-white dark:bg-indigo-600">
                   {paper.journalShort}
                 </span>
-                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{paper.journalRank}</span>
+                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{paper.journal}</span>
                 <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${DOMAIN_META[paper.domain].badgeClass}`}>
                   {DOMAIN_META[paper.domain].label}
                 </span>
@@ -160,11 +165,16 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                     {TOPIC_META[t].label}
                   </span>
                 ))}
+                <span className="font-mono-code rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  发表 {paper.publishedDate} · 被引 {paper.citedByCount}
+                </span>
               </div>
               <h2 className="font-serif-academic mt-2 text-xl font-bold leading-snug text-slate-900 dark:text-white">
                 {paper.titleZh}
               </h2>
-              <p className="mt-1 font-mono-code text-xs text-slate-500">{paper.title}</p>
+              {paper.titleZh !== paper.title && (
+                <p className="mt-1 font-mono-code text-xs text-slate-500">{paper.title}</p>
+              )}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span>作者：{paper.authors.join(', ')}</span>
                 <span>机构：{paper.affiliations.join(' · ')}</span>
@@ -187,7 +197,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
               >
                 <Edit3 className="h-3.5 w-3.5" />
-                编辑解析
+                编辑精读
               </button>
               <button
                 type="button"
@@ -225,9 +235,8 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
           </div>
         </div>
 
-        {/* Scrollable 10-Part Deep Anatomy Body */}
+        {/* Scrollable 10-Part Deep Anatomy + Citation Graph Body */}
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
-          {/* 1 & 2: Background & Problem */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <SectionCard
               id="sec-bg"
@@ -256,7 +265,6 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </SectionCard>
           </div>
 
-          {/* 3 & 4: Current Status & Limitations of Prior Work */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <SectionCard
               id="sec-status"
@@ -287,11 +295,10 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </SectionCard>
           </div>
 
-          {/* 5: Proposed Method + Interactive Architecture Diagram */}
           <SectionCard
             id="sec-method"
             num="05"
-            title="本文提出的方法与系统架构"
+            title="本文提出的方法与原理框图"
             subtitleEn="Proposed Methodology & Architecture"
             icon={<Sparkles className="h-4 w-4 text-indigo-600" />}
             darkMode={darkMode}
@@ -302,7 +309,6 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             <ArchitectureDiagram modules={anatomy.architectureModules} darkMode={darkMode} />
           </SectionCard>
 
-          {/* 6: Experimental Validation */}
           <SectionCard
             id="sec-exp"
             num="06"
@@ -316,7 +322,6 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </p>
           </SectionCard>
 
-          {/* 7: Dataset Provenance & Construction */}
           <SectionCard
             id="sec-data"
             num="07"
@@ -328,22 +333,20 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             <DatasetProvenanceVisual dataset={anatomy.dataset} darkMode={darkMode} />
           </SectionCard>
 
-          {/* 8: Comparison & Ablation Charts */}
           <SectionCard
             id="sec-cmp"
             num="08"
-            title="对比实验与消融实验深度可视化"
-            subtitleEn="Comparative & Ablation Studies"
+            title="对比实验与消融实验结果表"
+            subtitleEn="Comparative & Ablation Tables"
             icon={<Sparkles className="h-4 w-4 text-indigo-600" />}
             darkMode={darkMode}
           >
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <ComparisonChart comparison={anatomy.comparisonMetrics} darkMode={darkMode} />
-              <AblationChart ablation={anatomy.ablationStudy} darkMode={darkMode} />
+              <ComparisonTable comparison={anatomy.comparisonMetrics} darkMode={darkMode} />
+              <AblationTable ablation={anatomy.ablationStudy} darkMode={darkMode} />
             </div>
           </SectionCard>
 
-          {/* 9: Conclusion */}
           <SectionCard
             id="sec-conc"
             num="09"
@@ -359,7 +362,6 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </div>
           </SectionCard>
 
-          {/* 10: Future Directions & Paper Limitations */}
           <SectionCard
             id="sec-future"
             num="10"
@@ -398,7 +400,24 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </div>
           </SectionCard>
 
-          {/* Peer Comments Section */}
+          <SectionCard
+            id="sec-cite"
+            num="11"
+            title="论文引用关系拓扑图（上游参考文献与下游施引研究）"
+            subtitleEn="Citation Lineage Graph"
+            icon={<GitCommitHorizontal className="h-4 w-4 text-indigo-600" />}
+            darkMode={darkMode}
+          >
+            <EgoCitationGraph
+              paper={paper}
+              libraryPapers={libraryPapers}
+              darkMode={darkMode}
+              onImportReference={onImportReference}
+              onOpenPaper={onSelectOtherPaper}
+            />
+          </SectionCard>
+
+          {/* Personal Reading Notes */}
           <section
             className={`rounded-2xl border p-5 ${
               darkMode ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white'
@@ -406,38 +425,24 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
           >
             <div className="mb-3 flex items-center gap-2 text-sm font-bold">
               <MessageSquare className="h-4 w-4 text-indigo-600" />
-              <span>同行学术批注与讨论 ({paper.comments.length})</span>
+              <span>我的精读笔记 ({paper.comments.length})</span>
             </div>
 
-            <form onSubmit={handleCommentSubmit} className="grid grid-cols-1 gap-2 sm:grid-cols-12">
+            <form onSubmit={handleNoteSubmit} className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
-                value={commentAuthor}
-                onChange={(e) => setCommentAuthor(e.target.value)}
-                placeholder="姓名"
-                className="rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-500 sm:col-span-2 dark:border-slate-700 dark:bg-slate-800"
-              />
-              <input
-                type="text"
-                value={commentRole}
-                onChange={(e) => setCommentRole(e.target.value)}
-                placeholder="研究方向/头衔"
-                className="rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-500 sm:col-span-3 dark:border-slate-700 dark:bg-slate-800"
-              />
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="记录复现要点、公式质疑或与自己课题的结合灵感..."
-                className="rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-500 sm:col-span-5 dark:border-slate-700 dark:bg-slate-800"
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                placeholder="记录复现要点、论文灵感、与自身课题的切入点..."
+                className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800"
               />
               <button
                 type="submit"
-                disabled={submitting || !commentText.trim()}
-                className="inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 sm:col-span-2"
+                disabled={submitting || !noteText.trim()}
+                className="inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 <Send className="h-3.5 w-3.5" />
-                提交批注
+                保存笔记
               </button>
             </form>
 
@@ -448,12 +453,10 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                   className="flex items-start justify-between rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs dark:border-slate-800 dark:bg-slate-800/40"
                 >
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{c.author}</span>
-                      <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {c.role}
-                      </span>
-                      <span className="text-slate-400">{formatRelativeTime(c.createdAt)}</span>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                      <span className="font-bold text-slate-700 dark:text-slate-200">{c.author}</span>
+                      <span>·</span>
+                      <span>{c.createdAt.slice(0, 16).replace('T', ' ')}</span>
                     </div>
                     <p className="mt-1 text-slate-700 dark:text-slate-300">{c.content}</p>
                   </div>

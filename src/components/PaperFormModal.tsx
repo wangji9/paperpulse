@@ -38,13 +38,11 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Editable form fields
   const [title, setTitle] = useState(editingPaper?.title || '');
   const [titleZh, setTitleZh] = useState(editingPaper?.titleZh || '');
   const [authorsStr, setAuthorsStr] = useState(editingPaper?.authors.join(', ') || '');
   const [journal, setJournal] = useState(editingPaper?.journal || 'Journal of Manufacturing Systems');
   const [journalShort, setJournalShort] = useState(editingPaper?.journalShort || 'JMS');
-  const [journalRank, setJournalRank] = useState(editingPaper?.journalRank || 'SCI Q1');
   const [domain, setDomain] = useState<DomainCategory>(editingPaper?.domain || 'manufacturing');
   const [topics, setTopics] = useState<ResearchTopic[]>(editingPaper?.topics || ['LLM']);
   const [publishedDate, setPublishedDate] = useState(
@@ -52,8 +50,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   );
   const [doi, setDoi] = useState(editingPaper?.doi || '');
   const [url, setUrl] = useState(editingPaper?.url || '');
-  const [weiboSummary, setWeiboSummary] = useState(editingPaper?.weiboSummary || '');
-  const [keyHighlightMetric, setKeyHighlightMetric] = useState(editingPaper?.keyHighlightMetric || '');
+  const [digestSummary, setDigestSummary] = useState(editingPaper?.digestSummary || '');
 
   // 10-part anatomy fields
   const [background, setBackground] = useState(editingPaper?.anatomy.background || '');
@@ -74,12 +71,12 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
   );
   const [datasetScale, setDatasetScale] = useState(editingPaper?.anatomy.dataset.scale || '');
   const [datasetSummary, setDatasetSummary] = useState(editingPaper?.anatomy.dataset.summary || '');
-  const [comparisonSummaryText, setComparisonSummaryText] = useState(
+  const [comparisonInput, setComparisonInput] = useState(
     editingPaper
       ? editingPaper.anatomy.comparisonMetrics.rows
-          .map((r) => `${r.method}:${r.values[editingPaper.anatomy.comparisonMetrics.primaryMetric] ?? 0}`)
-          .join('; ')
-      : 'Proposed (本文):95.2; SOTA Baseline:88.4; Standard Baseline:82.1'
+          .map((r) => `${r.method}: ${String(Object.values(r.values)[0] ?? '')}`)
+          .join('\n')
+      : ''
   );
   const [ablationSummary, setAblationSummary] = useState(editingPaper?.anatomy.ablationStudy.summary || '');
   const [conclusion, setConclusion] = useState(editingPaper?.anatomy.conclusion || '');
@@ -101,9 +98,6 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
     setError('');
     try {
       const { paper, alreadyExists } = await importPaperByIdentifier(identifier.trim());
-      if (alreadyExists) {
-        setError('该文献已存在于数据库中，已为您定位最新数据。');
-      }
       onSaved(paper, !alreadyExists);
       onClose();
     } catch (err) {
@@ -123,21 +117,22 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
     setError('');
 
     try {
-      const parsedRows = comparisonSummaryText
-        .split(';')
-        .map((seg) => seg.trim())
+      const baseAnatomy = editingPaper?.anatomy;
+      const customRows = comparisonInput
+        .split('\n')
+        .map((line) => line.trim())
         .filter(Boolean)
-        .map((seg, idx) => {
-          const [method, valStr] = seg.split(':');
-          const val = parseFloat(valStr || '85') || 85;
+        .map((line, idx) => {
+          const [method, val] = line.split(':');
           return {
-            method: (method || `Method ${idx + 1}`).trim(),
-            isProposed: idx === 0 || (method || '').includes('本文') || (method || '').includes('Proposed'),
-            values: { PrimaryScore: val },
+            method: (method || `方法 ${idx + 1}`).trim(),
+            isProposed: idx === 0 || (method || '').includes('本文'),
+            values: {
+              [baseAnatomy?.comparisonMetrics.metricNames[0] || '对比说明']: (val || '待补充').trim(),
+            },
           };
         });
 
-      const baseAnatomy = editingPaper?.anatomy;
       const payload: Partial<AcademicPaper> & { quickAbstract?: string } = {
         title: title.trim(),
         titleZh: titleZh.trim() || title.trim(),
@@ -147,79 +142,69 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
           .filter(Boolean),
         journal: journal.trim(),
         journalShort: journalShort.trim(),
-        journalRank: journalRank.trim(),
         domain,
         topics,
         publishedDate,
         doi: doi.trim(),
         url: url.trim() || '#',
-        weiboSummary: weiboSummary.trim(),
-        keyHighlightMetric: keyHighlightMetric.trim() || '10维逻辑结构化精读',
+        digestSummary: digestSummary.trim(),
         quickAbstract: `${background} ${problem} ${proposedMethod} ${experimentalValidation}`,
       };
 
-      // If user filled full anatomy fields (or editing), attach complete anatomy
-      if (background.trim() && proposedMethod.trim()) {
+      if (background.trim() || proposedMethod.trim()) {
         payload.anatomy = {
-          background: background.trim(),
-          problem: problem.trim() || '待补充核心科学问题。',
-          currentStatus: currentStatus.trim() || '待补充研究现状梳理。',
-          limitationsOfPriorWork: limitationsOfPriorWork.trim() || '待补充现存局限分析。',
-          proposedMethod: proposedMethod.trim(),
+          background: background.trim() || baseAnatomy?.background || '',
+          problem: problem.trim() || baseAnatomy?.problem || '',
+          currentStatus: currentStatus.trim() || baseAnatomy?.currentStatus || '',
+          limitationsOfPriorWork: limitationsOfPriorWork.trim() || baseAnatomy?.limitationsOfPriorWork || '',
+          proposedMethod: proposedMethod.trim() || baseAnatomy?.proposedMethod || '',
           architectureModules: baseAnatomy?.architectureModules || [
-            { id: 'u1', stage: 'input', title: '多源输入层', subtitle: '原始数据采集', detail: '标准输入预处理' },
-            { id: 'u2', stage: 'encoder', title: '特征编码器', subtitle: '领域表征抽取', detail: '高维特征提取' },
-            { id: 'u3', stage: 'core', title: '核心创新引擎', subtitle: topics.join(' + '), detail: proposedMethod.slice(0, 60) },
-            { id: 'u4', stage: 'fusion', title: '对齐与约束层', subtitle: '先验约束校验', detail: '提升精度与鲁棒性' },
-            { id: 'u5', stage: 'output', title: '输出决策层', subtitle: '可解释结果', detail: '任务输出与验证' },
+            { id: 'u1', stage: 'input', title: '输入数据流', subtitle: '原始观测', detail: '输入标准化处理' },
+            { id: 'u2', stage: 'encoder', title: '特征表征层', subtitle: '编码映射', detail: '高维语义特征提取' },
+            { id: 'u3', stage: 'core', title: '核心创新机制', subtitle: topics.join(' + '), detail: proposedMethod.slice(0, 80) },
+            { id: 'u4', stage: 'fusion', title: '对齐约束层', subtitle: '优化校验', detail: '保障方法可靠性' },
+            { id: 'u5', stage: 'output', title: '输出与验证', subtitle: journalShort, detail: '任务结果输出' },
           ],
-          experimentalValidation: experimentalValidation.trim() || '在标准基准与消融设定下完成系统验证。',
+          experimentalValidation: experimentalValidation.trim() || baseAnatomy?.experimentalValidation || '',
           dataset: {
             sourceType: datasetSourceType,
             names: datasetNamesStr
               .split(',')
               .map((s) => s.trim())
               .filter(Boolean),
-            scale: datasetScale.trim() || '依据论文实验规模',
+            scale: datasetScale.trim() || baseAnatomy?.dataset.scale || '依据原文实验设定',
             modalities: baseAnatomy?.dataset.modalities || [
-              { label: '主模态数据', percentage: 65 },
-              { label: '辅助语义/标注', percentage: 35 },
+              { label: '主模态数据', percentage: 60 },
+              { label: '标注与辅助信息', percentage: 40 },
             ],
             constructionSteps: baseAnatomy?.dataset.constructionSteps || [
-              { step: '01', title: '数据采集与基准对齐', description: datasetSummary || '完成数据清洗与标准化划分' },
+              { step: '01', title: '数据构建流程', description: datasetSummary || '依据原文构建与标注协议' },
             ],
-            summary: datasetSummary.trim() || '完成公开/自建数据集构建与验证。',
+            summary: datasetSummary.trim() || baseAnatomy?.dataset.summary || '已完成数据集来源确认',
           },
           comparisonMetrics: baseAnatomy?.comparisonMetrics
             ? {
                 ...baseAnatomy.comparisonMetrics,
-                rows: parsedRows.length > 0 && !isEditing ? parsedRows : baseAnatomy.comparisonMetrics.rows,
+                rows: customRows.length > 0 ? customRows : baseAnatomy.comparisonMetrics.rows,
               }
             : {
-                metricNames: ['PrimaryScore'],
-                primaryMetric: 'PrimaryScore',
-                unit: '%',
-                higherIsBetter: true,
-                rows: parsedRows,
+                hasQuantitativeData: false,
+                metricNames: ['对比说明'],
+                primaryMetric: '对比说明',
+                unit: '',
+                rows: customRows,
               },
           ablationStudy: baseAnatomy?.ablationStudy
             ? { ...baseAnatomy.ablationStudy, summary: ablationSummary.trim() || baseAnatomy.ablationStudy.summary }
             : {
-                metricName: 'PrimaryScore',
-                unit: '%',
-                fullModelScore: parsedRows[0]?.values.PrimaryScore || 95.2,
-                items: [
-                  {
-                    variant: 'w/o 核心创新模块',
-                    removedModule: 'Core Module',
-                    score: 88.5,
-                    delta: -6.7,
-                    impactNote: ablationSummary.trim() || '移除核心组件后精度显著下滑。',
-                  },
-                ],
-                summary: ablationSummary.trim() || '各关键组件消融均证实有效性。',
+                hasQuantitativeData: false,
+                metricName: '消融总结',
+                unit: '',
+                fullModelScore: '完整方法',
+                items: [],
+                summary: ablationSummary.trim() || '待补充消融细节',
               },
-          conclusion: conclusion.trim() || '本文方法有效突破既有瓶颈并取得SOTA性能。',
+          conclusion: conclusion.trim() || baseAnatomy?.conclusion || '',
           futureAndLimitations: {
             paperLimitations: paperLimitationsStr
               .split('\n')
@@ -257,7 +242,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-3 backdrop-blur-sm"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -268,9 +253,14 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <PlusCircle className="h-5 w-5 text-indigo-600" />
-            <h2 className="text-base font-bold">{isEditing ? '编辑文献与十维逻辑解析' : '收录新文献 · 自动解析或结构化录入'}</h2>
+            <h2 className="text-base font-bold">{isEditing ? '编辑文献与十维精读笔记' : '入库新文献 · 在线抓取或结构化录入'}</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button
+            type="button"
+            aria-label="关闭弹窗"
+            onClick={onClose}
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -284,7 +274,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                 mode === 'import' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}
             >
-              ⚡ arXiv ID / DOI / 标题一键抓取解析
+              arXiv / DOI / OpenAlex 一键抓取入库
             </button>
             <button
               type="button"
@@ -293,7 +283,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                 mode === 'manual' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}
             >
-              📝 十维结构化精读表单录入
+              十维精读表单录入
             </button>
           </div>
         )}
@@ -310,20 +300,20 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
               <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 text-xs leading-relaxed text-slate-700 dark:border-indigo-900 dark:bg-indigo-950/30 dark:text-slate-300">
                 <div className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-300">
                   <Sparkles className="h-4 w-4" />
-                  实时文献解析引擎 (arXiv + OpenAlex API)
+                  自动引文与元数据解析（arXiv + OpenAlex）
                 </div>
                 <p className="mt-1">
-                  输入任意 arXiv 编号（如 <code className="font-mono-code font-semibold">2410.06164</code>）、DOI（如{' '}
-                  <code className="font-mono-code font-semibold">10.1016/j.jmsy.2024.08.005</code>）或论文英文标题关键词，系统将实时抓取元信息并自动构建十维学术逻辑结构存入本地 SQLite 数据库。
+                  输入 arXiv 编号（如 <code className="font-mono-code font-semibold">2503.20020</code>）、DOI（如{' '}
+                  <code className="font-mono-code font-semibold">10.1016/j.aei.2023.102333</code>）或英文标题关键词，系统将抓取真实摘要、发表日期与上下游引用关系图谱，并严格不伪造任何实验数值。
                 </p>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold">arXiv ID / DOI / 论文关键词</label>
+                <label className="mb-1.5 block text-xs font-semibold">arXiv ID / DOI / OpenAlex ID / 关键词</label>
                 <input
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="例如: 2406.09246 或 Vision-Language-Action Manufacturing"
+                  placeholder="例如: 10.1016/j.jmsy.2026.01.003 或 2503.20020"
                   className={inputClass}
                   required
                 />
@@ -342,7 +332,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                   className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  实时抓取并解析入库
+                  抓取元数据与引文并入库
                 </button>
               </div>
             </form>
@@ -363,40 +353,34 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold">简称</label>
+                    <label className="mb-1 block text-xs font-semibold">期刊简称</label>
                     <input type="text" value={journalShort} onChange={(e) => setJournalShort(e.target.value)} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold">分区 / 等级</label>
-                    <input type="text" value={journalRank} onChange={(e) => setJournalRank(e.target.value)} className={inputClass} />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold">作者（逗号分隔）</label>
-                  <input type="text" value={authorsStr} onChange={(e) => setAuthorsStr(e.target.value)} className={inputClass} />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold">所属领域</label>
-                    <select
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value as DomainCategory)}
-                      className={inputClass}
-                    >
-                      <option value="manufacturing">智能制造期刊</option>
-                      <option value="computer_science">计算机顶刊顶会</option>
-                      <option value="interdisciplinary">制造 × AI 交叉</option>
-                    </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-semibold">发表日期</label>
                     <input type="date" value={publishedDate} onChange={(e) => setPublishedDate(e.target.value)} className={inputClass} />
                   </div>
                 </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold">作者（逗号分隔）</label>
+                  <input type="text" value={authorsStr} onChange={(e) => setAuthorsStr(e.target.value)} className={inputClass} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold">所属领域</label>
+                  <select
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value as DomainCategory)}
+                    className={inputClass}
+                  >
+                    <option value="manufacturing">智能制造期刊</option>
+                    <option value="computer_science">计算机顶刊顶会</option>
+                    <option value="interdisciplinary">制造 × AI 交叉</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold">研究方向标签（可多选）</label>
+                <label className="mb-1 block text-xs font-semibold">研究方向标签</label>
                 <div className="flex flex-wrap gap-1.5">
                   {ALL_TOPICS.map((t) => {
                     const active = topics.includes(t);
@@ -420,31 +404,22 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold">DOI / 原文链接</label>
-                  <input type="text" value={doi} onChange={(e) => setDoi(e.target.value)} placeholder="10.1016/..." className={inputClass} />
+                  <label className="mb-1 block text-xs font-semibold">DOI</label>
+                  <input type="text" value={doi} onChange={(e) => setDoi(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold">核心指标亮点标签</label>
-                  <input
-                    type="text"
-                    value={keyHighlightMetric}
-                    onChange={(e) => setKeyHighlightMetric(e.target.value)}
-                    placeholder="如：准确率 96.4% (+12.1%)"
-                    className={inputClass}
-                  />
+                  <label className="mb-1 block text-xs font-semibold">原文链接</label>
+                  <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold">动态信息流一句话学术速递 (Weibo Hook)</label>
-                <textarea rows={2} value={weiboSummary} onChange={(e) => setWeiboSummary(e.target.value)} className={inputClass} />
+                <label className="mb-1 block text-xs font-semibold">一句话学术导读</label>
+                <textarea rows={2} value={digestSummary} onChange={(e) => setDigestSummary(e.target.value)} className={inputClass} />
               </div>
 
-              {/* 10-part fields */}
               <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
-                <h3 className="mb-3 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                  十维学术逻辑结构化详情 (支持随时增改)
-                </h3>
+                <h3 className="mb-3 text-xs font-bold text-indigo-600 dark:text-indigo-400">十维学术逻辑精读内容</h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs font-semibold">01 研究背景</label>
@@ -484,15 +459,16 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
 
                 <div className="mt-3 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-3 dark:border-slate-700">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold">07 数据集来源类型</label>
+                    <label className="mb-1 block text-xs font-semibold">07 数据集来源</label>
                     <select
                       value={datasetSourceType}
                       onChange={(e) => setDatasetSourceType(e.target.value as DatasetSourceType)}
                       className={inputClass}
                     >
-                      <option value="public">公开基准数据集 (Public)</option>
-                      <option value="self_built">自建数据集 (Self-Built)</option>
-                      <option value="hybrid">公开 + 自建混合 (Hybrid)</option>
+                      <option value="public">公开基准数据集</option>
+                      <option value="self_built">研究团队自建数据集</option>
+                      <option value="hybrid">公开 + 自建混合</option>
+                      <option value="unspecified">待精读核实</option>
                     </select>
                   </div>
                   <div>
@@ -500,28 +476,23 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                     <input type="text" value={datasetNamesStr} onChange={(e) => setDatasetNamesStr(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold">数据规模与构成说明</label>
+                    <label className="mb-1 block text-xs font-semibold">规模与样本说明</label>
                     <input type="text" value={datasetScale} onChange={(e) => setDatasetScale(e.target.value)} className={inputClass} />
                   </div>
                   <div className="sm:col-span-3">
-                    <label className="mb-1 block text-xs font-semibold">数据集如何构建及评价</label>
+                    <label className="mb-1 block text-xs font-semibold">数据集如何构建</label>
                     <input type="text" value={datasetSummary} onChange={(e) => setDatasetSummary(e.target.value)} className={inputClass} />
                   </div>
                 </div>
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold">08 对比指标（格式：方法:数值; ...）</label>
-                    <input
-                      type="text"
-                      value={comparisonSummaryText}
-                      onChange={(e) => setComparisonSummaryText(e.target.value)}
-                      className={inputClass}
-                    />
+                    <label className="mb-1 block text-xs font-semibold">08 对比实验表条目（每行: 方法: 结果说明）</label>
+                    <textarea rows={2} value={comparisonInput} onChange={(e) => setComparisonInput(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold">08 消融实验核心结论</label>
-                    <input type="text" value={ablationSummary} onChange={(e) => setAblationSummary(e.target.value)} className={inputClass} />
+                    <label className="mb-1 block text-xs font-semibold">08 消融实验核心发现</label>
+                    <textarea rows={2} value={ablationSummary} onChange={(e) => setAblationSummary(e.target.value)} className={inputClass} />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-semibold">09 研究结论</label>
@@ -562,7 +533,7 @@ export const PaperFormModal: React.FC<PaperFormModalProps> = ({
                   className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  {isEditing ? '保存更新至 SQLite' : '发布并存入 SQLite'}
+                  {isEditing ? '保存更新' : '入库保存'}
                 </button>
               </div>
             </form>

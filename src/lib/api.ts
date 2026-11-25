@@ -1,4 +1,4 @@
-import type { AcademicPaper, PaperComment } from '../types/paper';
+import type { AcademicPaper, AutoSyncConfig, PaperComment, ReadingStatus } from '../types/paper';
 
 export interface PaperFilters {
   q?: string;
@@ -7,23 +7,17 @@ export interface PaperFilters {
   journal?: string;
   datasetType?: string;
   bookmarked?: boolean;
+  readingStatus?: string;
+  recentOnly?: boolean;
   date?: string;
 }
 
-export interface AnalyticsResponse {
+export interface StorageStats {
+  dbPath: string;
+  sizeKB: number;
   totalPapers: number;
-  topicCounts: Record<string, number>;
-  domainCounts: Record<string, number>;
-  datasetCounts: Record<string, number>;
-  journals: Array<{ name: string; count: number }>;
-  dailyTimeline: Array<{ date: string; count: number }>;
-  storage: {
-    dbPath: string;
-    sizeKB: number;
-    totalPapers: number;
-    totalComments: number;
-    recentSyncs: Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }>;
-  };
+  totalComments: number;
+  recentSyncs: Array<{ id: number; syncedAt: string; source: string; addedCount: number; notes: string }>;
 }
 
 export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicPaper[]> {
@@ -34,6 +28,8 @@ export async function fetchPapers(filters: PaperFilters = {}): Promise<AcademicP
   if (filters.journal && filters.journal !== 'all') params.set('journal', filters.journal);
   if (filters.datasetType && filters.datasetType !== 'all') params.set('datasetType', filters.datasetType);
   if (filters.bookmarked) params.set('bookmarked', 'true');
+  if (filters.readingStatus && filters.readingStatus !== 'all') params.set('readingStatus', filters.readingStatus);
+  if (filters.recentOnly) params.set('recentOnly', 'true');
   if (filters.date) params.set('date', filters.date);
 
   const res = await fetch(`/api/papers?${params.toString()}`);
@@ -80,13 +76,16 @@ export async function updatePaper(id: string, payload: Partial<AcademicPaper>): 
   return data.paper;
 }
 
-export async function engagePaper(id: string, action: 'like' | 'bookmark' | 'repost'): Promise<AcademicPaper> {
-  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/engage`, {
+export async function updatePaperLibraryState(
+  id: string,
+  patch: { isBookmarked?: boolean; readingStatus?: ReadingStatus }
+): Promise<AcademicPaper> {
+  const res = await fetch(`/api/papers/${encodeURIComponent(id)}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action }),
+    body: JSON.stringify(patch),
   });
-  if (!res.ok) throw new Error('操作失败');
+  if (!res.ok) throw new Error('状态更新失败');
   const data = (await res.json()) as { paper: AcademicPaper };
   return data.paper;
 }
@@ -104,7 +103,7 @@ export async function postComment(paperId: string, author: string, role: string,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ author, role, content }),
   });
-  if (!res.ok) throw new Error('评论发送失败');
+  if (!res.ok) throw new Error('笔记保存失败');
   const data = (await res.json()) as { comment: PaperComment };
   return data.comment;
 }
@@ -113,7 +112,7 @@ export async function removeComment(paperId: string, commentId: string): Promise
   const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('删除评论失败');
+  if (!res.ok) throw new Error('删除笔记失败');
 }
 
 export async function syncLiveFeed(query?: string): Promise<{
@@ -139,8 +138,19 @@ export async function syncLiveFeed(query?: string): Promise<{
   };
 }
 
-export async function fetchAnalytics(): Promise<AnalyticsResponse> {
-  const res = await fetch('/api/analytics');
-  if (!res.ok) throw new Error('获取统计数据失败');
-  return (await res.json()) as AnalyticsResponse;
+export async function fetchAutoSyncStatus(): Promise<{ config: AutoSyncConfig; storage: StorageStats }> {
+  const res = await fetch('/api/auto-sync/config');
+  if (!res.ok) throw new Error('获取自动追踪配置失败');
+  return (await res.json()) as { config: AutoSyncConfig; storage: StorageStats };
+}
+
+export async function updateAutoSyncConfig(patch: Partial<AutoSyncConfig>): Promise<AutoSyncConfig> {
+  const res = await fetch('/api/auto-sync/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error('更新配置失败');
+  const data = (await res.json()) as { config: AutoSyncConfig };
+  return data.config;
 }

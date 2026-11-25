@@ -1,12 +1,14 @@
 import type {
   AcademicPaper,
+  CitationRefNode,
   DatasetSourceType,
   DomainCategory,
   PaperAnatomy,
   ResearchTopic,
 } from '../src/types/paper.js';
 
-interface RawExternalPaper {
+export interface RawExternalPaper {
+  openAlexId?: string;
   title: string;
   abstract: string;
   authors: string[];
@@ -17,25 +19,27 @@ interface RawExternalPaper {
   publishedDate: string;
   doi: string;
   url: string;
+  citedByCount: number;
+  citations: CitationRefNode[];
   sourceOrigin: 'arxiv_live' | 'openalex_live' | 'user_created';
 }
 
 function detectTopics(text: string): ResearchTopic[] {
   const lower = text.toLowerCase();
   const topics: ResearchTopic[] = [];
-  if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|language model)/.test(lower)) {
+  if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|language model|agentic)/.test(lower)) {
     topics.push('LLM');
   }
-  if (/(knowledge graph|ontology|triple|heterogeneous graph|graph neural|kgqa|neo4j)/.test(lower)) {
+  if (/(knowledge graph|ontology|triple|heterogeneous graph|graph neural|kgqa|causal graph)/.test(lower)) {
     topics.push('KnowledgeGraph');
   }
-  if (/(computer vision|segmentation|detection|defect|point cloud|image|visual|diffusion|yolo|vit)/.test(lower)) {
+  if (/(computer vision|segmentation|detection|defect|point cloud|image|visual|diffusion|yolo|vit|3d|video)/.test(lower)) {
     topics.push('ComputerVision');
   }
-  if (/(multimodal|vision-language|vlm|cross-modal|tactile|rgb-d|thermal|audio-visual)/.test(lower)) {
+  if (/(multimodal|vision-language|vlm|cross-modal|tactile|rgb-d|thermal|audio-visual|embedding)/.test(lower)) {
     topics.push('Multimodal');
   }
-  if (/(embodied|robot|manipulation|assembly|vla|policy|gripper|dexterous|control|navigation)/.test(lower)) {
+  if (/(embodied|robot|manipulation|assembly|vla|policy|gripper|dexterous|control|navigation|cobot)/.test(lower)) {
     topics.push('EmbodiedAI');
   }
   if (topics.length === 0) topics.push('LLM');
@@ -44,10 +48,10 @@ function detectTopics(text: string): ResearchTopic[] {
 
 function detectDomain(text: string, journal: string): DomainCategory {
   const combined = `${text} ${journal}`.toLowerCase();
-  const isMfg = /(manufactur|machining|cnc|industrial|factory|assembly|wafer|weld|additive|cirp|rcim|jms|scheduling|fault|prognostic|maintenance)/.test(
+  const isMfg = /(manufactur|machining|cnc|industrial|factory|assembly|wafer|weld|additive|cirp|rcim|jms|scheduling|fault|prognostic|maintenance|aei|shop-floor)/.test(
     combined
   );
-  const isCS = /(cvpr|iccv|neurips|icml|iclr|tpami|acl|corl|arxiv\.cs|computer vision|transformer|foundation model|deep learning)/.test(
+  const isCS = /(cvpr|iccv|neurips|icml|iclr|tpami|acl|corl|arxiv|computer vision|transformer|foundation model|deep learning|robotics|multimodal)/.test(
     combined
   );
   if (isMfg && isCS) return 'interdisciplinary';
@@ -57,8 +61,8 @@ function detectDomain(text: string, journal: string): DomainCategory {
 
 function detectDatasetType(abstract: string): { type: DatasetSourceType; names: string[] } {
   const lower = abstract.toLowerCase();
-  const hasPublic = /(mvtec|imagenet|webqsp|cwq|coco|oxe|benchmark|public dataset|open-source dataset|visA|scannet)/.test(lower);
-  const hasSelf = /(we collect|self-built|our dataset|constructed a|industrial line|real-world data|recorded|teleoperation|proprietary)/.test(
+  const hasPublic = /(mvtec|imagenet|webqsp|cwq|coco|oxe|benchmark|public dataset|open-source|visa|scannet|msrvtt|activitynet|kinetics)/.test(lower);
+  const hasSelf = /(we collect|we construct|our dataset|self-built|real-world data|teleoperation|proprietary|recorded on|industrial line|shop-floor)/.test(
     lower
   );
 
@@ -69,23 +73,25 @@ function detectDatasetType(abstract: string): { type: DatasetSourceType; names: 
   if (lower.includes('coco')) names.push('MS-COCO (公开)');
 
   if (hasPublic && hasSelf) {
-    names.push('领域实测/构建扩展集 (自建)');
+    names.push('作者自建实验/场景数据集 (自建)');
     return { type: 'hybrid', names };
   }
   if (hasSelf) {
-    names.push('研究团队自建工业/实验数据集 (自建)');
+    names.push('作者采集/自建数据集 (自建)');
     return { type: 'self_built', names };
   }
-  if (names.length === 0) names.push('领域公开标准基准集 (公开)');
-  return { type: 'public', names };
+  if (hasPublic) {
+    if (names.length === 0) names.push('公开基准数据集 (依原文标注)');
+    return { type: 'public', names };
+  }
+  return { type: 'unspecified', names: ['原文数据集细节待精读核实'] };
 }
 
 export function buildStructuredAnatomy(raw: RawExternalPaper): {
   domain: DomainCategory;
   topics: ResearchTopic[];
   titleZh: string;
-  weiboSummary: string;
-  keyHighlightMetric: string;
+  digestSummary: string;
   tags: string[];
   anatomy: PaperAnatomy;
 } {
@@ -98,7 +104,7 @@ export function buildStructuredAnatomy(raw: RawExternalPaper): {
     LLM: '大模型',
     KnowledgeGraph: '知识图谱',
     ComputerVision: '计算机视觉',
-    Multimodal: '多模态融合',
+    Multimodal: '多模态',
     EmbodiedAI: '具身智能',
   };
 
@@ -110,132 +116,132 @@ export function buildStructuredAnatomy(raw: RawExternalPaper): {
 
   const bgText =
     sentences[0] ||
-    `随着智能制造与${topicLabels.join('、')}技术的深度融合，${raw.journalShort} 领域亟需兼顾高精度、强泛化与可解释性的新一代智能分析框架。`;
+    `围绕 ${topicLabels.join('、')} 与相关领域前沿问题展开研究（来源：${raw.journal}，发表日期：${raw.publishedDate}）。`;
   const probText =
     sentences[1] ||
-    '在真实复杂场景下，现有方法面临跨模态语义鸿沟、长尾样本匮乏及先验物理/结构知识利用不足等瓶颈，制约了实际部署可靠性。';
+    '在复杂真实任务下，现有方法面临跨模态语义理解不足、泛化受限或结构化先验利用不充分等问题（详见原文摘要）。';
   const methodText =
     sentences.slice(2, 4).join(' ') ||
-    `针对上述挑战，本文围绕 ${topicLabels.join(' + ')} 协同架构展开创新，结合领域结构化先验与端到端表征对齐机制显著提升系统性能。`;
+    `本文围绕 ${topicLabels.join(' + ')} 提出新的建模与协同推理框架，以解决上述核心瓶颈。`;
   const expText =
     sentences.slice(4).join(' ') ||
-    '作者在公开基准与真实场景下进行了充分的对比试验、消融验证及鲁棒性压力测试，验证了各核心模块的有效性。';
+    '作者在相应公开或构建基准上开展了基线对比与模块有效性验证（精确实验配置与数值可通过「编辑精读」结合原文PDF补充）。';
 
-  const titleZh = `[自动解析 · ${topicLabels.join('/')}] ${raw.title}`;
-  const weiboSummary = `【实时学术同步 · ${raw.journalShort}】${sentences.slice(0, 2).join(' ').slice(0, 180)}... 已自动拆解为10维学术逻辑链与实验对比视图，支持在线编辑补充细节。`;
+  const titleZh = raw.title;
+  const digestSummary =
+    sentences.length > 0
+      ? sentences.slice(0, 3).join(' ')
+      : `自动同步自 ${raw.journal}（${raw.publishedDate}），涉及 ${topicLabels.join(' / ')} 方向。`;
 
   const anatomy: PaperAnatomy = {
-    background: `${bgText}\n（系统提示：该文献由实时学术追踪引擎同步解析，聚焦 ${topicLabels.join('、')} 前沿交叉方向。）`,
+    background: `${bgText}\n\n[原文完整摘要]\n${raw.abstract}`,
     problem: probText,
-    currentStatus: `当前 ${topicLabels.join('与')} 领域多采用单模态或通用预训练基座直接迁移的方案，在 ${
-      domain === 'manufacturing' ? '高精度工业制造/工艺决策' : '复杂开放环境泛化'
-    } 任务中尚缺乏结构化约束与领域知识引导。`,
+    currentStatus: `研究聚焦 ${topicLabels.join(' 与 ')} 方向；原文针对现有方法在当前任务设定的不足进行了系统对比（可结合原文 Related Work 进一步精读补充）。`,
     limitationsOfPriorWork:
-      '1. 通用模型在专业术语、物理规律与细粒度特征上容易产生幻觉或退化；\n2. 跨模态特征对齐颗粒度较粗，难以适应噪声与小样本工况；\n3. 端到端黑盒推理可解释性较弱，缺乏可追溯的对比与消融依据。',
+      '现有工作在专业领域知识约束、跨模态对齐精度或复杂真实场景泛化上存在局限，有待更结构化/协同化的新方法突破（可点击「编辑精读」细化逐条局限）。',
     proposedMethod: methodText,
     architectureModules: [
       {
         id: 'auto-1',
         stage: 'input',
-        title: '多源异构数据接入层',
-        subtitle: `${topicLabels[0]} 原始观测与规范输入`,
-        detail: '接收图像/文本/结构化图谱/传感时序流并完成标准化预处理。',
+        title: '输入观测与任务描述',
+        subtitle: topicLabels[0],
+        detail: bgText.slice(0, 90),
       },
       {
         id: 'auto-2',
         stage: 'encoder',
-        title: '领域特征表征编码器',
-        subtitle: '主干特征抽取与知识映射',
-        detail: '抽取高维语义及结构拓扑表征，抑制噪声干扰。',
+        title: '特征编码与表征对齐',
+        subtitle: 'Representation',
+        detail: '将多源输入映射至统一可计算表征空间。',
       },
       {
         id: 'auto-3',
         stage: 'core',
-        title: '核心协同推理模块',
-        subtitle: `${topicLabels.join(' × ')} 交互机制`,
-        detail: methodText.slice(0, 80),
+        title: '核心创新机制',
+        subtitle: topicLabels.join(' × '),
+        detail: methodText.slice(0, 110),
       },
       {
         id: 'auto-4',
         stage: 'fusion',
-        title: '对齐优化与约束校核',
-        subtitle: '先验约束重排序 / 损失正则',
-        detail: '保证输出结果的逻辑一致性与领域合规性。',
+        title: '约束优化与推理',
+        subtitle: 'Optimization',
+        detail: '联合任务目标与结构化/领域约束进行优化。',
       },
       {
         id: 'auto-5',
         stage: 'output',
-        title: '任务预测与可解释输出',
-        subtitle: '高精度决策结果与置信分析',
-        detail: '输出最终任务结果并生成可验证的中间归因线索。',
+        title: '实验评测与输出',
+        subtitle: raw.journalShort,
+        detail: expText.slice(0, 90),
       },
     ],
     experimentalValidation: expText,
     dataset: {
       sourceType: ds.type,
       names: ds.names,
-      scale: '依据原文实验协议划分训练集、验证集与跨场景测试集（可在编辑模式补充精确样本规模）',
+      scale: '依据原文实验设定（未自动编造样本数，请精读原文后在编辑模式补充精确规模）',
       modalities: [
-        { label: '核心主模态观测数据', percentage: 60 },
-        { label: '领域标注/知识文本指令', percentage: 40 },
+        { label: '核心观测模态', percentage: 60 },
+        { label: '标签 / 文本 / 结构知识', percentage: 40 },
       ],
       constructionSteps: [
         {
           step: '01',
-          title: '原始数据获取与基准对齐',
-          description: ds.type === 'public' ? '直接拉取国际公开基准数据集并统一评测划分。' : '采集真实实验台/产线样本并与行业基准对齐。',
-        },
-        {
-          step: '02',
-          title: '清洗、标注与质量控制',
-          description: '剔除低质量噪声样本并完成领域规范化标注与一致性检验。',
+          title: '原始数据来源核查',
+          description:
+            ds.type === 'public'
+              ? '原文摘要指明基于公开标准基准数据集开展验证。'
+              : ds.type === 'self_built'
+                ? '原文摘要表明包含研究团队自建或实机采集的数据集。'
+                : ds.type === 'hybrid'
+                  ? '原文摘要表明同时采用公开基准与自建补充数据集。'
+                  : '摘要未显式披露数据集来源分类，建议精读原文第3/4节后手动标注。',
         },
       ],
-      summary: `文献采用 ${ds.type === 'public' ? '公开数据集' : ds.type === 'self_built' ? '自建数据集' : '公开+自建混合数据集'} 验证方案，覆盖 ${ds.names.join('、')}。`,
+      summary: `自动识别结果：${ds.names.join('、')}（未编造任何虚假数字，支持手动精细编辑）。`,
     },
     comparisonMetrics: {
-      metricNames: ['PrimaryAcc', 'Robustness', 'Efficiency'],
-      primaryMetric: 'PrimaryAcc',
-      unit: '%',
-      higherIsBetter: true,
+      hasQuantitativeData: false,
+      metricNames: ['方法项', '依据来源', '备注'],
+      primaryMetric: '方法项',
+      unit: '',
+      note: '该文献由实时追踪接口自动入库，系统严格不生成虚假对比百分比。请对照原文实验表格后点击「编辑精读」录入真实基线指标。',
       rows: [
-        { method: 'Proposed (本文方法)', isProposed: true, values: { PrimaryAcc: 92.4, Robustness: 90.8, Efficiency: 89.5 } },
-        { method: 'SOTA Baseline A', values: { PrimaryAcc: 86.2, Robustness: 82.4, Efficiency: 84.0 } },
-        { method: 'Standard Baseline B', values: { PrimaryAcc: 81.5, Robustness: 77.9, Efficiency: 86.2 } },
+        {
+          method: '本文提出方法',
+          isProposed: true,
+          values: { 方法项: methodText.slice(0, 56), 依据来源: '原文摘要自动提取', 备注: '待补充原文数值表' },
+        },
+        {
+          method: '原文对比基线',
+          values: { 方法项: '依据原文实验章节对照方法', 依据来源: raw.journalShort, 备注: '待精读录入' },
+        },
       ],
     },
     ablationStudy: {
-      metricName: 'PrimaryAcc',
-      unit: '%',
-      fullModelScore: 92.4,
+      hasQuantitativeData: false,
+      metricName: '消融项',
+      unit: '',
+      fullModelScore: '待精读原文补充',
       items: [
         {
-          variant: 'w/o 核心知识/对齐模块',
-          removedModule: 'Core Alignment Module',
-          score: 86.8,
-          delta: -5.6,
-          impactNote: '移除核心对齐机制后跨场景性能明显下滑。',
-        },
-        {
-          variant: 'w/o 领域先验约束',
-          removedModule: 'Prior Constraint Gate',
-          score: 89.1,
-          delta: -3.3,
-          impactNote: '边界样本误判率增加。',
+          variant: '核心模块消融记录',
+          removedModule: '待精读原文消融表指定',
+          score: '待录入',
+          delta: '待录入',
+          impactNote: '系统不会伪造消融跌落数值，请在阅读原文消融实验表后手动补充。',
         },
       ],
-      summary: '核心协同模块与领域先验约束均带来了显著增益（可在详情页点击编辑录入原文精确消融表格数据）。',
+      summary: '待结合原文消融实验章节录入各核心组件的真实贡献度变化。',
     },
-    conclusion: `本文提出的方案在 ${topicLabels.join('与')} 交叉任务上取得了优于现有基准的表现，为相关制造/计算机系统的智能化升级提供了切实可行的技术路径。`,
+    conclusion:
+      sentences.slice(-1)[0] ||
+      `本文为 ${topicLabels.join('、')} 相关领域提供了新的研究思路与实验证据，建议结合原文细节进一步精读。`,
     futureAndLimitations: {
-      paperLimitations: [
-        '极端长尾与未见过的跨分布场景下仍需进一步扩充验证；',
-        '大参数量模型在低功耗边缘硬件上的实时部署效率有待继续压缩优化。',
-      ],
-      futureDirections: [
-        '探索更轻量化蒸馏部署与多模态闭环持续学习；',
-        '拓展至更多工业制造装备与复杂具身协同场景。',
-      ],
+      paperLimitations: ['待结合原文 Discussion / Limitations 章节精读补充本文局限性。'],
+      futureDirections: ['待结合原文 Conclusion / Future Work 章节精读补充未来展望。'],
     },
   };
 
@@ -243,9 +249,8 @@ export function buildStructuredAnatomy(raw: RawExternalPaper): {
     domain,
     topics,
     titleZh,
-    weiboSummary,
-    keyHighlightMetric: '已解析10维逻辑链 · 支持精确指标编辑',
-    tags: [...topicLabels, raw.journalShort, ds.type === 'public' ? '公开数据集' : ds.type === 'self_built' ? '自建数据集' : '混合数据集'],
+    digestSummary,
+    tags: [...topicLabels, raw.journalShort],
     anatomy,
   };
 }
@@ -253,10 +258,13 @@ export function buildStructuredAnatomy(raw: RawExternalPaper): {
 export function rawToAcademicPaper(raw: RawExternalPaper): AcademicPaper {
   const structured = buildStructuredAnatomy(raw);
   return {
-    id: `paper-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id: raw.openAlexId
+      ? `oa-${raw.openAlexId.split('/').pop()}`
+      : `paper-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    openAlexId: raw.openAlexId,
     title: raw.title,
     titleZh: structured.titleZh,
-    authors: raw.authors.length > 0 ? raw.authors : ['Research Team'],
+    authors: raw.authors.length > 0 ? raw.authors : ['Unknown Authors'],
     affiliations: raw.affiliations.length > 0 ? raw.affiliations : [raw.journal],
     journal: raw.journal,
     journalShort: raw.journalShort,
@@ -268,13 +276,13 @@ export function rawToAcademicPaper(raw: RawExternalPaper): AcademicPaper {
     doi: raw.doi,
     url: raw.url,
     sourceOrigin: raw.sourceOrigin,
-    weiboSummary: structured.weiboSummary,
-    keyHighlightMetric: structured.keyHighlightMetric,
+    abstractOriginal: raw.abstract,
+    digestSummary: structured.digestSummary,
     tags: structured.tags,
-    likes: Math.floor(Math.random() * 45) + 12,
-    isLiked: false,
+    citedByCount: raw.citedByCount,
+    citations: raw.citations,
+    readingStatus: 'unread',
     isBookmarked: false,
-    reposts: Math.floor(Math.random() * 15) + 3,
     anatomy: structured.anatomy,
     comments: [],
   };
@@ -291,75 +299,231 @@ function reconstructAbstractFromOpenAlex(invertedIndex?: Record<string, number[]
   return words.filter(Boolean).join(' ');
 }
 
-export async function fetchLivePapersFromOpenAlex(queryTopic?: string): Promise<RawExternalPaper[]> {
+export async function resolveOpenAlexCitations(workIdOrUrl: string, refUrls: string[] = []): Promise<CitationRefNode[]> {
+  const nodes: CitationRefNode[] = [];
+  const shortId = workIdOrUrl.split('/').pop();
+  if (!shortId) return nodes;
+
+  try {
+    const topRefIds = refUrls
+      .slice(0, 4)
+      .map((u) => u.split('/').pop())
+      .filter(Boolean);
+    if (topRefIds.length > 0) {
+      const refRes = await fetch(
+        `https://api.openalex.org/works?filter=ids.openalex:${topRefIds.join('|')}&per-page=4`,
+        { headers: { 'User-Agent': 'PaperPulse/1.0' } }
+      );
+      if (refRes.ok) {
+        const refData = (await refRes.json()) as { results?: Array<Record<string, unknown>> };
+        for (const x of refData.results ?? []) {
+          const src = (x.primary_location as Record<string, unknown> | undefined)?.source as Record<string, unknown> | undefined;
+          const doiClean = String(x.doi || '').replace('https://doi.org/', '');
+          nodes.push({
+            id: String(x.id),
+            title: String(x.title || 'Referenced Work'),
+            year: String(x.publication_year || ''),
+            venue: String(src?.display_name || 'Journal / Preprint'),
+            doi: doiClean || undefined,
+            url: String(x.doi || x.id || ''),
+            citedByCount: Number(x.cited_by_count || 0),
+            relation: 'references',
+          });
+        }
+      }
+    }
+
+    const citeRes = await fetch(
+      `https://api.openalex.org/works?filter=cites:${shortId}&sort=cited_by_count:desc&per-page=4`,
+      { headers: { 'User-Agent': 'PaperPulse/1.0' } }
+    );
+    if (citeRes.ok) {
+      const citeData = (await citeRes.json()) as { results?: Array<Record<string, unknown>> };
+      for (const x of citeData.results ?? []) {
+        const src = (x.primary_location as Record<string, unknown> | undefined)?.source as Record<string, unknown> | undefined;
+        const doiClean = String(x.doi || '').replace('https://doi.org/', '');
+        nodes.push({
+          id: String(x.id),
+          title: String(x.title || 'Citing Work'),
+          year: String(x.publication_year || ''),
+          venue: String(src?.display_name || 'Journal / Preprint'),
+          doi: doiClean || undefined,
+          url: String(x.doi || x.id || ''),
+          citedByCount: Number(x.cited_by_count || 0),
+          relation: 'cited_by',
+        });
+      }
+    }
+  } catch {
+    // Non-fatal: return whatever citations resolved
+  }
+
+  return nodes;
+}
+
+function getDateWindow(daysBack: number): { fromDate: string; toDate: string } {
+  const now = new Date();
+  const toDate = now.toISOString().slice(0, 10);
+  const from = new Date(now.getTime() - daysBack * 86400000);
+  const fromDate = from.toISOString().slice(0, 10);
+  return { fromDate, toDate };
+}
+
+export async function fetchYesterdayTodayFromArxiv(daysBack = 1): Promise<RawExternalPaper[]> {
+  const { fromDate } = getDateWindow(daysBack);
   const query =
-    queryTopic ||
-    '(smart manufacturing OR industrial inspection OR robotic assembly) AND (large language model OR knowledge graph OR multimodal OR embodied OR computer vision)';
-  const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&sort=publication_date:desc&per-page=6`;
+    '(cat:cs.CV OR cat:cs.RO OR cat:cs.CL OR cat:cs.AI) AND (manufacturing OR industrial OR "knowledge graph" OR multimodal OR embodied OR "vision-language" OR defect)';
+  const url = `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&sortBy=submittedDate&sortOrder=descending&max_results=8`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), 10000);
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'PaperPulse-Academic-Tracker/1.0 (mailto:research@paperpulse.local)' },
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`OpenAlex HTTP ${res.status}`);
-    const data = (await res.json()) as { results?: Array<Record<string, unknown>> };
-    const results = data.results ?? [];
-    return results
-      .filter((item) => Boolean(item.title))
-      .map((item) => {
-        const primaryLoc = item.primary_location as Record<string, unknown> | undefined;
-        const source = primaryLoc?.source as Record<string, unknown> | undefined;
-        const journalName = String(source?.display_name || 'OpenAlex Preprint / Journal');
-        const authorships = (item.authorships as Array<Record<string, unknown>> | undefined) ?? [];
-        const authors = authorships
-          .slice(0, 5)
-          .map((a) => String((a.author as Record<string, unknown> | undefined)?.display_name || 'Author'));
-        const affiliations = authorships
-          .slice(0, 3)
-          .flatMap((a) => ((a.institutions as Array<Record<string, unknown>> | undefined) ?? []).map((i) => String(i.display_name || '')))
-          .filter(Boolean);
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const entries = xml.match(/<entry>[\s\S]*?<\/entry>/g) ?? [];
+    const parsed: RawExternalPaper[] = [];
 
-        const doiRaw = String(item.doi || '').replace('https://doi.org/', '');
-        const abstract = reconstructAbstractFromOpenAlex(item.abstract_inverted_index as Record<string, number[]> | undefined);
+    for (const entry of entries) {
+      const title = (entry.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '').replace(/\s+/g, ' ').trim();
+      const summary = (entry.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] || '').replace(/\s+/g, ' ').trim();
+      const published = (entry.match(/<published>([\s\S]*?)<\/published>/)?.[1] || '').slice(0, 10);
+      const idUrl = (entry.match(/<id>([\s\S]*?)<\/id>/)?.[1] || '').trim();
+      const arxivId = idUrl.split('/abs/').pop()?.replace(/v\d+$/, '') || '';
+      const authors = Array.from(entry.matchAll(/<name>([\s\S]*?)<\/name>/g)).map((m) => m[1].trim());
+      if (!title) continue;
 
-        return {
-          title: String(item.title),
-          abstract:
-            abstract ||
-            `Recent research published in ${journalName} exploring AI-driven smart manufacturing, multimodal reasoning, and knowledge-enhanced industrial intelligence.`,
-          authors,
-          affiliations: Array.from(new Set(affiliations)),
-          journal: journalName,
-          journalShort: journalName
-            .split(/\s+/)
-            .filter((w) => w.length > 2 && /^[A-Z]/.test(w))
-            .map((w) => w[0])
-            .join('')
-            .slice(0, 6) || 'Journal',
-          journalRank: '实时学术同步 · OpenAlex',
-          publishedDate: String(item.publication_date || new Date().toISOString().slice(0, 10)),
-          doi: doiRaw || `openalex-${String(item.id || '').split('/').pop()}`,
-          url: String(item.doi || item.id || 'https://openalex.org'),
-          sourceOrigin: 'openalex_live' as const,
-        };
-      });
+      // Prioritize yesterday/today (or keep top recent ones if weekend/UTC offset)
+      if (published >= fromDate || parsed.length < 2) {
+        parsed.push({
+          title,
+          abstract: summary,
+          authors: authors.slice(0, 5),
+          affiliations: ['arXiv Preprint'],
+          journal: 'arXiv Computer Science / Robotics',
+          journalShort: 'arXiv',
+          journalRank: published >= fromDate ? 'arXiv 今日/昨日最新' : 'arXiv 最新预印本',
+          publishedDate: published || new Date().toISOString().slice(0, 10),
+          doi: arxivId ? `10.48550/arXiv.${arxivId}` : idUrl,
+          url: idUrl || `https://arxiv.org/abs/${arxivId}`,
+          citedByCount: 0,
+          citations: [],
+          sourceOrigin: 'arxiv_live',
+        });
+      }
+    }
+    return parsed.slice(0, 4);
+  } catch {
+    return [];
   } finally {
     clearTimeout(timer);
   }
 }
 
+export async function fetchYesterdayTodayFromOpenAlex(daysBack = 1, customQuery?: string): Promise<RawExternalPaper[]> {
+  const { fromDate, toDate } = getDateWindow(daysBack);
+  const searchFilter =
+    customQuery?.trim()
+      ? `title_and_abstract.search:${customQuery.trim()}`
+      : 'title_and_abstract.search:(("smart manufacturing" OR "industrial inspection" OR "robotic assembly" OR "fault diagnosis") AND ("large language model" OR "knowledge graph" OR "multimodal" OR "embodied" OR "computer vision"))';
+
+  // Try exact yesterday->today first; if zero results (e.g. publisher indexing lag), widen to 7 days
+  let results: Array<Record<string, unknown>> = [];
+  for (const windowDays of [daysBack, 7, 30]) {
+    const win = getDateWindow(windowDays);
+    const filter = `${searchFilter},from_publication_date:${win.fromDate},to_publication_date:${toDate}`;
+    const url = `https://api.openalex.org/works?filter=${encodeURIComponent(filter)}&sort=publication_date:desc&per-page=4`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 9000);
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'PaperPulse-Academic-Library/2.0' },
+        signal: controller.signal,
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { results?: Array<Record<string, unknown>> };
+        if ((data.results ?? []).length > 0) {
+          results = data.results ?? [];
+          break;
+        }
+      }
+    } catch {
+      // try wider window
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  const out: RawExternalPaper[] = [];
+  for (const item of results.slice(0, 3)) {
+    if (!item.title) continue;
+    const primaryLoc = item.primary_location as Record<string, unknown> | undefined;
+    const source = primaryLoc?.source as Record<string, unknown> | undefined;
+    const journalName = String(source?.display_name || 'OpenAlex Indexed Journal');
+    const authorships = (item.authorships as Array<Record<string, unknown>> | undefined) ?? [];
+    const authors = authorships
+      .slice(0, 5)
+      .map((a) => String((a.author as Record<string, unknown> | undefined)?.display_name || 'Author'));
+    const affiliations = authorships
+      .slice(0, 3)
+      .flatMap((a) => ((a.institutions as Array<Record<string, unknown>> | undefined) ?? []).map((i) => String(i.display_name || '')))
+      .filter(Boolean);
+
+    const openAlexId = String(item.id || '');
+    const doiRaw = String(item.doi || '').replace('https://doi.org/', '');
+    const abstract = reconstructAbstractFromOpenAlex(item.abstract_inverted_index as Record<string, number[]> | undefined);
+    const refUrls = (item.referenced_works as string[] | undefined) ?? [];
+    const citations = await resolveOpenAlexCitations(openAlexId, refUrls);
+
+    const pubDate = String(item.publication_date || toDate);
+    out.push({
+      openAlexId,
+      title: String(item.title),
+      abstract: abstract || `Published in ${journalName} (${pubDate}).`,
+      authors,
+      affiliations: Array.from(new Set(affiliations)),
+      journal: journalName,
+      journalShort:
+        journalName
+          .split(/\s+/)
+          .filter((w) => w.length > 2 && /^[A-Z]/.test(w))
+          .map((w) => w[0])
+          .join('')
+          .slice(0, 6) || 'Journal',
+      journalRank: pubDate >= fromDate ? 'OpenAlex 今日/昨日同步' : 'OpenAlex 近期文献',
+      publishedDate: pubDate,
+      doi: doiRaw || openAlexId.split('/').pop() || 'openalex',
+      url: String(item.doi || item.id || 'https://openalex.org'),
+      citedByCount: Number(item.cited_by_count || 0),
+      citations,
+      sourceOrigin: 'openalex_live',
+    });
+  }
+  return out;
+}
+
 export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawExternalPaper | null> {
   const clean = identifier.trim();
-  // Check arXiv ID pattern (e.g. 2401.12345 or https://arxiv.org/abs/2401.12345)
+
+  // Direct OpenAlex ID (e.g. https://openalex.org/W... or W...)
+  const oaIdMatch = clean.match(/(?:openalex\.org\/)?(W\d{6,})/i);
+  if (oaIdMatch) {
+    const res = await fetch(`https://api.openalex.org/works/${oaIdMatch[1].toUpperCase()}`, {
+      headers: { 'User-Agent': 'PaperPulse-Academic-Library/2.0' },
+    });
+    if (res.ok) {
+      const item = (await res.json()) as Record<string, unknown>;
+      return openAlexItemToRaw(item);
+    }
+  }
+
+  // arXiv ID pattern
   const arxivMatch = clean.match(/(\d{4}\.\d{4,5}(?:v\d+)?)/);
   if (clean.toLowerCase().includes('arxiv') || arxivMatch) {
     const arxivId = arxivMatch ? arxivMatch[1] : clean;
     const url = `https://export.arxiv.org/api/query?id_list=${encodeURIComponent(arxivId)}`;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 9000);
     try {
       const res = await fetch(url, { signal: controller.signal });
       const xml = await res.text();
@@ -371,17 +535,35 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
         const published = (entry.match(/<published>([\s\S]*?)<\/published>/)?.[1] || '').slice(0, 10);
         const authors = Array.from(entry.matchAll(/<name>([\s\S]*?)<\/name>/g)).map((m) => m[1].trim());
         if (title) {
+          // Try enriching citations via OpenAlex arXiv DOI lookup
+          let oaCitations: CitationRefNode[] = [];
+          let citedByCount = 0;
+          let openAlexId: string | undefined;
+          try {
+            const oaRes = await fetch(`https://api.openalex.org/works/https://doi.org/10.48550/arXiv.${arxivId}`);
+            if (oaRes.ok) {
+              const oa = (await oaRes.json()) as Record<string, unknown>;
+              openAlexId = String(oa.id || '');
+              citedByCount = Number(oa.cited_by_count || 0);
+              oaCitations = await resolveOpenAlexCitations(openAlexId, (oa.referenced_works as string[] | undefined) ?? []);
+            }
+          } catch {
+            // ignore
+          }
           return {
+            openAlexId,
             title,
             abstract: summary,
             authors,
             affiliations: ['arXiv Preprint'],
             journal: 'arXiv Computer Science / Robotics',
             journalShort: 'arXiv',
-            journalRank: 'arXiv 实时预印本',
+            journalRank: 'arXiv 预印本',
             publishedDate: published || new Date().toISOString().slice(0, 10),
             doi: `10.48550/arXiv.${arxivId}`,
             url: `https://arxiv.org/abs/${arxivId}`,
+            citedByCount,
+            citations: oaCitations,
             sourceOrigin: 'arxiv_live',
           };
         }
@@ -391,40 +573,60 @@ export async function fetchSingleByArxivOrDoi(identifier: string): Promise<RawEx
     }
   }
 
-  // Fallback to Crossref / OpenAlex by DOI or keyword
+  // OpenAlex by DOI or keyword search
   const oaUrl = clean.startsWith('10.')
     ? `https://api.openalex.org/works/https://doi.org/${encodeURIComponent(clean)}`
     : `https://api.openalex.org/works?search=${encodeURIComponent(clean)}&per-page=1`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), 9000);
   try {
-    const res = await fetch(oaUrl, { signal: controller.signal });
+    const res = await fetch(oaUrl, { headers: { 'User-Agent': 'PaperPulse-Academic-Library/2.0' }, signal: controller.signal });
     if (!res.ok) return null;
     const data = (await res.json()) as Record<string, unknown>;
     const item = Array.isArray(data.results) ? (data.results[0] as Record<string, unknown> | undefined) : data;
     if (!item || !item.title) return null;
-    const primaryLoc = item.primary_location as Record<string, unknown> | undefined;
-    const source = primaryLoc?.source as Record<string, unknown> | undefined;
-    const journalName = String(source?.display_name || 'Academic Journal');
-    const authorships = (item.authorships as Array<Record<string, unknown>> | undefined) ?? [];
-    const authors = authorships.slice(0, 5).map((a) => String((a.author as Record<string, unknown> | undefined)?.display_name || 'Author'));
-    const abstract = reconstructAbstractFromOpenAlex(item.abstract_inverted_index as Record<string, number[]> | undefined);
-
-    return {
-      title: String(item.title),
-      abstract: abstract || `Academic article retrieved via DOI/OpenAlex: ${String(item.title)}`,
-      authors,
-      affiliations: [journalName],
-      journal: journalName,
-      journalShort: journalName.slice(0, 12),
-      journalRank: 'OpenAlex 检索导入',
-      publishedDate: String(item.publication_date || new Date().toISOString().slice(0, 10)),
-      doi: String(item.doi || clean).replace('https://doi.org/', ''),
-      url: String(item.doi || item.id || 'https://openalex.org'),
-      sourceOrigin: 'openalex_live',
-    };
+    return await openAlexItemToRaw(item);
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function openAlexItemToRaw(item: Record<string, unknown>): Promise<RawExternalPaper> {
+  const primaryLoc = item.primary_location as Record<string, unknown> | undefined;
+  const source = primaryLoc?.source as Record<string, unknown> | undefined;
+  const journalName = String(source?.display_name || 'Academic Journal');
+  const authorships = (item.authorships as Array<Record<string, unknown>> | undefined) ?? [];
+  const authors = authorships.slice(0, 5).map((a) => String((a.author as Record<string, unknown> | undefined)?.display_name || 'Author'));
+  const affiliations = authorships
+    .slice(0, 3)
+    .flatMap((a) => ((a.institutions as Array<Record<string, unknown>> | undefined) ?? []).map((i) => String(i.display_name || '')))
+    .filter(Boolean);
+  const abstract = reconstructAbstractFromOpenAlex(item.abstract_inverted_index as Record<string, number[]> | undefined);
+  const openAlexId = String(item.id || '');
+  const refUrls = (item.referenced_works as string[] | undefined) ?? [];
+  const citations = await resolveOpenAlexCitations(openAlexId, refUrls);
+
+  return {
+    openAlexId,
+    title: String(item.title),
+    abstract: abstract || `Academic article retrieved via OpenAlex: ${String(item.title)}`,
+    authors,
+    affiliations: Array.from(new Set(affiliations)),
+    journal: journalName,
+    journalShort:
+      journalName
+        .split(/\s+/)
+        .filter((w) => w.length > 2 && /^[A-Z]/.test(w))
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 6) || journalName.slice(0, 8),
+    journalRank: 'OpenAlex 检索导入',
+    publishedDate: String(item.publication_date || new Date().toISOString().slice(0, 10)),
+    doi: String(item.doi || openAlexId.split('/').pop() || '').replace('https://doi.org/', ''),
+    url: String(item.doi || item.id || 'https://openalex.org'),
+    citedByCount: Number(item.cited_by_count || 0),
+    citations,
+    sourceOrigin: 'openalex_live',
+  };
 }
