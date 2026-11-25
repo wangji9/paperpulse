@@ -267,7 +267,7 @@ export const AuthGateScreen: React.FC<{
                     darkMode ? 'border-slate-800 bg-slate-800/60 text-slate-400' : 'border-slate-200/80 bg-slate-50 text-slate-600'
                   }`}
                 >
-                  无需验证码即可点击上方「注册新成员账号」创建专属账户；公共文献池维护管理员默认账号：<code className="font-semibold text-indigo-600 dark:text-indigo-400">admin</code>，密码：<code className="font-semibold text-indigo-600 dark:text-indigo-400">admin123</code>
+                  首次使用请注册个人账号。登录后，阅读足迹、时长和互动会向平台成员展示；管理员账号由平台维护人员分配。
                 </div>
               )}
             </form>

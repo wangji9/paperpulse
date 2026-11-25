@@ -188,20 +188,30 @@ const DEFAULT_AUTO_SYNC: AutoSyncConfig = {
 export function initDatabase(): void {
   // Ensure default admin account exists
   const adminRow = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
-  if (!adminRow) {
+  const bootstrapPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!adminRow && bootstrapPassword) {
     db.prepare(`
       INSERT INTO users (id, username, password_hash, display_name, role, avatar_color, user_tags, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       'usr-admin',
       'admin',
-      hashPassword('admin123'),
+      hashPassword(bootstrapPassword),
       '公共池管理员',
       'admin',
       '#4F46E5',
       JSON.stringify(['文献池维护', '智能制造与AI']),
       new Date().toISOString()
     );
+  }
+
+  // Retire the legacy public demo password while preserving configured admin accounts.
+  if (adminRow && bootstrapPassword) {
+    const legacy = db.prepare("SELECT password_hash FROM users WHERE username = 'admin'").get() as { password_hash: string };
+    if (verifyPassword('admin123', legacy.password_hash)) {
+      db.prepare("UPDATE users SET password_hash = ? WHERE username = 'admin'").run(hashPassword(bootstrapPassword));
+      db.prepare("DELETE FROM sessions WHERE user_id = 'usr-admin'").run();
+    }
   }
 
   const LIB_VERSION = 'v5.0-journals16-figures-kb';

@@ -40,3 +40,5 @@ docker compose ps
 ```
 默认局域网地址：[PaperPulse](http://10.206.58.217:13001)，部署目录 `/home/wangji/paperpulse-platform`。可在服务器 `.env` 中设置 `PAPERPULSE_PORT`（13001–14000）。容器配置 `restart: unless-stopped`，健康检查为 `/api/health`；该公开接口只返回服务健康信息。
 升级前应使用 SQLite backup API 备份数据库，并保留旧镜像以便回滚；不要用本地数据库覆盖服务器的 `data` 目录。账户密码、服务器密码和 GitHub 令牌不应写入仓库。
+
+管理员首次初始化请在服务器 `.env` 配置 `BOOTSTRAP_ADMIN_PASSWORD`，不会再创建使用公开演示密码的管理员。已有使用旧演示密码的管理员会在升级时更换为该配置并注销旧会话；其他已配置密码的账户保留原密码。

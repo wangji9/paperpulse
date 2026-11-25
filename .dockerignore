@@ -8,3 +8,8 @@ data
 *.log
 .DS_Store
 Thumbs.db
+
+.env
+.env.*
+.playwright-cli
+tests
