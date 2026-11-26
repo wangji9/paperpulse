@@ -284,19 +284,36 @@ const LabWeiboCard: React.FC<{
           <p className="mt-1.5 text-base leading-relaxed text-slate-500 dark:text-slate-400">{paper.title}</p>
         )}
 
-        {/* Clean Deduplicated Hashtags */}
-        {canonKws.length > 0 && (
+        {/* Clean Deduplicated Hashtags (Show paper's full author keywords + deduplicated tags) */}
+        {(canonKws.length > 0 || (paper.keywords?.length || 0) > 0) && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {canonKws.slice(0, 6).map((kw) => (
-              <button
-                key={kw.id}
-                type="button"
-                onClick={() => onSelectQuery(kw.shortLabel)}
-                className="rounded-full bg-sky-50 px-3 py-0.5 text-base font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
-              >
-                #{kw.shortLabel}#
-              </button>
-            ))}
+            {(() => {
+              const seen = new Set<string>();
+              const items: Array<{ key: string; label: string }> = [];
+              for (const kw of paper.keywordsOriginal || paper.keywords || []) {
+                const clean = kw.trim();
+                const norm = clean.toLowerCase();
+                if (!clean || clean.length > 48 || seen.has(norm)) continue;
+                seen.add(norm);
+                items.push({ key: `orig-${norm}`, label: clean });
+              }
+              for (const kw of canonKws) {
+                const norm = kw.shortLabel.toLowerCase();
+                if (seen.has(norm)) continue;
+                seen.add(norm);
+                items.push({ key: kw.id, label: kw.shortLabel });
+              }
+              return items.slice(0, 10).map((it) => (
+                <button
+                  key={it.key}
+                  type="button"
+                  onClick={() => onSelectQuery(it.label)}
+                  className="rounded-full bg-sky-50 px-3 py-0.5 text-base font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
+                >
+                  #{it.label}#
+                </button>
+              ));
+            })()}
           </div>
         )}
 

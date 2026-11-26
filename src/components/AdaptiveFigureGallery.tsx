@@ -30,7 +30,10 @@ function formatCaptionText(fig: OriginalPaperFigure): string {
 }
 
 /**
- * Aspect-Ratio-Aware Justified Row Packer (Zero Blank Margins + Clean Paired Captions!)
+ * Exact Aspect-Ratio-Matched Compact Justified Row Packer (ZERO Blank Whitespace!)
+ * Key invariant: for EVERY single tile, `tile.w / tile.h === img.naturalWidth / img.naturalHeight`,
+ * so images NEVER get letterboxed with blank left/right/top/bottom wings!
+ * Wide figures (e.g. 2.0–3.2 ratio) pack tightly 2-per-row instead of stretching into half-empty banners.
  */
 function computeJustifiedRows(
   figures: OriginalPaperFigure[],
@@ -40,9 +43,10 @@ function computeJustifiedRows(
   if (!figures.length || containerW < 120) return [];
 
   const isNarrow = containerW < 560;
-  const targetRowH = isNarrow ? 175 : containerW > 1050 ? 255 : 225;
-  const minRowH = isNarrow ? 115 : 150;
-  const maxRowH = isNarrow ? 290 : 360;
+  // Compact target row height so even 10–16 figures fit densely and crisply
+  const targetRowH = isNarrow ? 165 : containerW > 1050 ? 220 : 195;
+  const minRowH = isNarrow ? 105 : 130;
+  const maxRowH = isNarrow ? 250 : 300;
   const maxPerRow = isNarrow ? 2 : 4;
 
   const getRatio = (f: OriginalPaperFigure): number => {
@@ -51,16 +55,16 @@ function computeJustifiedRows(
     if (f.width && f.height && f.width > 0 && f.height > 0) {
       return Math.max(0.2, Math.min(10, f.width / f.height));
     }
-    return 1.45;
+    return 1.5;
   };
 
   if (figures.length === 1) {
     const f = figures[0];
     const r = getRatio(f);
-    const maxSingleH = isNarrow ? 340 : 460;
-    const w = Math.min(containerW, Math.round(maxSingleH * r));
-    const h = Math.max(120, Math.round(w / r));
-    return [{ tiles: [{ fig: f, index: 0, w, h }] }];
+    const maxSingleH = isNarrow ? 300 : 380;
+    const h = Math.max(120, Math.min(maxSingleH, Math.round(containerW / r)));
+    const w = Math.min(containerW, Math.round(h * r));
+    return [{ tiles: [{ fig: f, index: 0, w, h: Math.max(90, Math.round(w / r)) }] }];
   }
 
   const rows: LayoutRow[] = [];
@@ -72,31 +76,30 @@ function computeJustifiedRows(
     const availW = Math.max(120, containerW - GAP * (cur.length - 1));
     const exactH = availW / Math.max(curSum, 0.25);
 
-    if (isLast && exactH > maxRowH) {
-      const h = Math.round(Math.min(maxRowH, Math.max(targetRowH, minRowH)));
+    // Strictly maintain w = h * r for EVERY tile (ZERO blank side wings ever!)
+    if (exactH > maxRowH) {
+      const h = Math.round(isLast ? Math.min(maxRowH, Math.max(targetRowH, minRowH)) : maxRowH);
       rows.push({
         tiles: cur.map((it) => ({
           fig: it.fig,
           index: it.index,
-          w: Math.min(availW, Math.round(h * it.r)),
+          w: Math.max(70, Math.min(availW, Math.round(h * it.r))),
           h,
         })),
       });
     } else {
-      const h = Math.round(Math.max(minRowH, Math.min(maxRowH, exactH)));
-      const rawWidths = cur.map((it) => h * it.r);
-      const rawTotal = rawWidths.reduce((s, v) => s + v, 0);
-      const scale = exactH <= maxRowH && rawTotal > 0 ? availW / rawTotal : 1;
-      const finalH = Math.round(h * scale);
+      // Exact justified height fits within [minRowH, maxRowH] -> fills 100% of containerW with ZERO whitespace!
+      const h = Math.max(minRowH, exactH);
       let usedW = 0;
       const tiles: LayoutTile[] = cur.map((it, idx) => {
         const isEnd = idx === cur.length - 1;
+        const naturalW = Math.round(h * it.r);
         const w =
-          scale !== 1 && isEnd
+          exactH >= minRowH && isEnd
             ? Math.max(70, Math.round(availW - usedW))
-            : Math.max(70, Math.round(rawWidths[idx] * scale));
+            : Math.max(70, naturalW);
         usedW += w;
-        return { fig: it.fig, index: it.index, w, h: finalH };
+        return { fig: it.fig, index: it.index, w, h: Math.round(h) };
       });
       rows.push({ tiles });
     }
@@ -108,10 +111,13 @@ function computeJustifiedRows(
     const fig = figures[i];
     const r = getRatio(fig);
 
-    if (r >= 2.25) {
+    // Only ultra-wide strip banners (aspect >= 3.4, where containerW / r <= 360px naturally) take a full row alone;
+    // normal wide diagrams (2.0–3.3) pack tightly 2-per-row with ZERO side blank space!
+    if (r >= 3.4) {
       flushRow(false);
-      const h = Math.round(Math.max(135, Math.min(390, containerW / r)));
-      rows.push({ tiles: [{ fig, index: i, w: Math.round(containerW), h }] });
+      const h = Math.max(110, Math.min(340, Math.round(containerW / r)));
+      const w = Math.min(Math.round(containerW), Math.round(h * r));
+      rows.push({ tiles: [{ fig, index: i, w, h }] });
       continue;
     }
 
@@ -120,12 +126,12 @@ function computeJustifiedRows(
     const estWidth = curSum * targetRowH + GAP * (cur.length - 1);
 
     const remaining = figures.length - 1 - i;
-    if (cur.length === 2 && remaining === 2 && !isNarrow && estWidth >= containerW * 0.72) {
+    if (cur.length === 2 && remaining === 2 && !isNarrow && estWidth >= containerW * 0.7) {
       flushRow(false);
       continue;
     }
 
-    if (estWidth >= containerW * 0.94 || cur.length >= maxPerRow) {
+    if (estWidth >= containerW * 0.92 || cur.length >= maxPerRow) {
       flushRow(false);
     }
   }

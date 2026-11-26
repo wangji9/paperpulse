@@ -137,7 +137,7 @@ export function sanitizeCleanAbstract(raw: string): string {
 export function looksCorruptedAbstract(raw?: string): boolean {
   if (!raw || !raw.trim()) return true;
   if (raw.includes('....') || raw.includes('……')) return true;
-  if (/(?:收稿日期|基金项目|作者简介|中图分类号|Contents\s+1\.|1\.\s*引言|2\.\s*系统性综述)/.test(raw)) return true;
-  if (raw.length > 2600 && /(?:关键词|Keywords|1\s+风力|1\.\s+Introduction)/i.test(raw)) return true;
+  if (/(?:关键词\s*[:：]|Keywords?\s*[:：]|收稿日期|基金项目|作者简介|中图分类号|Contents\s+1\.|1\.\s*引言|2\.\s*系统性综述)/i.test(raw)) return true;
+  if (raw.length > 2600 && /(?:1\s+风力|1\.\s+Introduction)/i.test(raw)) return true;
   return false;
 }

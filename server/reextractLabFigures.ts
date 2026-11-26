@@ -120,33 +120,49 @@ async function main() {
             };
           });
 
-          // 2. Clean & exact abstract + sections from Baidu neural layout
+          // 2. Clean & exact abstract + keywords + sections from Baidu neural layout
           const baiduAbs = sanitizeCleanAbstract(baidu.sections.abstract || '');
           const oldAbsCorrupt = looksCorruptedAbstract(paper.abstractOriginal);
           const oldZhCorrupt = looksCorruptedAbstract(paper.abstractZh);
 
-          let finalAbstract = paper.abstractOriginal || '';
+          let finalAbstract = sanitizeCleanAbstract(paper.abstractOriginal || '');
+          let finalAbstractZh = paper.abstractZh ? sanitizeCleanAbstract(paper.abstractZh) : undefined;
           if (baiduAbs && (oldAbsCorrupt || !finalAbstract.trim())) {
             finalAbstract = baiduAbs;
-            needRetranslate = true;
-          } else if (oldAbsCorrupt) {
-            finalAbstract = sanitizeCleanAbstract(finalAbstract);
-            needRetranslate = true;
-          } else if (oldZhCorrupt) {
+            // Only call LLM re-translation if abstractZh was missing or had TOC/intro garbage (not merely trailing keywords!)
+            if (!finalAbstractZh || finalAbstractZh.length < 60 || finalAbstractZh.includes('....') || /(?:收稿日期|基金项目|作者简介|1\.\s*引言)/.test(finalAbstractZh)) {
+              finalAbstractZh = undefined;
+              needRetranslate = true;
+            }
+          } else if (oldZhCorrupt && (!finalAbstractZh || finalAbstractZh.length < 60)) {
+            finalAbstractZh = undefined;
             needRetranslate = true;
           }
 
           if (baiduAbs && metaChanged) {
             labMeta.abstractOriginal = baiduAbs;
           }
+          if (finalAbstractZh && labMeta.abstractZh) {
+            labMeta.abstractZh = finalAbstractZh;
+            metaChanged = true;
+          }
+
+          const mergedKeywords =
+            baidu.keywords.length >= 2
+              ? baidu.keywords
+              : paper.keywordsOriginal?.length
+                ? paper.keywordsOriginal
+                : paper.keywords;
 
           nextPaper = applySourceText(
             {
               ...nextPaper,
               abstractOriginal: finalAbstract,
-              ...(needRetranslate ? { abstractZh: undefined } : {}),
+              abstractZh: finalAbstractZh,
               digestSummary: finalAbstract ? finalAbstract.slice(0, 1200) : nextPaper.digestSummary,
-              ...(baidu.keywords.length >= 2 ? { keywords: baidu.keywords, keywordSource: 'author' as const } : {}),
+              ...(mergedKeywords?.length
+                ? { keywords: mergedKeywords, keywordsOriginal: mergedKeywords, keywordSource: 'author' as const }
+                : {}),
             },
             baidu.text,
             baidu.sections

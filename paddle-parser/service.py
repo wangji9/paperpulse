@@ -202,7 +202,15 @@ def sort_reading_order(boxes: list[dict[str, Any]], page_w: float) -> list[dict[
 FIG_CAP_RE = re.compile(r"^(?:Fig\.?|Figure|FIG\.?|图)\s*(\d+(?:\.\d+)?|[IVX]+)\s*(?:[:：.\s-]|$)", re.IGNORECASE)
 TBL_CAP_RE = re.compile(r"^(?:Table|TABLE|Tab\.?|表)\s*(\d+(?:\.\d+)?|[IVX]+)\s*(?:[:：.\s-]|$)", re.IGNORECASE)
 ABSTRACT_STOP_RE = re.compile(
-    r"(?:\bKeywords?\s*[:：]|关键词\s*[:：]|中图分类号\s*[:：]|收稿日期\s*[:：]|修回日期\s*[:：]|基金项目\s*[:：]|作者简介\s*[:：]|通信作者\s*[:：]|\bARTICLE\s+INFO\b|\bContents\b\s+1\.|\b1\.\s+Introduction\b|(?:\.{5,}))",
+    r"(?:\bKeywords?\s*[:：]|关键词\s*[:：]|关键字\s*[:：]|中图分类号\s*[:：]|收稿日期\s*[:：]|修回日期\s*[:：]|基金项目\s*[:：]|作者简介\s*[:：]|通信作者\s*[:：]|\bARTICLE\s+INFO\b|\bContents\b\s+1\.|\b1\.\s+Introduction\b|(?:\.{5,}))",
+    re.IGNORECASE,
+)
+REFERENCES_START_RE = re.compile(
+    r"(?:^|\n)\s*(?:\d+\.?\s*)?(?:References|Bibliography|参考文献|Author\s+biograph(?:y|ies)|Biographies|CRediT\s+authorship|Declaration\s+of\s+(?:competing\s+interest|Generative\s+AI))\s*(?:\n|$)",
+    re.IGNORECASE,
+)
+AUTHOR_BIO_RE = re.compile(
+    r"(?:received\s+the\s+(?:B\.?S\.?|B\.?E\.?|M\.?S\.?|M\.?E\.?|Ph\.?D\.?)|is\s+currently\s+pursuing|is\s+a\s+(?:professor|associate\s+professor|lecturer|Ph\.?D\.?|master|postdoctoral)|his\s+research\s+interests|her\s+research\s+interests|攻读(?:博士|硕士)|东华大学|机械工程学院|研究方向(?:包括|主要为)|作者简介|博士生导师|教授|副教授|研究员)",
     re.IGNORECASE,
 )
 
@@ -338,6 +346,7 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
 
     meta = doc.metadata or {}
     raw_full_text_p12 = ""
+    entered_references = False
 
     for pno in range(pages_to_scan):
         page = doc[pno]
@@ -346,6 +355,24 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
         is_scanned = len(page_native_text.strip()) < 35
         if pno < 2:
             raw_full_text_p12 += "\n" + page_native_text
+
+        # Once we pass References / Author Biographies (after page 2), stop scanning entirely so
+        # ZERO author biography portraits or reference clutter are ever extracted!
+        if entered_references:
+            break
+        if pno >= 2 and REFERENCES_START_RE.search(page_native_text):
+            # Still process this page only up to the References heading y-coordinate, then stop on next page
+            entered_references = True
+
+        # Find y-coordinate of References / Biographies heading on this page (if present)
+        ref_cutoff_y_pdf = prect.height
+        if entered_references:
+            for blk in page.get_text("blocks"):
+                if blk[6] == 0 and REFERENCES_START_RE.search(blk[4] or ""):
+                    ref_cutoff_y_pdf = min(ref_cutoff_y_pdf, float(blk[1]))
+            # If References starts right at the top of this page (no content above it), skip the whole page!
+            if ref_cutoff_y_pdf < prect.height * 0.14:
+                break
 
         # Render page for Baidu PP-DocLayout_plus-L detection
         lay_pix = page.get_pixmap(dpi=LAYOUT_DPI, alpha=False)
@@ -356,7 +383,6 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
             preds = list(model.predict(lay_np, batch_size=1))
 
         raw_boxes = parse_layout_boxes(preds[0]) if preds else []
-        # Keep confident boxes (>= 0.35; slightly lower 0.30 for figure_title / table_title / abstract)
         filtered = [
             b for b in raw_boxes
             if b["score"] >= (0.28 if b["label"] in ("abstract", "figure_title", "table_title", "doc_title") else 0.36)
@@ -367,6 +393,10 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
 
         def to_pdf(c: list[float]) -> tuple[float, float, float, float]:
             return (c[0] * scale_to_pdf_x, c[1] * scale_to_pdf_y, c[2] * scale_to_pdf_x, c[3] * scale_to_pdf_y)
+
+        # Drop any boxes sitting below the References / Biographies cutoff on the transition page
+        if entered_references and ref_cutoff_y_pdf < prect.height:
+            filtered = [b for b in filtered if (b["coord"][1] * scale_to_pdf_y) < ref_cutoff_y_pdf - 4]
 
         # Render high-res page lazily ONLY if this page has figures or tables to crop
         fig_boxes = dedupe_boxes([b for b in filtered if b["label"] in ("image", "chart")], iou_thr=0.55)
@@ -398,20 +428,36 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
             cpix = page.get_pixmap(dpi=CROP_DPI, alpha=False)
             crop_img = Image.frombytes("RGB", (cpix.width, cpix.height), cpix.samples)
 
-        # 1. Extract ALL Figures detected by Baidu PP-DocLayout_plus-L
+        # 1. Extract ALL Academic Figures detected by Baidu PP-DocLayout_plus-L (NEVER author portraits!)
         used_fig_caps: set[int] = set()
         for fb in sorted(fig_boxes, key=lambda b: (b["coord"][1], b["coord"][0])):
             x0, y0, x1, y1 = fb["coord"]
             w_px, h_px = x1 - x0, y1 - y0
-            # Filter tiny icons / publisher badges (e.g. Elsevier logo on page 1 top-left)
             if w_px < 65 or h_px < 50:
                 continue
-            if pno == 0 and y1 < lay_pix.height * 0.16 and w_px < lay_pix.width * 0.22:
+            # Filter publisher logos / journal covers on page 1 top banner
+            if pno == 0 and y1 < lay_pix.height * 0.18 and w_px < lay_pix.width * 0.28:
                 continue
 
             cap_box = pair_caption(fb["coord"], fig_title_boxes, used_fig_caps, prefer="below")
             cap_text = clean_ws(cap_box.get("_text", "")) if cap_box else ""
             m_num = FIG_CAP_RE.match(cap_text) if cap_text else None
+
+            # Reject author biography photos! (Often have no Fig. N caption and sit near bio text)
+            if cap_text and AUTHOR_BIO_RE.search(cap_text) and not m_num:
+                continue
+            if not m_num:
+                # Inspect text immediately to the right/below of the image for author biography phrasing
+                pdf_x0, pdf_y0, pdf_x1, pdf_y1 = to_pdf(fb["coord"])
+                near_rect = fitz.Rect(max(0, pdf_x0 - 30), max(0, pdf_y0 - 20), min(prect.width, pdf_x1 + 260), min(prect.height, pdf_y1 + 60))
+                near_txt = page.get_text("text", clip=near_rect) or ""
+                if AUTHOR_BIO_RE.search(near_txt):
+                    continue
+                # On late pages (last 25% of document), skip uncaptioned narrow/portrait images (author headshots / strips)
+                aspect = w_px / max(h_px, 1.0)
+                if pno >= max(2, int(total_pages * 0.72)) and (aspect < 1.15 or w_px < lay_pix.width * 0.35):
+                    continue
+
             fig_label = f"Figure {m_num.group(1)}" if m_num else f"Figure {len(figures) + 1}"
 
             # Avoid duplicate identical figure numbers if same page split a subfigure without caption
