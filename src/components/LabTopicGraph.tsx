@@ -42,35 +42,54 @@ export const LabTopicGraph: React.FC<{
         { group: 'keyword', label: '高频合并热词', color: MATLAB_COLORS[2], shape: 'diamond' },
       ];
 
-      // Top Topics
+      // Top Topics arranged across TWO wide panoramic horizontal rows (eliminates side whitespace!)
       const topTopics = analysis.topics.slice(0, 8);
-      topTopics.forEach(([t, cnt]) => {
+      topTopics.forEach(([t, cnt], idx) => {
+        const cols = Math.ceil(topTopics.length / 2);
+        const row = idx % 2;
+        const col = Math.floor(idx / 2);
+        const nx = 0.16 + (cols > 1 ? (col / (cols - 1)) * 0.68 : 0.34) + (row === 1 ? 0.05 : -0.03);
+        const ny = row === 0 ? 0.31 : 0.69;
         nodes.push({
           id: `t:${t}`,
           label: (TOPIC_META[t]?.label || t).replace(/\s*\(.*?\)/, ''),
           subLabel: `${cnt} 篇课题组论文`,
           group: 'topic',
           color: MATLAB_COLORS[3],
-          radius: 19 + Math.min(10, Math.sqrt(cnt) * 3.5),
+          radius: 21 + Math.min(11, Math.sqrt(cnt) * 3.6),
           shape: 'hex',
           badge: String(cnt),
+          normX: Math.max(0.12, Math.min(0.88, nx)),
+          normY: ny,
+          anchorStrengthX: 0.22,
+          anchorStrengthY: 0.22,
           meta: { kind: 'topic', topic: t, count: cnt },
         });
       });
 
-      // Papers
+      // Top 12 Deduplicated Bilingual Keywords placed along panoramic outer perimeter
+      const topKws = analysis.canonicalKeywords.slice(0, 12);
+      const topTopicSet = new Set(topTopics.map(([t]) => t));
+      const paperLinkCount = new Map<string, number>();
+
+      // Papers (distributed organically around their topics & keywords with year-informed soft X)
       analysis.papers.forEach((p, idx) => {
         const yr = analysis.paperYearById.get(p.id) || Number((p.publishedDate || '').slice(0, 4)) || 2025;
         const color = yr >= 2026 ? MATLAB_COLORS[1] : yr === 2025 ? MATLAB_COLORS[0] : MATLAB_COLORS[4];
+        const yrNorm = Math.max(0, Math.min(1, (yr - minYear) / spanYear));
         nodes.push({
           id: `p:${p.id}`,
           label: cut(p.titleZh || p.title, 12),
           subLabel: `${yr} · ${p.journalShort}`,
           group: yr >= 2026 ? 'paper_new' : yr === 2025 ? 'paper_mid' : 'paper_base',
           color,
-          radius: 14,
+          radius: 15,
           shape: 'circle',
           badge: String(idx + 1),
+          normX: 0.14 + yrNorm * 0.72,
+          normY: 0.24 + ((idx * 37) % 52) / 100,
+          anchorStrengthX: 0.04,
+          anchorStrengthY: 0.04,
           meta: { kind: 'paper', paper: p, year: yr },
         });
         for (const [t] of topTopics) {
@@ -79,24 +98,33 @@ export const LabTopicGraph: React.FC<{
               id: `pt:${p.id}->${t}`,
               source: `p:${p.id}`,
               target: `t:${t}`,
-              weight: 1.5,
+              weight: 1.6,
               color: MATLAB_COLORS[3],
             });
+            paperLinkCount.set(p.id, (paperLinkCount.get(p.id) || 0) + 1);
           }
         }
       });
 
-      // Top 12 Deduplicated Bilingual Keywords
-      const topKws = analysis.canonicalKeywords.slice(0, 12);
-      topKws.forEach((kw) => {
+      topKws.forEach((kw, idx) => {
+        const half = Math.ceil(topKws.length / 2);
+        const isTop = idx < half;
+        const pos = isTop ? idx : idx - half;
+        const denom = Math.max(1, (isTop ? half : topKws.length - half) - 1);
+        const nx = 0.08 + (pos / denom) * 0.84;
+        const ny = isTop ? 0.12 : 0.88;
         nodes.push({
           id: `k:${kw.info.id}`,
           label: kw.info.shortLabel,
           subLabel: `${kw.info.label} · ${kw.count} 篇`,
           group: 'keyword',
           color: MATLAB_COLORS[2],
-          radius: 13 + Math.min(7, kw.count),
+          radius: 14 + Math.min(7, kw.count),
           shape: 'diamond',
+          normX: nx,
+          normY: ny,
+          anchorStrengthX: 0.24,
+          anchorStrengthY: 0.26,
           meta: { kind: 'keyword', kw },
         });
         for (const p of kw.papers) {
@@ -108,8 +136,27 @@ export const LabTopicGraph: React.FC<{
             color: MATLAB_COLORS[2],
             dashed: true,
           });
+          paperLinkCount.set(p.id, (paperLinkCount.get(p.id) || 0) + 1);
         }
       });
+
+      // Guarantee NO orphan paper drifts off detached from the network
+      if (topTopics.length > 0) {
+        const fallbackTopic = topTopics[0][0];
+        analysis.papers.forEach((p) => {
+          if ((paperLinkCount.get(p.id) || 0) === 0) {
+            const matched = (p.topics || []).find((t) => topTopicSet.has(t)) || fallbackTopic;
+            links.push({
+              id: `pt-fb:${p.id}->${matched}`,
+              source: `p:${p.id}`,
+              target: `t:${matched}`,
+              weight: 1,
+              color: MATLAB_COLORS[3],
+              dashed: true,
+            });
+          }
+        });
+      }
     } else if (mode === 'coauthor') {
       title = '作者协作力导向网络';
       subtitle = '';
@@ -166,15 +213,15 @@ export const LabTopicGraph: React.FC<{
       const topAuthors = analysis.canonicalAuthors.slice(0, 22);
       const idSet = new Set(topAuthors.map((a) => a.info.id));
 
-      // Domain cluster anchors in a clean ring
-      const domAnchors = new Map<string, { x: number; y: number }>();
+      // Domain cluster anchors in a wide panoramic ring filling full viewport width
+      const domAnchors = new Map<string, { nx: number; ny: number }>();
       analysis.domainAxes.forEach((ax, i) => {
         const ang = (i / Math.max(analysis.domainAxes.length, 1)) * Math.PI * 2 - Math.PI / 2;
-        domAnchors.set(ax.id, { x: 490 + Math.cos(ang) * 245, y: 270 + Math.sin(ang) * 155 });
+        domAnchors.set(ax.id, { nx: 0.5 + Math.cos(ang) * 0.37, ny: 0.5 + Math.sin(ang) * 0.34 });
       });
 
       topAuthors.forEach((a) => {
-        const anchor = domAnchors.get(a.primaryDomainId) || { x: 490, y: 270 };
+        const anchor = domAnchors.get(a.primaryDomainId) || { nx: 0.5, ny: 0.5 };
         const isHub = a.socialRole === '枢纽导师';
         const isBridge = a.socialRole === '跨方向桥梁';
         nodes.push({
@@ -183,11 +230,13 @@ export const LabTopicGraph: React.FC<{
           subLabel: `${a.socialRole} · 合作${a.coauthorDegree}人 · 发文${a.count}篇`,
           group: a.primaryDomainId,
           color: domColorMap.get(a.primaryDomainId) || MATLAB_COLORS[0],
-          radius: 14 + Math.sqrt(a.coauthorDegree + a.count) * 3.1,
+          radius: 15 + Math.sqrt(a.coauthorDegree + a.count) * 3.2,
           shape: isHub ? 'hex' : isBridge ? 'diamond' : 'circle',
           badge: String(a.coauthorDegree),
-          targetX: isHub ? 490 : anchor.x,
-          targetY: isHub ? 270 : anchor.y,
+          normX: isHub ? 0.5 : anchor.nx,
+          normY: isHub ? 0.5 : anchor.ny,
+          anchorStrengthX: isHub ? 0.35 : 0.24,
+          anchorStrengthY: isHub ? 0.35 : 0.24,
           meta: { kind: 'author', stat: a },
         });
       });
@@ -220,17 +269,21 @@ export const LabTopicGraph: React.FC<{
       const topKws = analysis.canonicalKeywords.slice(0, 24);
       const idSet = new Set(topKws.map((k) => k.info.id));
 
-      topKws.forEach((kw) => {
-        const t = (kw.avgYear - minYear) / spanYear;
+      topKws.forEach((kw, idx) => {
+        const t = Math.max(0, Math.min(1, (kw.avgYear - minYear) / spanYear));
         nodes.push({
           id: `k:${kw.info.id}`,
           label: kw.info.shortLabel,
           subLabel: `${kw.info.label} · 均年 ${kw.avgYear.toFixed(1)}`,
           group: t < 0.35 ? 'y23' : t < 0.7 ? 'y25' : 'y27',
           color: parulaColor(t),
-          radius: 15 + Math.sqrt(kw.count) * 4,
+          radius: 16 + Math.sqrt(kw.count) * 4.2,
           shape: kw.info.category === 'paradigm' ? 'hex' : 'circle',
           badge: String(kw.count),
+          normX: 0.1 + t * 0.8,
+          normY: 0.18 + ((idx * 31) % 64) / 100,
+          anchorStrengthX: 0.16,
+          anchorStrengthY: 0.06,
           meta: { kind: 'keyword', kw },
         });
       });
@@ -256,6 +309,7 @@ export const LabTopicGraph: React.FC<{
         { group: 'frontier', label: '潜在高价值空白方向', color: MATLAB_COLORS[1], shape: 'pill' },
       ];
 
+      const techLen = Math.max(1, analysis.techAxes.length - 1);
       analysis.techAxes.forEach((ax, i) => {
         const cnt = analysis.techDomainMatrix
           .filter((c) => c.techId === ax.id)
@@ -266,15 +320,18 @@ export const LabTopicGraph: React.FC<{
           subLabel: ax.label,
           group: 'tech',
           color: MATLAB_COLORS[0],
-          radius: 21,
+          radius: 22,
           shape: 'hex',
           badge: String(cnt),
-          targetX: 190,
-          targetY: 75 + i * 65,
+          normX: 0.12,
+          normY: 0.12 + (i / techLen) * 0.76,
+          anchorStrengthX: 0.42,
+          anchorStrengthY: 0.35,
           meta: { kind: 'axis', axis: ax },
         });
       });
 
+      const domLen = Math.max(1, analysis.domainAxes.length - 1);
       analysis.domainAxes.forEach((ax, i) => {
         const cnt = analysis.techDomainMatrix
           .filter((c) => c.domainId === ax.id)
@@ -285,11 +342,13 @@ export const LabTopicGraph: React.FC<{
           subLabel: ax.label,
           group: 'domain',
           color: MATLAB_COLORS[4],
-          radius: 21,
+          radius: 22,
           shape: 'circle',
           badge: String(cnt),
-          targetX: 495,
-          targetY: 90 + i * 74,
+          normX: 0.49,
+          normY: 0.14 + (i / domLen) * 0.72,
+          anchorStrengthX: 0.42,
+          anchorStrengthY: 0.35,
           meta: { kind: 'axis', axis: ax },
         });
       });
@@ -309,7 +368,9 @@ export const LabTopicGraph: React.FC<{
         });
 
       // Right-hand pulsing potential frontier nodes
-      analysis.potentialDirections.slice(0, 6).forEach((opp, i) => {
+      const frontList = analysis.potentialDirections.slice(0, 6);
+      const frontLen = Math.max(1, frontList.length - 1);
+      frontList.forEach((opp, i) => {
         const fid = `opp:${opp.id}`;
         nodes.push({
           id: fid,
@@ -317,10 +378,12 @@ export const LabTopicGraph: React.FC<{
           subLabel: `创新 ${opp.noveltyScore} · 可行 ${opp.feasibilityScore}`,
           group: 'frontier',
           color: MATLAB_COLORS[1],
-          radius: 22,
+          radius: 23,
           shape: 'pill',
-          targetX: 805,
-          targetY: 86 + i * 74,
+          normX: 0.85,
+          normY: 0.13 + (i / frontLen) * 0.74,
+          anchorStrengthX: 0.42,
+          anchorStrengthY: 0.35,
           meta: { kind: 'opportunity', opp },
         });
         links.push({
@@ -365,7 +428,7 @@ export const LabTopicGraph: React.FC<{
       links={graphData.links}
       legend={graphData.legend}
       darkMode={darkMode}
-      height={660}
+      height={700}
       exportFilename={`paperpulse-lab-graph-${mode}`}
       topControls={
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
