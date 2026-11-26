@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 
 export interface BaiduParsedFigure {
   id: string;
@@ -46,6 +47,34 @@ const cache = new Map<string, { at: number; data: BaiduPdfParseResult }>();
 
 export function getPaddleParserUrl(): string {
   return (process.env.PADDLE_PARSER_URL || '').trim().replace(/\/+$/, '');
+}
+
+/**
+ * Safely download a remote open-access PDF to a local file (validates %PDF header and <= 32MB).
+ */
+export async function downloadPdfToCache(pdfUrl: string, destPath: string): Promise<boolean> {
+  if (!/^https?:\/\//i.test(pdfUrl)) return false;
+  if (fs.existsSync(destPath) && fs.statSync(destPath).size > 1024) return true;
+  try {
+    const res = await fetch(pdfUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0 Safari/537.36',
+        Accept: 'application/pdf,*/*',
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) return false;
+    const ab = await res.arrayBuffer();
+    const buf = Buffer.from(ab);
+    if (buf.length < 1024 || buf.length > 32 * 1024 * 1024) return false;
+    if (buf.subarray(0, 1024).indexOf('%PDF-') < 0) return false;
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    fs.writeFileSync(destPath, buf);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

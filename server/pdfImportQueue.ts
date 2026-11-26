@@ -6,6 +6,7 @@ import type { PdfImportJob, UserProfile, AcademicPaper } from '../src/types/pape
 import { getAutoSyncConfig, getPaperById, isPaperSuppressed, listAllUsers, listPapers, recordSyncLog, upsertPaper, upsertUserKbItem } from './db.js';
 import { extractUploadedPdf, buildUploadedPaper } from './uploadedPdf.js';
 import { extractOriginalPaperMedia, PAPER_ASSETS_DIR } from './paperMediaExtractor.js';
+import { getPaddleParserUrl, parsePdfWithBaiduService } from './paddleParser.js';
 import { localizePaper } from './localizePaper.js';
 import { addLabPaper } from './labLibrary.js';
 
@@ -66,18 +67,28 @@ async function processJob(job:InternalJob):Promise<void> {
   const phase=(text:string)=>{job.status='processing';job.phase=text;save(job);};
   let paperDir:string|undefined,committed=false;
   try {
-    phase('读取PDF正文与文献信息');
-    const evidence=await extractUploadedPdf(incoming(job.id));
-    phase('核对期刊与发表信息，识别研究方向和数据集来源');
     const id='pdf-'+job.sha256.slice(0,24);
+    const urlPrefix=`/paper-assets/${id}`;
+    paperDir=path.join(PAPER_ASSETS_DIR,id);
+    fs.mkdirSync(paperDir,{recursive:true});
+    const sourcePdf=path.join(paperDir,'source.pdf');
+    fs.copyFileSync(incoming(job.id),sourcePdf);
+
+    // Single-pass Baidu PP-DocLayout_plus-L neural parse (warms cache for BOTH text/abstract AND ALL figures/tables!)
+    if(getPaddleParserUrl()) {
+      phase('使用百度版面模型精准解析摘要、正文、全部插图与表格');
+      await parsePdfWithBaiduService(sourcePdf,paperDir,urlPrefix);
+    } else {
+      phase('读取PDF正文与文献信息');
+    }
+    const evidence=await extractUploadedPdf(sourcePdf);
+    phase('核对期刊与发表信息，识别研究方向和数据集来源');
     let paper=await buildUploadedPaper(evidence,id,{userId:job.user.id,username:job.user.username,displayName:job.user.displayName,fileName:job.fileName,uploadedAt:job.createdAt,sha256:job.sha256});
     let existing=duplicate(paper);
     if(!existing) {
       if(isPaperSuppressed(paper.title,paper.doi))throw new Error('该文献已由管理员删除；请联系管理员确认后恢复收录。');
       if(listPapers().length>=(getAutoSyncConfig().maxStoredPapers||1000))throw new Error('公共文献池容量已满，请联系管理员。');
-      paperDir=path.join(PAPER_ASSETS_DIR,id);fs.mkdirSync(paperDir,{recursive:true});
-      fs.copyFileSync(incoming(job.id),path.join(paperDir,'source.pdf'));
-      phase('提取原文方法图和实验表格');
+      phase('整理全量原文插图与表格');
       const media=await extractOriginalPaperMedia(paper);
       paper.anatomy.paperFigures=media.paperFigures;paper.anatomy.paperTables=media.paperTables;
       if(!media.paperFigures.length)paper.parsing!.warnings.push('未可靠识别原文方法图，可从站内PDF查看；管理员可补充图像。');

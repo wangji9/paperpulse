@@ -31,6 +31,7 @@ import {
   resolvePaperOriginalUrl,
 } from '../lib/constants';
 import { OriginalFiguresSection, OriginalTablesSection } from './visuals/PaperVisuals';
+import { AdaptiveFigureGallery } from './AdaptiveFigureGallery';
 import { PaperKeywords } from './PaperKeywords';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
 import { PaperSocialFootprintPanel, useCardReadingTracker, useModalReadingTracker, formatDurationZh } from './SocialEngagement';
@@ -231,7 +232,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
 
       <PaperKeywords paper={paper} />
-      <PaperAbstract paper={paper} compact />
+      <PaperAbstract paper={paper} />
       {/* Authors + Clickable DOI */}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
         <span>作者：{paper.authors.slice(0, 6).join(', ')}</span>
@@ -361,11 +362,15 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
         </div>
       )}
 
-      {/* Directly Embedded Original Paper Figures (No self-drawn SVG!) */}
-      {(paperFigures.length > 0 || anatomy.figureUrl) && (
+      {/* Directly Embedded Original Paper Figures — Zero-Whitespace Compact Adaptive Gallery (ALL Figures) */}
+      {paperFigures.length > 0 ? (
+        <div className="mt-4">
+          <AdaptiveFigureGallery figures={paperFigures} darkMode={darkMode} />
+        </div>
+      ) : anatomy.figureUrl ? (
         <div className="mt-4">
           <OriginalFiguresSection
-            figures={paperFigures}
+            figures={[]}
             legacyFigureUrl={anatomy.figureUrl}
             legacyCaption={anatomy.figureCaption}
             title="论文原文方法与实验配图"
@@ -374,17 +379,44 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             darkMode={darkMode}
           />
         </div>
-      )}
+      ) : null}
 
-      {/* Directly Embedded Original Paper Experimental Tables */}
+      {/* Directly Embedded Original Paper Experimental Tables (ALL Tables Recorded!) */}
       {paperTables.length > 0 && (
-        <div className="mt-4">
-          <OriginalTablesSection
-            tables={paperTables}
-            maxItems={1}
-            onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
-            darkMode={darkMode}
-          />
+        <div className="mt-3">
+          {paperTables.some((t) => Boolean(t.imageUrl)) && (
+            <details className="rounded-xl border border-slate-200/80 bg-slate-50/60 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-800/35">
+              <summary className="cursor-pointer font-semibold text-slate-700 hover:text-[#0072BD] dark:text-slate-200">
+                原文全部表格（共 {paperTables.filter((t) => Boolean(t.imageUrl)).length} 张 · 点击展开查看与放大）
+              </summary>
+              <div className="pt-2">
+                <AdaptiveFigureGallery
+                  figures={paperTables
+                    .filter((t) => Boolean(t.imageUrl))
+                    .map((t) => ({
+                      id: t.id,
+                      label: t.label,
+                      url: t.imageUrl!,
+                      captionOriginal: t.captionOriginal,
+                      captionZh: t.captionZh,
+                      analysisZh: t.analysisZh,
+                      category: 'experiment' as const,
+                    }))}
+                  darkMode={darkMode}
+                />
+              </div>
+            </details>
+          )}
+          {paperTables.some((t) => Boolean(t.html) && !t.imageUrl) && (
+            <div className="mt-3">
+              <OriginalTablesSection
+                tables={paperTables.filter((t) => Boolean(t.html) && !t.imageUrl)}
+                maxItems={2}
+                onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+                darkMode={darkMode}
+              />
+            </div>
+          )}
         </div>
       )}
 

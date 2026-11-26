@@ -7,7 +7,7 @@ import { load } from 'cheerio';
 import { sanitizePaperTableHtml } from './tableSafety.js';
 export { sanitizePaperTableHtml } from './tableSafety.js';
 import { translateToZh } from './liveFetcher.js';
-import { parsePdfWithBaiduService } from './paddleParser.js';
+import { downloadPdfToCache, getPaddleParserUrl, parsePdfWithBaiduService } from './paddleParser.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -429,8 +429,16 @@ async function extractFromPdfUrl(
   uploaded=false
 ): Promise<{ figures: OriginalPaperFigure[]; tables: OriginalPaperTable[] }> {
   // 1. Prefer Baidu PaddleOCR (PP-DocLayout_plus-L) neural layout detection for ALL figures & tables
-  if (!/^https?:\/\//i.test(pdfUrl) && fs.existsSync(pdfUrl)) {
-    const baidu = await parsePdfWithBaiduService(pdfUrl, paperDir, urlPrefix);
+  // If given a remote OA PDF URL and Baidu service is active, cache it locally first so Baidu parses it!
+  let localPdfPath = !/^https?:\/\//i.test(pdfUrl) ? pdfUrl : '';
+  if (!localPdfPath && getPaddleParserUrl() && /^https?:\/\//i.test(pdfUrl)) {
+    const dest = path.join(paperDir, 'source.pdf');
+    if (await downloadPdfToCache(pdfUrl, dest)) {
+      localPdfPath = dest;
+    }
+  }
+  if (localPdfPath && fs.existsSync(localPdfPath)) {
+    const baidu = await parsePdfWithBaiduService(localPdfPath, paperDir, urlPrefix);
     if (baidu && (baidu.figures.length > 0 || baidu.tables.length > 0)) {
       const figures: OriginalPaperFigure[] = [];
       for (const f of baidu.figures) {
@@ -569,12 +577,26 @@ export async function extractOriginalPaperMedia(paper: AcademicPaper): Promise<{
   const methodCtx = paper.anatomy.proposedMethod || paper.digestSummary;
   const expCtx = paper.anatomy.experimentalValidation || paper.anatomy.conclusion;
 
-  const cachedPdf=path.join(paperDir,'source.pdf');
-  if(fs.existsSync(cachedPdf)) {
-    const cachedMedia=await extractFromPdfUrl(cachedPdf,paperDir,urlPrefix,methodCtx,expCtx,Boolean(paper.upload));
-    if(paper.upload || (cachedMedia.figures.length && cachedMedia.tables.length))return {paperFigures:cachedMedia.figures,paperTables:cachedMedia.tables};
+  const cachedPdf = path.join(paperDir, 'source.pdf');
+  if (fs.existsSync(cachedPdf)) {
+    const cachedMedia = await extractFromPdfUrl(cachedPdf, paperDir, urlPrefix, methodCtx, expCtx, Boolean(paper.upload));
+    if (
+      paper.upload ||
+      (getPaddleParserUrl() && (cachedMedia.figures.length > 0 || cachedMedia.tables.length > 0)) ||
+      (cachedMedia.figures.length && cachedMedia.tables.length)
+    ) {
+      return { paperFigures: cachedMedia.figures, paperTables: cachedMedia.tables };
+    }
   }
   const { arxivId, pdfUrl } = await resolvePaperMediaEndpoints(paper);
+
+  // When Baidu PaddleOCR service is active and a PDF URL is available, prefer Baidu neural layout over HTML scraping
+  if (getPaddleParserUrl() && pdfUrl && !fs.existsSync(cachedPdf)) {
+    const pdfRes = await extractFromPdfUrl(pdfUrl, paperDir, urlPrefix, methodCtx, expCtx, Boolean(paper.upload));
+    if (pdfRes.figures.length > 0 || pdfRes.tables.length > 0) {
+      return { paperFigures: pdfRes.figures, paperTables: pdfRes.tables };
+    }
+  }
 
   let figures: OriginalPaperFigure[] = [];
   let tables: OriginalPaperTable[] = [];

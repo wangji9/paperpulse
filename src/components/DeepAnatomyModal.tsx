@@ -29,6 +29,7 @@ import {
 } from './visuals/PaperVisuals';
 import { EgoCitationGraph } from './CitationGraph';
 import { PaperAbstract } from './PaperAbstract';
+import { AdaptiveFigureGallery } from './AdaptiveFigureGallery';
 import { RelatedPapers } from './RelatedPapers';
 import { PaperKeywords } from './PaperKeywords';
 import { CommentsAndThoughts } from './CommentsAndThoughts';
@@ -406,16 +407,25 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
           >
             {anatomy.proposedMethod && <Text>{anatomy.proposedMethod}</Text>}
             <div className="mt-4">
-              <OriginalFiguresSection
-                figures={methodFigures.length > 0 ? methodFigures : allFigures}
-                legacyFigureUrl={anatomy.figureUrl}
-                legacyCaption={anatomy.figureCaption}
-                title="论文原文方法图 / 总体架构图"
-                allowUpload={true}
-                uploadKind="method_figure"
-                onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
-                darkMode={darkMode}
-              />
+              {allFigures.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="font-semibold text-slate-700 dark:text-slate-200">
+                    论文全部原图（共 {allFigures.length} 张 · 点击可全屏放大与切换）
+                  </div>
+                  <AdaptiveFigureGallery figures={allFigures} darkMode={darkMode} />
+                </div>
+              ) : (
+                <OriginalFiguresSection
+                  figures={[]}
+                  legacyFigureUrl={anatomy.figureUrl}
+                  legacyCaption={anatomy.figureCaption}
+                  title="论文原文方法图 / 总体架构图"
+                  allowUpload={true}
+                  uploadKind="method_figure"
+                  onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
+                  darkMode={darkMode}
+                />
+              )}
             </div>
           </Section>
 
@@ -430,20 +440,33 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </Section>
           )}
 
-          <Section id="sec-cmp" num="08" title="原文实验图表与结果解析" darkMode={darkMode}>
+          <Section id="sec-cmp" num="08" title="原文实验表格与结果解析" darkMode={darkMode}>
             <div className="space-y-4">
-              <OriginalTablesSection
-                tables={paperTables}
-                allowUpload={true}
-                onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
-                darkMode={darkMode}
-              />
-              {expFigures.length > 0 && (
-                <OriginalFiguresSection
-                  figures={expFigures}
-                  title="论文原文实验结果对比图"
-                  allowUpload={false}
-                  uploadKind="experiment_figure"
+              {paperTables.some((t) => Boolean(t.imageUrl)) && (
+                <div className="space-y-2">
+                  <div className="font-semibold text-slate-700 dark:text-slate-200">
+                    原文表格图像（共 {paperTables.filter((t) => Boolean(t.imageUrl)).length} 张 · 点击放大查看）
+                  </div>
+                  <AdaptiveFigureGallery
+                    figures={paperTables
+                      .filter((t) => Boolean(t.imageUrl))
+                      .map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                        url: t.imageUrl!,
+                        captionOriginal: t.captionOriginal,
+                        captionZh: t.captionZh,
+                        analysisZh: t.analysisZh,
+                        category: 'experiment' as const,
+                      }))}
+                    darkMode={darkMode}
+                  />
+                </div>
+              )}
+              {(paperTables.some((t) => Boolean(t.html) && !t.imageUrl) || paperTables.length === 0) && (
+                <OriginalTablesSection
+                  tables={paperTables.filter((t) => Boolean(t.html) && !t.imageUrl)}
+                  allowUpload={true}
                   onUploadMedia={onUploadMedia ? (pl) => onUploadMedia(paper.id, pl) : undefined}
                   darkMode={darkMode}
                 />
