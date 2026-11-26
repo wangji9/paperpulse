@@ -39,9 +39,11 @@ for filename,title in [(sys.argv[1],'Automated Product Design with Public ImageN
 `,pdf,other]);
   // Deliberately slow translation lets the test restart a real in-flight job.
   const translator=createServer(async(req,res)=>{
-    for await(const _ of req){}
+    let text='';for await(const part of req)text+=part;
+    const {q}=JSON.parse(text);
     await new Promise(r=>setTimeout(r,100));
-    res.setHeader('Content-Type','application/json');res.end(JSON.stringify({translatedText:'根据原文，研究提出设计优化方法，并在公开数据集上开展实验验证。'}));
+    const translated=s=>'根据原文，研究提出设计优化方法，并在公开数据集上开展实验验证。'+(s.match(/\b\d+(?:\.\d+)?\b/g)||[]).join('、');
+    res.setHeader('Content-Type','application/json');res.end(JSON.stringify({translatedText:Array.isArray(q)?q.map(translated):translated(q)}));
   });
   await new Promise(r=>translator.listen(0,'127.0.0.1',r));
   let server,logs='';const base='http://127.0.0.1:13992';

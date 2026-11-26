@@ -19,5 +19,6 @@ Thumbs.db
 .playwright-cli/
 
 translation-models/
+translation-llm/
 __pycache__/
 *.pyc

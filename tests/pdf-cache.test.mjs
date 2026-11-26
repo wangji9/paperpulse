@@ -16,11 +16,13 @@ p.insert_textbox(fitz.Rect(40,80,280,180),'Abstract\nLEFT_SOURCE_ONLY. This is t
 p.insert_textbox(fitz.Rect(40,220,280,320),'1 Introduction\nThe left column contains the introduction and research background.',fontsize=11)
 p.insert_textbox(fitz.Rect(320,80,560,180),'2 Method\nRIGHT_METHOD_ONLY. We propose a source-grounded method.',fontsize=11)
 p.insert_textbox(fitz.Rect(320,220,560,320),'3 Conclusion\nThe source-grounded method preserves original evidence.',fontsize=11)
+p.insert_text((280,820),'12345',fontsize=9)
 d.save(sys.argv[1])`,file]);
     const parsed=JSON.parse(execFileSync('python',['server/extract_paper_text.py',file],{encoding:'utf8'}));
     assert.match(parsed.sections.abstract,/LEFT_SOURCE_ONLY/);
     assert.doesNotMatch(parsed.sections.abstract,/RIGHT_METHOD_ONLY/);
     assert.match(parsed.sections.method,/RIGHT_METHOD_ONLY/);
+    assert.doesNotMatch(parsed.text,/12345/);
   }finally {
     assert.ok(path.resolve(dir).startsWith(path.resolve(tmpdir())+path.sep));assert.ok(path.basename(dir).startsWith('paperpulse-columns-'));
     await rm(dir,{recursive:true,force:true,maxRetries:10,retryDelay:100});

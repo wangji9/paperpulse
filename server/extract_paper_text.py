@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """Extract source text and section boundaries; never synthesize research claims."""
-import sys, json, re, urllib.request, fitz, os, shutil, glob
+import sys, json, re, urllib.request, fitz, os, shutil, glob, unicodedata
 
 def page_text_in_order(page):
-    blocks=[b for b in page.get_text('blocks') if b[6]==0 and b[4].strip()]
+    caption=re.compile(r'^(?:Fig\.?|Figure|Table|图|表)\s*(?:\d+|[IVX]+)(?:\s*[:：.]|\s*\n)',re.I)
+    blocks=[b for b in page.get_text('blocks') if b[6]==0 and b[4].strip() and not caption.match(b[4].strip())]
+    blocks=[b for b in blocks if not (re.fullmatch(r'\d{1,5}',b[4].strip()) and (b[1]>page.rect.height-80 or b[3]<35))]
     # Reading by screen coordinates interleaves two journal columns. Keep each
     # column together, while respecting full-width titles and section bands.
     mid=page.rect.width/2
@@ -89,7 +91,27 @@ def main():
                     value=page.get_text(textpage=tp,sort=True);ocr_pages+=1
                 except Exception: warnings.append('部分扫描页OCR识别失败，请核对原文。')
             page_text.append(value)
-        text='\n'.join(page_text)[:180000]
+        # Repeated running headers and publisher metadata are not research prose.
+        counts={}
+        for page_value in page_text:
+            for line in set(page_value.splitlines()):
+                key=line.strip();counts[key]=counts.get(key,0)+1
+        cleaned_pages=[]
+        for page_value in page_text:
+            keep=[]
+            for line in page_value.splitlines():
+                s=line.strip()
+                header=re.search(r'et al\.|arxiv|preprint',s,re.I) or (len(s)<180 and re.search(r'20\d{2}',s) and re.search(r'journal|manufacturing|proceedings|informatics|engineering|robotics|sciences',s,re.I))
+                if counts.get(s,0)>1 and (header or re.fullmatch(r'\d{1,3}',s)):continue
+                if re.match(r'(Contents lists available|journal homepage:|Received(?: in revised form)?\b|Accepted\b|Available online\b|[*∗†]?\s*Corresponding author|E-mail address:|https?://doi\.org/|©|\d{4}-\d{4}/)',s,re.I):continue
+                if re.match(r'Correspondence to:|Proceedings of (?:the|a)\b|Copyright\b',s,re.I):continue
+                if re.search(r'PMLR\s+\d+\s*,\s*20\d{2}',s):continue
+                if re.match(r'^\d{1,2}\s*[A-Z]',s) and re.search(r'University|Institute|OpenHands|Department|College',s):continue
+                keep.append(line)
+            cleaned_pages.append('\n'.join(keep))
+        text=unicodedata.normalize('NFKC','\n'.join(cleaned_pages))[:180000]
+        text=re.sub(r'A\s+B\s+S\s+T\s+R\s+A\s+C\s+T','Abstract',text)
+        text=re.sub(r'A\s+R\s+T\s+I\s+C\s+L\s+E\s+I\s+N\s+F\s+O','Article info',text)
         text=re.sub(r'(?im)^\s*(abstract|摘要)\s*[:：—-]\s*',lambda m:m[1]+'\n',text,count=1)
         if ocr_pages:warnings.append('已对%d页进行OCR，扫描内容及公式需要结合原文核对；最多识别8个扫描页。'%ocr_pages)
         if len(doc)>40:warnings.append('当前提取前40页正文，完整PDF保留在站内。')

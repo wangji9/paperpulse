@@ -13,7 +13,8 @@ test('new paper localization uses the free API, preserves sources and caches tra
     let body='';for await(const chunk of req)body+=chunk;
     const {q}=JSON.parse(body);requests++;
     res.setHeader('Content-Type','application/json');
-    res.end(JSON.stringify({translatedText:q==='Offline content'?undefined:'中文翻译：研究方法、实验与结论。'}));
+    const translate=s=>s==='Offline content'?undefined:'中文翻译：研究方法、实验与结论。';
+    res.end(JSON.stringify({translatedText:Array.isArray(q)?q.map(translate):translate(q)}));
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
   try {
@@ -38,7 +39,7 @@ test('new paper localization uses the free API, preserves sources and caches tra
     let errors='';child.stderr.on('data',b=>errors+=b);
     const code=await new Promise(r=>child.on('exit',r));
     assert.equal(code,0,errors);
-    assert.equal(requests,8,'one request per distinct source; repeated text comes from cache');
+    assert.ok(requests>0&&requests<8,'source fields are batched and repeated text comes from cache');
   }finally {
     await new Promise(r=>server.close(r));
     assert.ok(path.resolve(dir).startsWith(path.resolve(tmpdir())+path.sep));

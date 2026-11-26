@@ -983,9 +983,13 @@ export function commitPaperTranslation(original:AcademicPaper, localized:Academi
   const row=db.prepare('SELECT payload FROM papers WHERE id=?').get(original.id) as {payload:string}|undefined;
   if(!row)return;
   const current=JSON.parse(row.payload) as AcademicPaper;
-  for(const key of ['titleZh','digestSummary','keywords','keywordsOriginal','tags','anatomy'] as const) {
+  if(current.title!==original.title || current.abstractOriginal!==original.abstractOriginal)return;
+  let unchanged=true;
+  for(const key of ['titleZh','digestSummary','keywords','keywordsOriginal','tags','anatomy','abstractOriginal','parsing'] as const) {
     if(JSON.stringify(current[key])===JSON.stringify(original[key]))Object.assign(current,{[key]:localized[key]});
+    else unchanged=false;
   }
+  if(unchanged)current.localization=localized.localization;
   db.prepare('UPDATE papers SET payload=? WHERE id=?').run(JSON.stringify(current),original.id);
 }
 

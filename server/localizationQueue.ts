@@ -2,11 +2,12 @@ import { commitPaperTranslation, listPapers } from './db.js';
 import { localizePaper } from './localizePaper.js';
 import { isChineseText, technicalName } from './translation.js';
 import type { AcademicPaper } from '../src/types/paper.js';
+import { hasDegenerateRepetition, TRANSLATION_VERSION } from './translationQuality.js';
 
 export function needsChinese(p:AcademicPaper):boolean {
   const a=p.anatomy;
   const values=[p.titleZh||p.title,p.digestSummary,a.background,a.problem,a.currentStatus,a.limitationsOfPriorWork,a.proposedMethod,a.experimentalValidation,a.conclusion,...(p.keywords||[]),...(a.paperFigures||[]).map(f=>f.captionZh||f.captionOriginal),...(a.paperTables||[]).map(t=>t.captionZh||t.captionOriginal)];
-  return values.some(s=>s && /[A-Za-z]{3,}/.test(s) && !isChineseText(s) && !technicalName(s));
+  return p.localization?.version!==TRANSLATION_VERSION || p.localization.status==='partial' || values.some(s=>s && (hasDegenerateRepetition(s) || (/[A-Za-z]{3,}/.test(s) && !isChineseText(s) && !technicalName(s))));
 }
 
 export async function localizeStoredPaper(p:AcademicPaper):Promise<void> {

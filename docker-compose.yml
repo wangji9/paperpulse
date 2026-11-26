@@ -19,6 +19,8 @@ services:
       - TRANSLATION_PROVIDER=local
       - LOCAL_TRANSLATION_URL=http://translator:8080/translate
       - TRANSLATION_ALLOW_PAID_FALLBACK=0
+      - TRANSLATION_ENGINE_VERSION=qwen3-4b-v3
+      - DISABLE_AUTO_LOCALIZATION=${DISABLE_AUTO_LOCALIZATION:-0}
       - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
     volumes:
       - ./data:/app/data
@@ -32,7 +34,31 @@ services:
     image: paperpulse-translator:latest
     container_name: wangji-paperpulse-translator
     restart: unless-stopped
-    volumes:
-      - ./translation-models:/models:ro
+    depends_on:
+      translation-llm:
+        condition: service_healthy
+    environment:
+      - OLLAMA_URL=http://translation-llm:11434
+      - TRANSLATION_MODEL=qwen3:4b-instruct-2507-q4_K_M
     expose:
       - "8080"
+
+  translation-llm:
+    image: ollama/ollama:latest
+    container_name: wangji-paperpulse-llm
+    restart: unless-stopped
+    gpus: all
+    environment:
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_NO_CLOUD=1
+      - OLLAMA_CONTEXT_LENGTH=8192
+    volumes:
+      - ./translation-llm:/root/.ollama
+    expose:
+      - "11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 20s
+      timeout: 5s
+      retries: 5

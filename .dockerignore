@@ -15,5 +15,6 @@ Thumbs.db
 tests
 
 translation-models/
+translation-llm/
 __pycache__
 *.pyc

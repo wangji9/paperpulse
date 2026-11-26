@@ -206,6 +206,10 @@ export interface AcademicPaper {
   url: string;
   sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'conference_live' | 'user_created';
   upload?: { userId:string; username:string; displayName:string; fileName:string; uploadedAt:string; sha256:string; titleFromFileName?:boolean };
+  localization?: {
+    version:string; status:'complete'|'partial'; updatedAt:string;
+    fields:Record<string,{source:string;translated:string}>; warnings:string[];
+  };
   keywords?: string[];
   keywordsOriginal?: string[];
   keywordSource?: 'author' | 'extracted' | 'manual';
