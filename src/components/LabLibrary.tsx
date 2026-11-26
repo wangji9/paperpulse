@@ -31,6 +31,7 @@ import { labRequest, repostPaperApi, unrepostPaperApi, uploadLabPaperPdf } from 
 import { TOPIC_META } from '../lib/constants';
 import { analyzeLab, type LabAnalysisResult } from '../lib/labAnalysis';
 import { PaperAbstract } from './PaperAbstract';
+import { AdaptiveFigureGallery } from './AdaptiveFigureGallery';
 import { LabTopicGraph } from './LabTopicGraph';
 import { PdfUploadModal } from './PdfUploadModal';
 import { RelatedPapers } from './RelatedPapers';
@@ -296,31 +297,12 @@ const LabWeiboCard: React.FC<{
           </div>
         )}
 
-        {/* Full Paper Abstract */}
-        <PaperAbstract paper={paper} compact />
+        {/* Full Paper Abstract (Always Expanded) */}
+        <PaperAbstract paper={paper} />
 
-        {/* Original Figures Preview Strip (if extracted) */}
+        {/* All Original Figures — Aspect-Ratio-Aware Compact Justified Gallery (Zero Blank Margins) */}
         {(paper.anatomy?.paperFigures?.length || 0) > 0 && (
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {paper.anatomy.paperFigures!.slice(0, 3).map((fig) => (
-              <button
-                key={fig.id}
-                type="button"
-                onClick={() => onOpen(paper)}
-                className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
-              >
-                <img
-                  src={fig.url}
-                  alt={fig.label}
-                  loading="lazy"
-                  className="h-28 w-full object-contain p-1 transition-transform group-hover:scale-[1.03]"
-                />
-                <span className="absolute bottom-1 left-1 rounded bg-slate-900/75 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                  {fig.label}
-                </span>
-              </button>
-            ))}
-          </div>
+          <AdaptiveFigureGallery figures={paper.anatomy.paperFigures!} darkMode={darkMode} />
         )}
 
         {/* Quick Resource Bar (Deep Read / PDF / DOI) */}

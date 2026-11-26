@@ -129,6 +129,8 @@ export interface OriginalPaperFigure {
   captionZh?: string;
   analysisZh: string;
   category: 'method' | 'experiment';
+  width?: number;
+  height?: number;
 }
 
 export interface OriginalPaperTable {

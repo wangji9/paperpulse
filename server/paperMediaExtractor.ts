@@ -429,12 +429,12 @@ async function extractFromPdfUrl(
 ): Promise<{ figures: OriginalPaperFigure[]; tables: OriginalPaperTable[] }> {
   try {
     const scriptPath = path.resolve(process.cwd(), 'server', 'extract_pdf_figures.py');
-    const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix,...(uploaded?['6','4']:[])], {
-      timeout: 60000,
-      maxBuffer: 4 * 1024 * 1024,
+    const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix, ...(uploaded ? ['32', '12'] : ['24', '8'])], {
+      timeout: 90000,
+      maxBuffer: 8 * 1024 * 1024,
     });
     const parsed = JSON.parse(stdout.trim()) as {
-      figures?: Array<{ id: string; label: string; url: string; captionOriginal: string; category: 'method' | 'experiment' }>;
+      figures?: Array<{ id: string; label: string; url: string; captionOriginal: string; category: 'method' | 'experiment'; width?: number; height?: number }>;
       tables?: Array<{ id: string; label: string; imageUrl: string; captionOriginal: string }>;
     };
 
