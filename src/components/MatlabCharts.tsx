@@ -1077,15 +1077,15 @@ export const MatlabGapOpportunityMatrix: React.FC<{
                 return { opp, idx, tx, ty, x: tx + ((idx % 3) - 1) * 14, y: ty + (idx % 2 === 0 ? -12 : 12) };
               });
               const qSim = forceSimulation<QNode>(qNodes)
-                .force('x', forceX<QNode>((d) => d.tx).strength(0.28))
-                .force('y', forceY<QNode>((d) => d.ty).strength(0.28))
-                .force('collide', forceCollide<QNode>(26).iterations(6))
+                .force('x', forceX<QNode>((d) => d.tx).strength(0.24))
+                .force('y', forceY<QNode>((d) => d.ty).strength(0.24))
+                .force('collide', forceCollide<QNode>(34).iterations(8))
                 .stop();
-              for (let k = 0; k < 120; k++) {
+              for (let k = 0; k < 150; k++) {
                 qSim.tick();
                 for (const qn of qNodes) {
-                  qn.x = Math.max(qPad.left + 28, Math.min(qPad.left + qpW - 28, qn.x || qn.tx));
-                  qn.y = Math.max(qPad.top + 24, Math.min(qPad.top + qpH - 28, qn.y || qn.ty));
+                  qn.x = Math.max(qPad.left + 32, Math.min(qPad.left + qpW - 32, qn.x || qn.tx));
+                  qn.y = Math.max(qPad.top + 22, Math.min(qPad.top + qpH - 30, qn.y || qn.ty));
                 }
               }
 
@@ -1312,8 +1312,8 @@ export const MatlabAuthorSocialBubbleChart: React.FC<{
 
   const items = analysis.canonicalAuthors.slice(0, 18);
   const W = 640;
-  const H = 340;
-  const pad = { top: 26, right: 32, bottom: 48, left: 54 };
+  const H = 370;
+  const pad = { top: 38, right: 30, bottom: 48, left: 54 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
 
@@ -1330,6 +1330,35 @@ export const MatlabAuthorSocialBubbleChart: React.FC<{
     '核心主力': MATLAB_COLORS[0],
     '合作成员': MATLAB_COLORS[4],
   };
+
+  // Collision-free author bubble positions
+  const socialBubbles = useMemo(() => {
+    type SNode = SimulationNodeDatum & {
+      a: (typeof items)[number];
+      r: number;
+      tx: number;
+      ty: number;
+    };
+    const nodes: SNode[] = items.map((a, idx) => {
+      const r = 11 + Math.sqrt(a.count / maxCount) * 16;
+      const tx = xScale(a.coauthorDegree);
+      const ty = yScale(a.techSpan + a.domainSpan);
+      return { a, r, tx, ty, x: tx + ((idx % 3) - 1) * 6, y: ty + (idx % 2 === 0 ? -5 : 5) };
+    });
+    const sim = forceSimulation<SNode>(nodes)
+      .force('x', forceX<SNode>((d) => d.tx).strength(0.32))
+      .force('y', forceY<SNode>((d) => d.ty).strength(0.32))
+      .force('collide', forceCollide<SNode>((d) => d.r + 3.5).iterations(8))
+      .stop();
+    for (let i = 0; i < 160; i++) {
+      sim.tick();
+      for (const n of nodes) {
+        n.x = Math.max(pad.left + n.r + 4, Math.min(pad.left + plotW - n.r - 4, n.x || n.tx));
+        n.y = Math.max(pad.top + n.r + 4, Math.min(pad.top + plotH - n.r - 4, n.y || n.ty));
+      }
+    }
+    return nodes;
+  }, [items, maxCount, maxDeg, maxSpan]);
 
   const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
   const gridInk = darkMode ? '#334155' : '#cbd5e1';
@@ -1348,6 +1377,18 @@ export const MatlabAuthorSocialBubbleChart: React.FC<{
     >
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="img" aria-label="作者社交中心性与跨方向融合气泡图">
         <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
+
+        {/* Legend neatly placed above plot box so it never touches any bubble */}
+        <g transform={`translate(${pad.left}, 8)`}>
+          <rect width={320} height={22} rx={3} fill={plotBg} stroke={gridInk} strokeWidth={0.9} />
+          {Object.entries(roleColors).map(([role, col], idx) => (
+            <g key={role} transform={`translate(${12 + idx * 78}, 11)`}>
+              <circle r={4.5} fill={col} />
+              <text x={8} y={3.5} fontSize="10" fontWeight="600" fill={axisInk}>{role}</text>
+            </g>
+          ))}
+        </g>
+
         <rect x={pad.left} y={pad.top} width={plotW} height={plotH} fill={plotBg} stroke={axisInk} strokeWidth={1.25} />
 
         {/* Dashed Grid */}
@@ -1380,22 +1421,11 @@ export const MatlabAuthorSocialBubbleChart: React.FC<{
           );
         })}
 
-        {/* Legend */}
-        <g transform={`translate(${pad.left + 10}, ${pad.top + 8})`}>
-          <rect width={302} height={24} rx={3} fill={plotBg} fillOpacity={0.92} stroke={gridInk} strokeWidth={0.9} />
-          {Object.entries(roleColors).map(([role, col], idx) => (
-            <g key={role} transform={`translate(${10 + idx * 73}, 12)`}>
-              <circle r={4.5} fill={col} />
-              <text x={8} y={3.5} fontSize="10" fill={axisInk}>{role}</text>
-            </g>
-          ))}
-        </g>
-
-        {/* Bubbles */}
-        {items.map((a, idx) => {
-          const cx = Math.max(pad.left + 18, Math.min(pad.left + plotW - 18, xScale(a.coauthorDegree) + ((idx % 3) - 1) * 4));
-          const cy = Math.max(pad.top + 24, Math.min(pad.top + plotH - 18, yScale(a.techSpan + a.domainSpan) + (idx % 2 === 0 ? -3 : 3)));
-          const r = 9 + Math.sqrt(a.count / maxCount) * 20;
+        {/* Collision-free Bubbles */}
+        {socialBubbles.map((bn) => {
+          const { a, r } = bn;
+          const cx = bn.x || bn.tx;
+          const cy = bn.y || bn.ty;
           const col = roleColors[a.socialRole] || MATLAB_COLORS[0];
           const isHov = hoveredId === a.info.id;
           return (
@@ -1407,12 +1437,12 @@ export const MatlabAuthorSocialBubbleChart: React.FC<{
               onClick={() => onSelectAuthor(a.info.shortName)}
             >
               {isHov && <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke={col} strokeWidth={1.8} strokeDasharray="3 2" />}
-              <circle cx={cx} cy={cy} r={r} fill={col} fillOpacity={isHov ? 0.94 : 0.72} stroke="#ffffff" strokeWidth={1.5} />
+              <circle cx={cx} cy={cy} r={r} fill={col} fillOpacity={isHov ? 0.96 : 0.84} stroke="#ffffff" strokeWidth={1.5} />
               <text
                 x={cx}
-                y={cy + 3.5}
+                y={cy + 3.2}
                 textAnchor="middle"
-                fontSize={r > 16 ? '10.5' : '9'}
+                fontSize={r > 16 ? '10' : '8.5'}
                 fontWeight="700"
                 fill="#ffffff"
               >

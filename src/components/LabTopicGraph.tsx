@@ -377,7 +377,7 @@ export const LabTopicGraph: React.FC<{
               className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                 mode === b.id
                   ? 'bg-[#0072BD] text-white shadow-2xs'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {b.icon}
