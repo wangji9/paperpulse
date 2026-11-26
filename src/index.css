@@ -88,3 +88,28 @@
 .app-header-search { flex: 0 0 256px; width: 256px; min-width: 256px; max-width: 256px; }
 @keyframes paper-update { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { [aria-label="文献更新动态"] button { animation: none !important; } }
+
+/* Lab Literature Library Typography Scale: strict 12pt (16px) floor + clear heading hierarchy */
+.lab-space {
+  font-size: 12pt;
+}
+.lab-space :where(.text-xs, .text-sm, .text-\[10px\], .text-\[11px\]) {
+  font-size: 12pt !important;
+  line-height: 1.55 !important;
+}
+.lab-space h1 {
+  font-size: 24pt !important;
+  line-height: 1.25 !important;
+}
+.lab-space h2 {
+  font-size: 16pt !important;
+  line-height: 1.35 !important;
+}
+.lab-space h3 {
+  font-size: 14pt !important;
+  line-height: 1.4 !important;
+}
+.lab-space h4 {
+  font-size: 13pt !important;
+  line-height: 1.45 !important;
+}

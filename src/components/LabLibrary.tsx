@@ -191,12 +191,12 @@ const LabWeiboCard: React.FC<{
       }`}
     >
       {/* 1. Weibo Author & Metadata Header */}
-      <div className="flex items-start justify-between gap-3 px-5 pt-4">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex items-start justify-between gap-3 px-5 pt-5">
+        <div className="flex min-w-0 items-center gap-3.5">
           <button
             type="button"
             onClick={() => onSelectQuery(leadAuthor)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900"
             style={{ backgroundColor: leadColor }}
             title={`筛选 ${leadAuthor} 的全部成果`}
           >
@@ -207,24 +207,24 @@ const LabWeiboCard: React.FC<{
               <button
                 type="button"
                 onClick={() => onSelectQuery(leadAuthor)}
-                className="text-sm font-bold text-slate-900 hover:text-[#0072BD] dark:text-white dark:hover:text-sky-400"
+                className="text-lg font-bold text-slate-900 hover:text-[#0072BD] dark:text-white dark:hover:text-sky-400"
               >
                 {leadAuthor}
               </button>
-              <span className="rounded-md bg-[#0072BD] px-2 py-0.5 font-mono text-[11px] font-bold text-white">
+              <span className="rounded-md bg-[#0072BD] px-2.5 py-0.5 font-mono text-base font-bold text-white">
                 {yr || '年份待核'}
               </span>
-              <span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
+              <span className="rounded-md bg-teal-50 px-2.5 py-0.5 text-base font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
                 {paper.journal}
               </span>
               {paper.localPdfUrl && (
-                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-base font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
                   全文PDF
                 </span>
               )}
             </div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
-              <span>#{index + 1}</span>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-slate-600 dark:text-slate-300">
+              <span className="font-mono font-semibold text-slate-400">#{index + 1}</span>
               <span>·</span>
               <span>
                 合作作者：
@@ -248,47 +248,47 @@ const LabWeiboCard: React.FC<{
         </div>
 
         {entry.canEdit && (
-          <div className="flex shrink-0 items-center gap-1.5 text-xs">
+          <div className="flex shrink-0 items-center gap-2 text-base">
             <button
               type="button"
               onClick={() => onEdit(entry)}
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-[#0072BD] dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-slate-600 hover:bg-slate-100 hover:text-[#0072BD] dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <Edit3 className="h-3.5 w-3.5" /> 修订
+              <Edit3 className="h-4 w-4" /> 修订
             </button>
             <button
               type="button"
               onClick={() => onDelete(entry.paperId)}
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-800"
             >
-              <Trash2 className="h-3.5 w-3.5" /> 移出
+              <Trash2 className="h-4 w-4" /> 移出
             </button>
           </div>
         )}
       </div>
 
       {/* 2. Weibo Main Content Body */}
-      <div className="px-5 pt-3 pb-3">
+      <div className="px-5 pt-3.5 pb-4">
         <button
           type="button"
           onClick={() => onOpen(paper)}
-          className="block text-left text-base font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-lg dark:text-white dark:hover:text-sky-400"
+          className="block text-left text-xl font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-[22px] dark:text-white dark:hover:text-sky-400"
         >
           {paper.titleZh || paper.title}
         </button>
         {paper.titleZh && paper.title && paper.titleZh !== paper.title && (
-          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{paper.title}</p>
+          <p className="mt-1.5 text-base leading-relaxed text-slate-500 dark:text-slate-400">{paper.title}</p>
         )}
 
         {/* Clean Deduplicated Hashtags */}
         {canonKws.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
+          <div className="mt-3 flex flex-wrap gap-2">
             {canonKws.slice(0, 6).map((kw) => (
               <button
                 key={kw.id}
                 type="button"
                 onClick={() => onSelectQuery(kw.shortLabel)}
-                className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
+                className="rounded-full bg-sky-50 px-3 py-0.5 text-base font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
               >
                 #{kw.shortLabel}#
               </button>
@@ -410,7 +410,7 @@ const LabWeiboCard: React.FC<{
             {reposts.slice(0, 4).map((rp) => (
               <div key={rp.id} className="flex items-start gap-2">
                 <span
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-base font-bold text-white"
                   style={{ backgroundColor: rp.avatarColor }}
                 >
                   {rp.displayName.slice(0, 1)}
@@ -433,7 +433,7 @@ const LabWeiboCard: React.FC<{
 
       {/* 3. Classic Weibo 4-Column Social Action Footer */}
       <div
-        className={`grid grid-cols-4 divide-x border-t text-xs font-semibold sm:text-sm ${
+        className={`grid grid-cols-4 divide-x border-t text-base font-semibold ${
           darkMode ? 'divide-slate-800 border-slate-800' : 'divide-slate-100 border-slate-100'
         }`}
       >
@@ -825,12 +825,12 @@ export function LabLibrary({
   const cardCls = `rounded-2xl border p-4 sm:p-5 ${
     darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-xs'
   }`;
-  const btnOutline = `inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs sm:text-sm font-medium transition ${
+  const btnOutline = `inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-base font-medium transition ${
     darkMode
       ? 'border-slate-700 bg-slate-800 text-slate-200 hover:border-sky-500'
       : 'border-slate-200 bg-white text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD]'
   }`;
-  const inputCls = `w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#0072BD] ${
+  const inputCls = `w-full rounded-xl border px-3.5 py-2.5 text-base outline-none focus:border-[#0072BD] ${
     darkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900 focus:bg-white'
   }`;
 
@@ -842,7 +842,7 @@ export function LabLibrary({
   };
 
   return (
-    <div className="mx-auto max-w-[1800px] space-y-5 text-slate-800 dark:text-slate-100">
+    <div className="lab-space mx-auto max-w-[1800px] space-y-5 text-base text-slate-800 dark:text-slate-100">
       <input
         ref={pdfInputRef}
         type="file"
@@ -853,28 +853,23 @@ export function LabLibrary({
 
       {/* Clean Compact Header */}
       <header
-        className={`rounded-2xl border p-5 ${
+        className={`rounded-2xl border p-5 sm:p-6 ${
           darkMode
             ? 'border-slate-800 bg-gradient-to-r from-slate-900 via-sky-950/30 to-indigo-950/30'
             : 'border-sky-200/70 bg-gradient-to-r from-sky-50/70 via-white to-indigo-50/60 shadow-sm'
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0072BD] text-white shadow-sm">
-              <Library className="h-5 w-5" />
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0072BD] text-white shadow-sm">
+              <Library className="h-6 w-6" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-                课题组文献库
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                课题组成果交流广场 · 方向演进梳理 · 合作网络与前沿探索
-              </p>
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              课题组文献库
+            </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button type="button" className={btnOutline} onClick={() => setArchiveOpen((v) => !v)}>
               <FolderPlus className="h-4 w-4 text-[#0072BD]" /> 从公共池归档
             </button>
@@ -884,7 +879,7 @@ export function LabLibrary({
             <button
               type="button"
               onClick={() => setUploadOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#005a96]"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-4 py-2 text-base font-semibold text-white shadow-xs hover:bg-[#005a96]"
             >
               <Upload className="h-4 w-4" /> 上传课题组 PDF
             </button>
@@ -892,7 +887,7 @@ export function LabLibrary({
         </div>
 
         {/* KPI Bar */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ['课题组论文', syncedEntries.length, '篇', '#0072BD'],
             ['时间跨度', analysis.years.length ? `${analysis.years[0]}–${analysis.years[analysis.years.length - 1]}` : '—', '', '#7E2F8E'],
@@ -903,27 +898,27 @@ export function LabLibrary({
           ].map(([label, val, unit, color]) => (
             <div
               key={String(label)}
-              className={`rounded-xl border p-3 ${
+              className={`rounded-xl border p-3.5 ${
                 darkMode ? 'border-slate-800 bg-slate-900/80' : 'border-slate-200/70 bg-white/90'
               }`}
             >
-              <div className="font-mono text-xl font-bold" style={{ color: String(color) }}>
+              <div className="font-mono text-2xl font-bold sm:text-3xl" style={{ color: String(color) }}>
                 {val}
-                {unit && <span className="ml-0.5 text-xs font-medium text-slate-400">{unit}</span>}
+                {unit && <span className="ml-1 text-base font-medium text-slate-400">{unit}</span>}
               </div>
-              <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{label}</div>
+              <div className="mt-1 text-base text-slate-600 dark:text-slate-300">{label}</div>
             </div>
           ))}
         </div>
       </header>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
+        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-base text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
           {error}
         </div>
       )}
       {notice && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
           {notice}
         </div>
       )}
@@ -938,25 +933,25 @@ export function LabLibrary({
           <button
             type="button"
             onClick={() => setMode('papers')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-lg font-semibold transition ${
               mode === 'papers'
                 ? 'bg-[#0072BD] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'
+                : 'text-slate-700 hover:text-slate-900 dark:text-slate-200'
             }`}
           >
-            <Flame className="h-4 w-4" />
+            <Flame className="h-5 w-5" />
             学术动态流 ({syncedEntries.length})
           </button>
           <button
             type="button"
             onClick={() => setMode('analysis')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-lg font-semibold transition ${
               mode === 'analysis'
                 ? 'bg-[#0072BD] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'
+                : 'text-slate-700 hover:text-slate-900 dark:text-slate-200'
             }`}
           >
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="h-5 w-5" />
             知识图谱与可视化分析
           </button>
         </div>
@@ -1200,7 +1195,7 @@ export function LabLibrary({
                       className="flex w-full items-start gap-2.5 text-left group"
                     >
                       <span
-                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded font-mono text-[11px] font-bold ${
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded font-mono text-base font-bold ${
                           idx < 3 ? 'bg-[#D95319] text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                         }`}
                       >
@@ -1238,26 +1233,26 @@ export function LabLibrary({
                     社交图谱 →
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   {analysis.canonicalAuthors.slice(0, 12).map((a) => (
                     <button
                       key={a.info.id}
                       type="button"
                       title={a.info.honors ? `${a.info.displayName} · ${a.info.cohort || ''} · ${a.info.honors}` : `${a.info.displayName} · ${a.info.cohort || a.socialRole}`}
                       onClick={() => setQuery(a.info.shortName)}
-                      className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-2 text-left hover:border-[#0072BD] dark:border-slate-800 dark:bg-slate-800/50"
+                      className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 p-2.5 text-left hover:border-[#0072BD] dark:border-slate-800 dark:bg-slate-800/50"
                     >
                       <span
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-bold text-white"
                         style={{ backgroundColor: pickAuthorColor(a.info.shortName) }}
                       >
                         {a.info.shortName.slice(0, 1)}
                       </span>
                       <div className="min-w-0">
-                        <div className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">
+                        <div className="truncate text-base font-bold text-slate-800 dark:text-slate-100">
                           {a.info.shortName}
                         </div>
-                        <div className="truncate text-[10px] text-slate-500">
+                        <div className="truncate text-base text-slate-500">
                           {a.info.cohort || a.socialRole} · {a.count}篇
                         </div>
                       </div>
