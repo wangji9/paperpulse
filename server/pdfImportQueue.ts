@@ -7,6 +7,7 @@ import { getAutoSyncConfig, getPaperById, isPaperSuppressed, listAllUsers, listP
 import { extractUploadedPdf, buildUploadedPaper } from './uploadedPdf.js';
 import { extractOriginalPaperMedia, PAPER_ASSETS_DIR } from './paperMediaExtractor.js';
 import { localizePaper } from './localizePaper.js';
+import { addLabPaper } from './labLibrary.js';
 
 const root=path.resolve(process.env.DATA_DIR||'data','pdf-imports');
 fs.mkdirSync(root,{recursive:true});
@@ -20,6 +21,9 @@ const read=(id:string):InternalJob|undefined=>{
   return row?JSON.parse(row.payload):undefined;
 };
 function save(job:InternalJob):void {
+  // A second upload can promote an active public import into the lab library.
+  // Do not lose that durable destination on the worker's next phase update.
+  if(read(job.id)?.destination==='lab')job.destination='lab';
   job.updatedAt=new Date().toISOString();
   jobs.prepare('INSERT OR REPLACE INTO imports VALUES (?,?,?,?,?)').run(job.id,job.user.id,job.status,job.createdAt,JSON.stringify(job));
 }
@@ -36,18 +40,19 @@ export function listPdfImportJobs(user:UserProfile):PdfImportJob[] {
 }
 const incoming=(id:string)=>path.join(root,id+'.pdf');
 export class PdfUploadError extends Error {constructor(message:string,public status:number){super(message);}}
-export function enqueuePdf(buffer:Buffer,fileName:string,user:UserProfile,addToMyKb:boolean):PdfImportJob {
+export function enqueuePdf(buffer:Buffer,fileName:string,user:UserProfile,addToMyKb:boolean,destination:'pool'|'lab'='pool'):PdfImportJob {
   if(!buffer.length || buffer.length>32*1024*1024)throw new PdfUploadError('PDF大小需要在1字节至32MB之间',413);
   if(buffer.subarray(0,1024).indexOf('%PDF-')<0)throw new PdfUploadError('文件不是有效的PDF文档',415);
   const hash=createHash('sha256').update(buffer).digest('hex');
   const current=jobs.prepare("SELECT payload FROM imports WHERE user_id=? AND status IN ('queued','processing')").all(user.id) as Array<{payload:string}>;
-  for(const row of current) {const prior:InternalJob=JSON.parse(row.payload);if(prior.sha256===hash)return publicJob(prior);}
+  for(const row of current) {const prior:InternalJob=JSON.parse(row.payload);if(prior.sha256===hash){if(destination==='lab'){prior.destination='lab';save(prior);}return publicJob(prior);}}
   if(current.length>=3)throw new PdfUploadError('您已有3个待处理任务，请等待解析完成后再上传',429);
   const active=Number((jobs.prepare("SELECT COUNT(*) AS n FROM imports WHERE status IN ('queued','processing')").get() as {n:number}).n);
   if(active>=24)throw new PdfUploadError('解析队列繁忙，请稍后上传',429);
   if(listPapers().length+active>=(getAutoSyncConfig().maxStoredPapers||1000))throw new PdfUploadError('公共文献池已达到容量上限，请联系管理员清理或调整上限',409);
   const now=new Date().toISOString();
   const job:InternalJob={id:randomUUID(),user,sha256:hash,fileName:fileName.replace(/[\\/\u0000-\u001f]/g,'_').slice(0,200)||'上传文献.pdf',status:'queued',phase:'排队等待解析',createdAt:now,updatedAt:now,addToMyKb};
+  job.destination=destination;
   fs.writeFileSync(incoming(job.id),buffer,{flag:'wx'});
   try {save(job);}catch(error){fs.unlinkSync(incoming(job.id));throw error;}
   setImmediate(()=>{void drain();});
@@ -89,6 +94,8 @@ async function processJob(job:InternalJob):Promise<void> {
       }
     }
     job.paperId=existing?.id||paper.id;job.alreadyExists=Boolean(existing);
+    const userStillExists=listAllUsers().some(u=>u.id===job.user.id);
+    if((read(job.id)?.destination||job.destination)==='lab' && userStillExists){job.destination='lab';addLabPaper(job.paperId,job.user);}
     if(job.addToMyKb && listAllUsers().some(u=>u.id===job.user.id))upsertUserKbItem(job.user.id,job.paperId,{});
     job.status='completed';job.phase=existing?'文献已存在，已定位公共池条目':'已完成解析并加入公共文献池';save(job);
   }catch(error) {job.status='failed';job.error=error instanceof Error?error.message:'PDF解析失败';job.phase='解析未完成';save(job);}

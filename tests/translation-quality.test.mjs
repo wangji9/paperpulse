@@ -11,6 +11,8 @@ test('the Qwen API retries failed segments without discarding valid neighboring 
   execFileSync('python',['-c',String.raw`import importlib.util,json
 s=importlib.util.spec_from_file_location('qwen_translation','translation/qwen_service.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
 assert not m.valid('Research accuracy 0.91','Research accuracy 0.19')
+assert 'COVID-19' in m.normalize('Affected by COVID-19',chr(26032)+chr(20896)+chr(30123)+chr(24773))
+assert m.normalize('Other research',chr(26032)+chr(20896))==chr(26032)+chr(20896)
 assert m.valid('model pi 0',chr(27169)+chr(22411)+' '+chr(960)+chr(8320))
 def partial(url,payload=None,timeout=180):
  if payload and 'format' in payload:return {'message':{'content':json.dumps({'translations':[chr(21407)+chr(25991)+chr(35777)+chr(25454),chr(30456)*100]})}}

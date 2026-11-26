@@ -7,7 +7,7 @@ export function applySourceText(paper: AcademicPaper, text: string, sections: Re
   const gap = sentences.find(s=>/however|challenge|limitation|lack of|difficult|然而|不足|挑战/i.test(s)) || '';
   const method = sentences.filter(s=>/we (?:propose|introduce|present|develop)|this paper (?:proposes|presents)|本文|我们提出/i.test(s)).join(' ');
   const conclusion = sentences.filter(s=>/results (?:show|demonstrate|indicate)|we (?:show|find|demonstrate)|结果表明/i.test(s)).slice(-2).join(' ');
-  return { ...paper, anatomy: { ...paper.anatomy,
+  return { ...paper, ...(sections.abstract?.trim()?{abstractOriginal:clean(sections.abstract),abstractZh:undefined}:{}), anatomy: { ...paper.anatomy,
     background: sourceExcerpt(section(/introduction|background/) || sentences.slice(0,2).join(' '),1500),
     problem: sourceExcerpt(section(/problem/) || gap,1500),
     proposedMethod: sourceExcerpt(section(/method|approach/) || method,2200),

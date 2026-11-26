@@ -1,4 +1,5 @@
 import { localizePaper } from './localizePaper.js';
+import { addLabPaper, changeLabEntry, listLabEntries } from './labLibrary.js';
 import { startLocalizationQueue } from './localizationQueue.js';
 import { enqueuePdf, getPdfImportJob, listPdfImportJobs, PdfUploadError, startPdfImportQueue } from './pdfImportQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
@@ -217,6 +218,21 @@ app.use('/api/papers', requireAuth);
 app.use('/api/pdf-imports', requireAuth);
 app.use('/api/sync', requireAuth);
 app.use('/api/auto-sync', requireAuth);
+app.use('/api/lab', requireAuth);
+app.get('/api/lab', (req,res)=>res.json({entries:listLabEntries(extractUser(req)!)}));
+app.post('/api/lab', (req,res)=>{
+  try {if(typeof req.body.paperId!=='string'||!getPaperById(req.body.paperId)){res.status(404).json({error:'请先上传PDF或选择公共池内的文献'});return;}
+    addLabPaper(req.body.paperId,extractUser(req)!);res.status(201).json({entries:listLabEntries(extractUser(req)!)});
+  }catch(e){res.status(400).json({error:e instanceof Error?e.message:'归档失败'});}
+});
+app.put('/api/lab/:id', (req,res)=>{
+  try {changeLabEntry(String(req.params.id),extractUser(req)!,req.body);res.json({entries:listLabEntries(extractUser(req)!)});}
+  catch(e){res.status((e as {status?:number}).status||400).json({error:(e as Error).message});}
+});
+app.delete('/api/lab/:id',(req,res)=>{
+  try {changeLabEntry(String(req.params.id),extractUser(req)!,{},true);res.json({entries:listLabEntries(extractUser(req)!)});}
+  catch(e){res.status((e as {status?:number}).status||400).json({error:(e as Error).message});}
+});
 
 app.get('/api/users', (req, res) => {
   const actor = extractUser(req)!;
@@ -465,7 +481,7 @@ app.post('/api/papers/upload-pdf', (req,res,next)=>{
     if(!req.is('application/pdf') || !Buffer.isBuffer(req.body)) {res.status(415).json({error:'请上传PDF文档'});return;}
     let fileName='上传文献.pdf';
     try {fileName=decodeURIComponent(String(req.headers['x-file-name']||fileName));}catch { /* use safe default */ }
-    const job=enqueuePdf(req.body,fileName,extractUser(req)!,req.headers['x-add-to-kb']!=='0');
+    const job=enqueuePdf(req.body,fileName,extractUser(req)!,req.headers['x-add-to-kb']!=='0',req.headers['x-library-destination']==='lab'?'lab':'pool');
     res.status(202).json({job});
   }catch(error) {res.status(error instanceof PdfUploadError?error.status:500).json({error:error instanceof Error?error.message:'PDF上传失败'});}
 });

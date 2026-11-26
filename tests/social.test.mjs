@@ -37,7 +37,7 @@ test('authenticated social reading is traceable, isolated and durable', async ()
   };
   try {
     await start();
-    for (const route of ['/api/papers', '/api/users', '/api/auto-sync/config', '/api/kb/anything', '/paper-assets/private.png']) {
+    for (const route of ['/api/lab','/api/papers', '/api/users', '/api/auto-sync/config', '/api/kb/anything', '/paper-assets/private.png']) {
       assert.equal((await request(route)).status, 401, route);
     }
     assert.equal((await request('/api/health')).data.storage, undefined);
@@ -48,6 +48,15 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     const ta = a.data.token, tb = b.data.token;
     const id = (await request('/api/papers', ta)).data.papers[0].id;
     const route = `/api/papers/${encodeURIComponent(id)}`;
+    assert.equal((await request('/api/lab',ta,'POST',{paperId:id})).status,201);
+    assert.equal((await request('/api/lab',tb,'POST',{paperId:id})).status,201);
+    assert.equal((await request('/api/lab/'+id,tb,'PUT',{titleZh:'越权修订'})).status,403);
+    assert.equal((await request('/api/lab/'+id,tb,'DELETE')).status,403);
+    assert.equal((await request('/api/lab/'+id,ta,'PUT',{titleZh:'课题组条目修订',notes:'成员整理',publicationYear:2027})).status,200);
+    const labB=(await request('/api/lab',tb)).data.entries[0];
+    assert.equal(labB.paper.titleZh,'课题组条目修订');assert.equal(labB.canEdit,false);
+    assert.notEqual((await request(route,ta)).data.paper.titleZh,'课题组条目修订');
+    assert.equal((await request('/api/lab/'+id,ta,'PUT',{keywords:[42]})).status,400);
     const heartbeat = { visitId: 'test-session-123456', elapsedSeconds: 3 };
     await request(`${route}/read`, ta, 'POST', heartbeat);
     const repeated = await request(`${route}/read`, ta, 'POST', heartbeat);
@@ -77,6 +86,7 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     await stop();
     await start();
     const durable = (await request(route, ta)).data.paper;
+    assert.equal((await request('/api/lab',ta)).data.entries[0].publicationYear,2027);
     assert.equal(durable.likedByMe, true);
     assert.equal(durable.totalVisits, 1);
     assert.equal(durable.totalDwellSeconds, 3);
@@ -85,6 +95,9 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     const rootLogin = await request('/api/auth/login', null, 'POST', { username: 'admin', password: 'test-admin-password' });
     assert.equal(rootLogin.status, 200);
     const root = rootLogin.data.token;
+    assert.equal((await request('/api/lab/'+id,root,'DELETE')).status,200);
+    assert.equal((await request(route,ta)).status,200);
+    assert.equal((await request('/api/papers?scope=my_kb',ta)).data.total,1);
     const ownDirectory = (await request('/api/users', tb)).data.users;
     assert.deepEqual(ownDirectory.map(u => u.id), [b.data.user.id]);
     assert.ok((await request('/api/users', root)).data.users.length >= 3);

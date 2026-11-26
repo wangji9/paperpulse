@@ -985,7 +985,7 @@ export function commitPaperTranslation(original:AcademicPaper, localized:Academi
   const current=JSON.parse(row.payload) as AcademicPaper;
   if(current.title!==original.title || current.abstractOriginal!==original.abstractOriginal)return;
   let unchanged=true;
-  for(const key of ['titleZh','digestSummary','keywords','keywordsOriginal','tags','anatomy','abstractOriginal','parsing'] as const) {
+  for(const key of ['titleZh','abstractZh','digestSummary','keywords','keywordsOriginal','tags','anatomy','abstractOriginal','parsing'] as const) {
     if(JSON.stringify(current[key])===JSON.stringify(original[key]))Object.assign(current,{[key]:localized[key]});
     else unchanged=false;
   }
@@ -1005,6 +1005,7 @@ export function upsertPaper(paper: AcademicPaper, currentUserId?: string): Acade
     totalVisits: _tv,
     totalDwellSeconds: _td,
     inMyKb: _i,
+    labMetadata: _lab,
     myPersonalTags: _mt,
     myReadingStatus: _ms,
     ...rest

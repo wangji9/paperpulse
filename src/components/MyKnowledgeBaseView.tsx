@@ -16,8 +16,11 @@ import {
 import type { AcademicPaper, EntryType, ReadingStatus, UserProfile } from '../types/paper';
 import { DATASET_SOURCE_META, READING_STATUS_META, resolvePaperOriginalUrl } from '../lib/constants';
 import { PaperFeedCard } from './PaperFeedCard';
+import { RelatedPapers } from './RelatedPapers';
+import { PaperAbstract } from './PaperAbstract';
 
 interface MyKnowledgeBaseViewProps {
+  pool: AcademicPaper[];
   papers: AcademicPaper[];
   onSocialUpdate: (paper: AcademicPaper) => void;
   onLike: (id: string) => Promise<void>;
@@ -45,6 +48,7 @@ interface MyKnowledgeBaseViewProps {
 type KbLayoutMode = 'kanban' | 'matrix' | 'cards';
 
 export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
+  pool,
   papers,
   onSocialUpdate, onLike, onLikeComment, trackingEnabled,
   currentUser,
@@ -112,6 +116,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
 
   return (
     <div className="space-y-5">
+      <RelatedPapers seeds={papers} pool={pool} onOpen={onOpenDetail} onCollect={onToggleMyKb} />
       {/* Distinct Personal Research Workbench Header (Teal-Indigo Theme) */}
       <div
         className={`rounded-2xl border p-5 ${
@@ -286,10 +291,11 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
           }`}
         >
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1900px] table-fixed border-collapse text-left text-sm">
+            <table className="w-full min-w-[2200px] table-fixed border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b-2 border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-200">
                   <th className="w-72 px-4 py-3 font-semibold">文献标题与来源</th>
+                  <th className="w-80 px-4 py-3 font-semibold">论文摘要</th>
                   <th className="w-64 px-4 py-3 font-semibold">研究背景</th>
                   <th className="w-60 px-4 py-3 font-semibold">核心问题</th>
                   <th className="w-64 px-4 py-3 font-semibold">方法 / 核心机制</th>
@@ -326,6 +332,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                         )}
                       </td>
 
+                      <td className="px-4 py-3.5"><PaperAbstract paper={p} compact /></td>
                       <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300"><p className="whitespace-pre-line leading-6">{p.anatomy.background || '尚未解析研究背景'}</p></td>
                       <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
                         {p.anatomy.problem || '尚未解析核心问题'}

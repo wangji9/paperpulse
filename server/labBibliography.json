@@ -1,0 +1,4689 @@
+[
+  {
+    "number": 1,
+    "title": "A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions",
+    "authorsText": "Jiang, C., Yao, J., Xiao, W., Zhuang, W., Wang, J., Bao, J., & Li, X.*",
+    "year": 2027,
+    "citation": "1. Jiang, C., Yao, J., Xiao, W., Zhuang, W., Wang, J., Bao, J., & Li, X.* (2027). A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions. Advanced Engineering Informatics, 77, 105281.",
+    "venueText": "Advanced Engineering Informatics, 77, 105281.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2027,
+            1
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2026.105281",
+      "page": "105281",
+      "is-referenced-by-count": 1,
+      "title": [
+        "A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions"
+      ],
+      "volume": "77",
+      "author": [
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034626009730?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034626009730?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034626009730"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2027,
+            1
+          ]
+        ]
+      },
+      "article-number": "105281"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7213561571"
+    }
+  },
+  {
+    "number": 2,
+    "title": "An agentic AI-enabled approach for extracting designers’ meta-knowledge in product configuration of rehabilitation assistive devices",
+    "authorsText": "Zhuang, W., Deng, W., Lv, X., Wang, J., Xiao, W., Jiang, C., ... & Li, X.",
+    "year": 2027,
+    "citation": "2. Zhuang, W., Deng, W., Lv, X., Wang, J., Xiao, W., Jiang, C., ... & Li, X. (2027). An agentic AI-enabled approach for extracting designers’ meta-knowledge in product configuration of rehabilitation assistive devices. Expert Systems with Applications, 334, 134629.",
+    "venueText": "Expert Systems with Applications, 334, 134629.",
+    "verification": "verified",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                2,
+                1
+              ]
+            ],
+            "date-time": "2027-02-01T00:00:00Z",
+            "timestamp": 1801440000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2027,
+            2
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.eswa.2026.134629",
+      "page": "134629",
+      "is-referenced-by-count": 0,
+      "title": [
+        "An agentic AI-enabled approach for extracting designers’ meta-knowledge in product configuration of rehabilitation assistive devices"
+      ],
+      "volume": "334",
+      "author": [
+        {
+          "ORCID": "https://orcid.org/0009-0003-6569-5886",
+          "authenticated-orcid": false,
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weijia",
+          "family": "Deng",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xingchen",
+          "family": "Lv",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Expert Systems with Applications"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0957417426035335?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0957417426035335?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0957417426035335"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2027,
+            2
+          ]
+        ]
+      },
+      "article-number": "134629"
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7220847518"
+    }
+  },
+  {
+    "number": 3,
+    "title": "An LLM-KG empowered manner for extracting and representing operational knowledge under abnormal conditions: A case study in end-of-life battery disassembly",
+    "authorsText": "Yao, J., Jiang, C., Xiao, W., Wang, J., Zhuang, W., Bao, J., & Li, X.*",
+    "year": 2026,
+    "citation": "3. Yao, J., Jiang, C., Xiao, W., Wang, J., Zhuang, W., Bao, J., & Li, X.* (2026). An LLM-KG empowered manner for extracting and representing operational knowledge under abnormal conditions: A case study in end-of-life battery disassembly. Journal of Manufacturing Systems, 88, 1004-1025.",
+    "venueText": "Journal of Manufacturing Systems, 88, 1004-1025.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                10,
+                1
+              ]
+            ],
+            "date-time": "2026-10-01T00:00:00Z",
+            "timestamp": 1790812800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                10,
+                1
+              ]
+            ],
+            "date-time": "2026-10-01T00:00:00Z",
+            "timestamp": 1790812800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            10
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.jmsy.2026.07.025",
+      "page": "1004-1025",
+      "is-referenced-by-count": 0,
+      "title": [
+        "An LLM-KG empowered manner for extracting and representing operational knowledge under abnormal conditions: A case study in end-of-life battery disassembly"
+      ],
+      "volume": "88",
+      "author": [
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Journal of Manufacturing Systems"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612526002086?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612526002086?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0278612526002086"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            10
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7172400593"
+    }
+  },
+  {
+    "number": 4,
+    "title": "Explicating visual tacit knowledge in industrial welding inspection with context-aware cognitive pathway graph",
+    "authorsText": "Wang, J., Zhuang, W., Wu, X., Chen, C., Bao, J., & Li, X.*",
+    "year": 2026,
+    "citation": "4. Wang, J., Zhuang, W., Wu, X., Chen, C., Bao, J., & Li, X.* (2026). Explicating visual tacit knowledge in industrial welding inspection with context-aware cognitive pathway graph. Journal of Manufacturing Systems, 85, 366-385.",
+    "venueText": "Journal of Manufacturing Systems, 85, 366-385.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.jmsy.2026.02.001",
+      "page": "366-385",
+      "is-referenced-by-count": 4,
+      "title": [
+        "Explicating visual tacit knowledge in industrial welding inspection with context-aware cognitive pathway graph"
+      ],
+      "volume": "85",
+      "author": [
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Journal of Manufacturing Systems"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612526000300?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612526000300?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0278612526000300"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7128164090"
+    }
+  },
+  {
+    "number": 5,
+    "title": "An Agentic AI-Empowered Product Family Configuration Approach for Personalizing Rehabilitation Assistive Devices with Multi-Faceted Wearing Experience",
+    "authorsText": "Zhuang, W., Lv, X., Wu, X., Chen, C., Xiao, W., Wang, J., Jiang, C., Yao, J., Bao, J., & Li, X.*",
+    "year": 2026,
+    "citation": "5. Zhuang, W., Lv, X., Wu, X., Chen, C., Xiao, W., Wang, J., Jiang, C., Yao, J., Bao, J., & Li, X.* (2026). An Agentic AI-Empowered Product Family Configuration Approach for Personalizing Rehabilitation Assistive Devices with Multi-Faceted Wearing Experience. Advanced Engineering Informatics, 74, 104695.",
+    "venueText": "Advanced Engineering Informatics, 74, 104695.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                9,
+                1
+              ]
+            ],
+            "date-time": "2026-09-01T00:00:00Z",
+            "timestamp": 1788220800000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            9
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2026.104695",
+      "page": "104695",
+      "is-referenced-by-count": 3,
+      "title": [
+        "An Agentic AI-Empowered product family configuration approach for personalizing rehabilitation assistive devices with Multi-Faceted wearing experience"
+      ],
+      "volume": "74",
+      "author": [
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xingchen",
+          "family": "Lv",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034626003873?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034626003873?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034626003873"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            9
+          ]
+        ]
+      },
+      "article-number": "104695"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7154650937"
+    }
+  },
+  {
+    "number": 6,
+    "title": "Parsing and prioritizing users’ evolving requirements with large language models: A case study in personalized rehabilitation assistive devices design",
+    "authorsText": "Zhuang, W., Wang, J., Wu, X., Chen, C., Xiao, W., Jiang, C., Yao, J., Bao, J., & Li, X.*",
+    "year": 2026,
+    "citation": "6. Zhuang, W., Wang, J., Wu, X., Chen, C., Xiao, W., Jiang, C., Yao, J., Bao, J., & Li, X.* (2026). Parsing and prioritizing users’ evolving requirements with large language models: A case study in personalized rehabilitation assistive devices design. Computers & Industrial Engineering, 214, 111878.",
+    "venueText": "Computers & Industrial Engineering, 214, 111878.",
+    "verification": "verified",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.cie.2026.111878",
+      "page": "111878",
+      "is-referenced-by-count": 4,
+      "title": [
+        "Parsing and prioritizing users’ evolving requirements with large language models: A case study in personalized rehabilitation assistive devices design"
+      ],
+      "volume": "214",
+      "author": [
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0003-1999-1003",
+          "authenticated-orcid": false,
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Computers &amp; Industrial Engineering"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0360835226000793?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0360835226000793?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0360835226000793"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      },
+      "article-number": "111878"
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7128037178"
+    }
+  },
+  {
+    "number": 7,
+    "title": "Recursive Multi-modal Retrieval for Structured Semantic Trees in Engineering Documents",
+    "authorsText": "Li, F.*, Li, X.*, & Bao, J.*",
+    "year": 2026,
+    "citation": "7. Li, F.*, Li, X.*, & Bao, J.* (2026). Recursive Multi-modal Retrieval for Structured Semantic Trees in Engineering Documents. Knowledge-Based Systems, 338, 115433.",
+    "venueText": "Knowledge-Based Systems, 338, 115433.",
+    "verification": "verified",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2026,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2026-04-01T00:00:00Z",
+            "timestamp": 1775001600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.knosys.2026.115433",
+      "page": "115433",
+      "is-referenced-by-count": 2,
+      "title": [
+        "Recursive multi-modal retrieval for structured semantic trees in engineering documents"
+      ],
+      "volume": "338",
+      "author": [
+        {
+          "given": "Fei",
+          "family": "Li",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0003-1999-1003",
+          "authenticated-orcid": false,
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Knowledge-Based Systems"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0950705126001760?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0950705126001760?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0950705126001760"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            4
+          ]
+        ]
+      },
+      "article-number": "115433"
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7126120889"
+    }
+  },
+  {
+    "number": 8,
+    "title": "Large language model-enabled multi-agent self-organised approach for personalised rehabilitation assistive devices design",
+    "authorsText": "Zhuang, W., Pan, X., Wen, S., Yu, W., Li, X.*, & Bao, J.",
+    "year": 2026,
+    "citation": "8. Zhuang, W., Pan, X., Wen, S., Yu, W., Li, X.*, & Bao, J. (2026). Large language model-enabled multi-agent self-organised approach for personalised rehabilitation assistive devices design. International Journal of Production Research, 64(12), 5209-5238.",
+    "venueText": "International Journal of Production Research, 64(12), 5209-5238.",
+    "crossref": {
+      "issue": "12",
+      "published-print": {
+        "date-parts": [
+          [
+            2026,
+            6,
+            18
+          ]
+        ]
+      },
+      "DOI": "10.1080/00207543.2025.2509155",
+      "page": "5209-5238",
+      "is-referenced-by-count": 20,
+      "title": [
+        "Large language model-enabled multi-agent self-organised approach for personalised rehabilitation assistive devices design"
+      ],
+      "volume": "64",
+      "author": [
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weigang",
+          "family": "Yu",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "published-online": {
+        "date-parts": [
+          [
+            2025,
+            5,
+            26
+          ]
+        ]
+      },
+      "container-title": [
+        "International Journal of Production Research"
+      ],
+      "link": [
+        {
+          "URL": "https://www.tandfonline.com/doi/pdf/10.1080/00207543.2025.2509155",
+          "content-type": "unspecified",
+          "content-version": "vor",
+          "intended-application": "similarity-checking"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://www.tandfonline.com/doi/full/10.1080/00207543.2025.2509155"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            5,
+            26
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "With the increasing prevalence of age-related diseases among the elderly, escalating disability rates resulting from chronic illnesses, and heightened public health awareness, there is a growing demand for personalised design of rehabilitation assistive devices (RADs). Conventional product design methods have shown significant limitations in addressing the diversity and individuality of user needs. Therefore, leveraging large language models (LLM) to self-organise multi-agents, an innovative method for designing personalised RADs, called LLM-PDAgents, is proposed in this manuscript. Initially, a knowledge graph (KG) was constructed with the relationship among ‘phenomenon-symptom-function-behaviour-structure', establishing a chain-of-thought for product design knowledge within multi-agents. Subsequently, a thinking mechanism for task planning in the self-organised process of multi-agents was developed, which emulates the processes of planning, execution, and monitoring in product design. Ultimately, a multi-tiered progressive reflection strategy was devised to iteratively refine the product design, fostering a continuous optimization on the design solution until user satisfaction is achieved. Taking the real-world design of knee joint RADs as an example, LLM-PDAgents significantly improved the procedure and quality of the whole design process, and its outcomes showed merits on economic viability, manufacturing feasibility, user pertinence, and generated costs, indicating an efficient and reliable approach for the personalised design of RADs.",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4410732732"
+    }
+  },
+  {
+    "number": 9,
+    "title": "Analysis of causes of welding defects in bridge weathering steel based on large language models",
+    "authorsText": "Wang, J., Zhuang, W., Liu, T., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "9. Wang, J., Zhuang, W., Liu, T., Bao, J., & Li, X.* (2025). Analysis of causes of welding defects in bridge weathering steel based on large language models. Journal of Industrial Information Integration, 48, 100954.",
+    "venueText": "Journal of Industrial Information Integration, 48, 100954.",
+    "verification": "verified",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            11
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.jii.2025.100954",
+      "page": "100954",
+      "is-referenced-by-count": 2,
+      "title": [
+        "Analysis of causes of welding defects in bridge weathering steel based on large language models"
+      ],
+      "volume": "48",
+      "author": [
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Tianyuan",
+          "family": "Liu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Journal of Industrial Information Integration"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S2452414X25001773?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S2452414X25001773?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S2452414X25001773"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            11
+          ]
+        ]
+      },
+      "article-number": "100954"
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4414189842"
+    }
+  },
+  {
+    "number": 10,
+    "title": "A context-aware KG-LLM collaborated conceptual design approach for personalized products: A case in lower limbs rehabilitation assistive devices",
+    "authorsText": "Pan, X., Zhuang, W., Wen, S., Yu, W., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "10. Pan, X., Zhuang, W., Wen, S., Yu, W., Bao, J., & Li, X.* (2025). A context-aware KG-LLM collaborated conceptual design approach for personalized products: A case in lower limbs rehabilitation assistive devices. Advanced Engineering Informatics, 66, 103422.",
+    "venueText": "Advanced Engineering Informatics, 66, 103422.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                7,
+                1
+              ]
+            ],
+            "date-time": "2025-07-01T00:00:00Z",
+            "timestamp": 1751328000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            7
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2025.103422",
+      "page": "103422",
+      "is-referenced-by-count": 32,
+      "title": [
+        "A context-aware KG-LLM collaborated conceptual design approach for personalized products: A case in lower limbs rehabilitation assistive devices"
+      ],
+      "volume": "66",
+      "author": [
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weigang",
+          "family": "Yu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034625003155?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034625003155?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034625003155"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            7
+          ]
+        ]
+      },
+      "article-number": "103422"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4410050652"
+    }
+  },
+  {
+    "number": 11,
+    "title": "Leveraging large language models for Human-Machine collaborative troubleshooting of complex industrial equipment faults",
+    "authorsText": "Wen, S., Li, F., Zhuang, W., Pan, X., Yu, W., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "11. Wen, S., Li, F., Zhuang, W., Pan, X., Yu, W., Bao, J., & Li, X.* (2025). Leveraging large language models for Human-Machine collaborative troubleshooting of complex industrial equipment faults. Advanced Engineering Informatics, 65, 103235.",
+    "venueText": "Advanced Engineering Informatics, 65, 103235.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                5,
+                1
+              ]
+            ],
+            "date-time": "2025-05-01T00:00:00Z",
+            "timestamp": 1746057600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            5
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2025.103235",
+      "page": "103235",
+      "is-referenced-by-count": 58,
+      "title": [
+        "Leveraging large language models for Human-Machine collaborative troubleshooting of complex industrial equipment faults"
+      ],
+      "volume": "65",
+      "author": [
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Fei",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weigang",
+          "family": "Yu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034625001284?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034625001284?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034625001284"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            5
+          ]
+        ]
+      },
+      "article-number": "103235"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4408285578"
+    }
+  },
+  {
+    "number": 12,
+    "title": "Rescheduling human-robot collaboration tasks under dynamic disassembly scenarios: An MLLM-KG collaboratively enabled approach",
+    "authorsText": "Yu, W., Lv, J., Zhuang, W., Pan, X., Wen, S., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "12. Yu, W., Lv, J., Zhuang, W., Pan, X., Wen, S., Bao, J., & Li, X.* (2025). Rescheduling human-robot collaboration tasks under dynamic disassembly scenarios: An MLLM-KG collaboratively enabled approach. Journal of Manufacturing Systems, 80, 20-37.",
+    "venueText": "Journal of Manufacturing Systems, 80, 20-37.",
+    "verification": "verified",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                6,
+                1
+              ]
+            ],
+            "date-time": "2025-06-01T00:00:00Z",
+            "timestamp": 1748736000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                6,
+                1
+              ]
+            ],
+            "date-time": "2025-06-01T00:00:00Z",
+            "timestamp": 1748736000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            6
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.jmsy.2025.02.015",
+      "page": "20-37",
+      "is-referenced-by-count": 46,
+      "title": [
+        "Rescheduling human-robot collaboration tasks under dynamic disassembly scenarios: An MLLM-KG collaboratively enabled approach"
+      ],
+      "volume": "80",
+      "author": [
+        {
+          "given": "Weigang",
+          "family": "Yu",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jianhao",
+          "family": "Lv",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Journal of Manufacturing Systems"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612525000445?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0278612525000445?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0278612525000445"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            6
+          ]
+        ]
+      }
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4407928655"
+    }
+  },
+  {
+    "number": 13,
+    "title": "A layer-wise anomaly prediction method for 3D printing process leveraging multimodal data",
+    "authorsText": "Wu, X., Chen, C., Zhuang, W., Wang, J., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "13. Wu, X., Chen, C., Zhuang, W., Wang, J., Bao, J., & Li, X.* (2025). A layer-wise anomaly prediction method for 3D printing process leveraging multimodal data. Journal of Engineering Design, 1-30.",
+    "venueText": "Journal of Engineering Design, 1-30.",
+    "crossref": {
+      "DOI": "10.1080/09544828.2025.2574208",
+      "page": "1-30",
+      "is-referenced-by-count": 1,
+      "title": [
+        "A layer-wise anomaly prediction method for 3D printing process leveraging multimodal data"
+      ],
+      "author": [
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "College of Mechanical Engineering, Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "published-online": {
+        "date-parts": [
+          [
+            2025,
+            10,
+            15
+          ]
+        ]
+      },
+      "container-title": [
+        "Journal of Engineering Design"
+      ],
+      "link": [
+        {
+          "URL": "https://www.tandfonline.com/doi/pdf/10.1080/09544828.2025.2574208",
+          "content-type": "unspecified",
+          "content-version": "vor",
+          "intended-application": "similarity-checking"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://www.tandfonline.com/doi/full/10.1080/09544828.2025.2574208"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            10,
+            15
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "Reliable anomaly detection in 3D printing is critical for ensuring part quality and process stability, yet conventional data-driven methods often fail under cold-start conditions and long-range dependencies. To overcome these challenges, this paper proposes a layer-wise anomaly prediction framework that combines large language model (LLM) reasoning with multimodal physical sensing. A stage-adaptive Prompt adjustment mechanism is introduced, which dynamically integrates material properties, process parameters, sensor states, and task semantics with time-series data as a unified input. This enables the model to capture both global semantics and local temporal variations across print layers. The proposed method consists of three key modules: (1) prompt design tailored to layered printing characteristics, including static and dynamic Prompts; (2) multimodal time-series alignment using sliding window encoding and semantic prototype matching; and (3) a unified inference framework for anomaly classification based on prompt cues and sensor embeddings. Experiments on four representative 3D-printed parts – rectangular beam, L-shaped bracket, spiral component, and internal-cavity cube – with controlled anomaly scenarios demonstrate that our approach outperforms LSTM, Anomaly Transformer, and frozen LLM baselines, offering superior accuracy and interpretability in complex printing environments.",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4415237035"
+    }
+  },
+  {
+    "number": 14,
+    "title": "Recommending engineering knowledge with context-aware agentic AI: a case study in on-site wind turbines assembly",
+    "authorsText": "Chen, C., Wu, X., Zhuang, W., Wang, J., Bao, J., & Li, X.*",
+    "year": 2025,
+    "citation": "14. Chen, C., Wu, X., Zhuang, W., Wang, J., Bao, J., & Li, X.* (2025). Recommending engineering knowledge with context-aware agentic AI: a case study in on-site wind turbines assembly. Journal of Engineering Design, 1-39.",
+    "venueText": "Journal of Engineering Design, 1-39.",
+    "verification": "verified",
+    "crossref": {
+      "DOI": "10.1080/09544828.2025.2609041",
+      "page": "1-39",
+      "is-referenced-by-count": 0,
+      "title": [
+        "Recommending engineering knowledge with context-aware agentic AI: a case study in on-site wind turbines assembly"
+      ],
+      "author": [
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "published-online": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            2
+          ]
+        ]
+      },
+      "container-title": [
+        "Journal of Engineering Design"
+      ],
+      "link": [
+        {
+          "URL": "https://www.tandfonline.com/doi/pdf/10.1080/09544828.2025.2609041",
+          "content-type": "unspecified",
+          "content-version": "vor",
+          "intended-application": "similarity-checking"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://www.tandfonline.com/doi/full/10.1080/09544828.2025.2609041"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2026,
+            1,
+            2
+          ]
+        ]
+      }
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "With the rapid development of the renewable energy industry, the demand for on-site assembly of wind turbines has been increasing. However, the assembly process of wind turbines involves complex process knowledge and high contextual constraints, and traditional knowledge recommendation methods have certain limitations in addressing these challenges. To improve the efficiency and accuracy of workers in acquiring specialised knowledge at the assembly site, this paper proposes a context-driven multi-agent collaborative solution generation method. This method considers contextual constraints and interdisciplinary collaboration issues by constructing a multi-agent system that combines specialised knowledge of wind turbine assembly with situational information, thereby recommending task-specific knowledge. We constructed a context-oriented knowledge graph for wind turbine assembly, structurally modelling key processes, procedures, steps, and situational constraints. We propose a multi-strategy knowledge recommendation mechanism, which selects appropriate query strategy based on different task scenarios. We introduce expertise degree and agent memory mechanism, adjusting the agent's memory structure and decision-making approach to ensure the accuracy and consistency of information transmission. Experimental results show that the proposed method demonstrates high accuracy and effectiveness in knowledge recommendation for wind turbine assembly, providing intelligent and customised solutions for assembly personnel.",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W7117964363"
+    }
+  },
+  {
+    "number": 15,
+    "title": "Multi-modal causal hypergraph reasoning for enhancing collaborative diagnosis of equipment composite failures",
+    "authorsText": "Li, F., Li, X.*, Wen, S., & Bao, J.*",
+    "year": 2025,
+    "citation": "15. Li, F., Li, X.*, Wen, S., & Bao, J.* (2025). Multi-modal causal hypergraph reasoning for enhancing collaborative diagnosis of equipment composite failures. Advanced Engineering Informatics, 68, 103611.",
+    "venueText": "Advanced Engineering Informatics, 68, 103611.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2025,
+                11,
+                1
+              ]
+            ],
+            "date-time": "2025-11-01T00:00:00Z",
+            "timestamp": 1761955200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            11
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2025.103611",
+      "page": "103611",
+      "is-referenced-by-count": 19,
+      "title": [
+        "Multi-modal causal hypergraph reasoning for enhancing collaborative diagnosis of equipment composite failures"
+      ],
+      "volume": "68",
+      "author": [
+        {
+          "given": "Fei",
+          "family": "Li",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0003-1999-1003",
+          "authenticated-orcid": false,
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S147403462500504X?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S147403462500504X?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S147403462500504X"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2025,
+            11
+          ]
+        ]
+      },
+      "article-number": "103611"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4411991021"
+    }
+  },
+  {
+    "number": 16,
+    "title": "Evolving to multi-modal knowledge graphs for engineering design: state-of-the-art and future challenges",
+    "authorsText": "Pan, X., Li, X.*, Li, Q., Hu, Z., & Bao, J.",
+    "year": 2025,
+    "citation": "16. Pan, X., Li, X.*, Li, Q., Hu, Z., & Bao, J. (2025). Evolving to multi-modal knowledge graphs for engineering design: state-of-the-art and future challenges. Journal of Engineering Design, 36(7-9), 1156-1195.",
+    "venueText": "Journal of Engineering Design, 36(7-9), 1156-1195.",
+    "crossref": {
+      "issue": "7-9",
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            9,
+            2
+          ]
+        ]
+      },
+      "DOI": "10.1080/09544828.2023.2301230",
+      "page": "1156-1195",
+      "is-referenced-by-count": 36,
+      "title": [
+        "Evolving to multi-modal knowledge graphs for engineering design: state-of-the-art and future challenges"
+      ],
+      "volume": "36",
+      "author": [
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Qi",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Zhiqiang",
+          "family": "Hu",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "published-online": {
+        "date-parts": [
+          [
+            2024,
+            1,
+            6
+          ]
+        ]
+      },
+      "container-title": [
+        "Journal of Engineering Design"
+      ],
+      "link": [
+        {
+          "URL": "https://www.tandfonline.com/doi/pdf/10.1080/09544828.2023.2301230",
+          "content-type": "unspecified",
+          "content-version": "vor",
+          "intended-application": "similarity-checking"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://www.tandfonline.com/doi/full/10.1080/09544828.2023.2301230"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2024,
+            1,
+            6
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "With the support of advanced information and communication technologies and open innovative design platforms, the emerging and blooming paradigm of mass personalization drives the process of engineering design to include knowledge with higher heterogeneity and more complex modalities. To this end, Multi-Modal Knowledge Graphs (MMKG), evolved from semantic networks and knowledge graphs, provide a powerful technology system for more effectively organizing and utilizing this knowledge. To understand the state-of-the-art of key aspects that enables MMKG, and recognize the potential challenges for forefront applications in engineering design, a literature review of MMKG-related publications is conducted. With selected 131 representative papers together with other 32 supplementary studies (up to 11/11/2023), this article summarizes the technical and practical efforts of multi-modal knowledge extraction, fusion technology, and specific applications in the engineering design process. Meantime, the challenges that MMKG faces and its foreseeable development potentials are discussed, which is hoped to provide a basis for the futuristic explorations and implementations of MMKG-enhanced availability and productivity in engineering design.",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4390640507"
+    }
+  },
+  {
+    "number": 17,
+    "title": "A question answering system for assembly process of wind turbines based on multi-modal knowledge graph and large language model",
+    "authorsText": "Hu, Z., Li, X.*, Pan, X., Wen, S., & Bao, J.",
+    "year": 2025,
+    "citation": "17. Hu, Z., Li, X.*, Pan, X., Wen, S., & Bao, J. (2025). A question answering system for assembly process of wind turbines based on multi-modal knowledge graph and large language model. Journal of engineering design, 36(7-9), 1093-1117.",
+    "venueText": "Journal of engineering design, 36(7-9), 1093-1117.",
+    "verification": "verified",
+    "crossref": {
+      "issue": "7-9",
+      "published-print": {
+        "date-parts": [
+          [
+            2025,
+            9,
+            2
+          ]
+        ]
+      },
+      "DOI": "10.1080/09544828.2023.2272555",
+      "page": "1093-1117",
+      "is-referenced-by-count": 30,
+      "title": [
+        "A question answering system for assembly process of wind turbines based on multi-modal knowledge graph and large language model"
+      ],
+      "volume": "36",
+      "author": [
+        {
+          "given": "Zhiqiang",
+          "family": "Hu",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Pan",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Sijie",
+          "family": "Wen",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [
+            {
+              "name": "Donghua University",
+              "place": [
+                "Shanghai, People’s Republic of China"
+              ]
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "published-online": {
+        "date-parts": [
+          [
+            2023,
+            10,
+            24
+          ]
+        ]
+      },
+      "container-title": [
+        "Journal of Engineering Design"
+      ],
+      "link": [
+        {
+          "URL": "https://www.tandfonline.com/doi/pdf/10.1080/09544828.2023.2272555",
+          "content-type": "unspecified",
+          "content-version": "vor",
+          "intended-application": "similarity-checking"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://www.tandfonline.com/doi/full/10.1080/09544828.2023.2272555"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2023,
+            10,
+            24
+          ]
+        ]
+      }
+    },
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "In the field of wind power generation, wind turbines serve as the foundation for harnessing electrical energy. However, the assembly process information for wind turbines is typically dispersed among various modalities such as 3D models, natural text, and images in the form of process documents. The difficulty in effectively utilising historical process knowledge hampers the efficiency of assembly process design and subsequently affects production efficiency. To address this issue, this paper constructs a Multi-modal Process Knowledge Graph for Wind Turbines, named MPKG-WT. Additionally, a wind turbine assembly process question-answering system combining multi-modal knowledge graphs with large language models (LLMs) is proposed to enable efficient utilisation of historical assembly process knowledge. The proposed approach achieves outstanding results when compared with other state-of-the-art KBQA methods and recent LLMs using a wind turbine assembly process dataset. The effectiveness of the approach is further validated through a visualised assembly process question-answering system. The research findings demonstrate a significant improvement in assembly process design efficiency.",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4387909235"
+    }
+  },
+  {
+    "number": 18,
+    "title": "基于可供性推理的人机协作拆卸序列规划方法",
+    "authorsText": "喻惟刚, 文思捷, 李建军, 李心雨*.",
+    "year": 2024,
+    "citation": "18. 喻惟刚, 文思捷, 李建军, 李心雨*. (2024). 基于可供性推理的人机协作拆卸序列规划方法. 机械工程学报, 60(17), 297-309.",
+    "venueText": "机械工程学报, 60(17), 297-309.",
+    "verification": "manual_needed",
+    "matchScore": 0.381
+  },
+  {
+    "number": 19,
+    "title": "基于多源异构数据的风机多模态装配工艺知识图谱建模",
+    "authorsText": "胡志强, 刘鸣飞, 李琦, 李心雨*, 鲍劲松.",
+    "year": 2024,
+    "citation": "19. 胡志强, 刘鸣飞, 李琦, 李心雨*, 鲍劲松. (2024). 基于多源异构数据的风机多模态装配工艺知识图谱建模. 上海交通大学学报, 58(08), 1249-1263.",
+    "venueText": "上海交通大学学报, 58(08), 1249-1263.",
+    "verification": "manual_needed"
+  },
+  {
+    "number": 20,
+    "title": "基于超图嵌入的行车故障多元关系知识表示方法",
+    "authorsText": "张飞, 周彬, 鲍劲松, 李心雨*.",
+    "year": 2024,
+    "citation": "20. 张飞, 周彬, 鲍劲松, 李心雨*. (2024). 基于超图嵌入的行车故障多元关系知识表示方法. 计算机集成制造系统. 30(02), 445-459.",
+    "venueText": "计算机集成制造系统. 30(02), 445-459.",
+    "verification": "manual_needed"
+  },
+  {
+    "number": 21,
+    "title": "Achieving cognitive mass personalization via the self-X cognitive manufacturing network: An industrial-knowledge-graph and graph-embedding- enabled pathway",
+    "authorsText": "Li, X., Zheng, P.*, Bao, J., Gao, L., & Xu, X.",
+    "year": 2023,
+    "citation": "21. Li, X., Zheng, P.*, Bao, J., Gao, L., & Xu, X. (2023). Achieving cognitive mass personalization via the self-X cognitive manufacturing network: An industrial-knowledge-graph and graph-embedding- enabled pathway. Engineering. 22, 14-19",
+    "venueText": "Engineering. 22, 14-19",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                3,
+                1
+              ]
+            ],
+            "date-time": "2023-03-01T00:00:00Z",
+            "timestamp": 1677628800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                3,
+                1
+              ]
+            ],
+            "date-time": "2023-03-01T00:00:00Z",
+            "timestamp": 1677628800000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2021,
+                10,
+                19
+              ]
+            ],
+            "date-time": "2021-10-19T00:00:00Z",
+            "timestamp": 1634601600000
+          },
+          "content-version": "vor",
+          "delay-in-days": 0,
+          "URL": "http://creativecommons.org/licenses/by-nc-nd/4.0/"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2023,
+            3
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.eng.2021.08.018",
+      "page": "14-19",
+      "is-referenced-by-count": 43,
+      "title": [
+        "Achieving Cognitive Mass Personalization via the Self-X Cognitive Manufacturing Network: An Industrial Knowledge Graph- and Graph Embedding-Enabled Pathway"
+      ],
+      "volume": "22",
+      "author": [
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Pai",
+          "family": "Zheng",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Liang",
+          "family": "Gao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xun",
+          "family": "Xu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Engineering"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S2095809921004252?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S2095809921004252?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S2095809921004252"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2023,
+            3
+          ]
+        ]
+      }
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "Based on advanced information and communication infrastructures and enabled with the cutting-edge information processing of cognitive computing, existing smart manufacturing systems have foreseen a prevailing tendency that approaches a higher automation level, i.e., Self-X (e.g., Self-configuration/optimization/adaptation). However, the readiness of ‘Self-X’ levels is still far to reach, encountering the practical challenges of semantics-based networking and human-machine untrust in the manufacturing scenario. To mind these gaps, the authors envision an industrial knowledge graph (IKG) and graph embedding (GE) enabled pathway, to flourish today’s smart manufacturing paradigms towards cognitive mass personalization. To pave it, three promising IKG and GE enabling techniques in the ‘Self-X’ cognitive manufacturing network are described. Potential opportunities and challenges are also pointed out to invite more opinions to refine and innovate the exploitation of IKG and GE for the future of smart manufacturing.",
+      "pdfUrl": "https://www.sciencedirect.com/science/article/pii/S2095809921004252/pdf",
+      "openAlexId": "https://openalex.org/W3209825639"
+    }
+  },
+  {
+    "number": 22,
+    "title": "Exploiting a knowledge hypergraph for modeling multi-nary relations in fault diagnosis reports",
+    "authorsText": "Li, X.*, Zhang, F., Li Q., Zhou, B., & Bao, J.",
+    "year": 2023,
+    "citation": "22. Li, X.*, Zhang, F., Li Q., Zhou, B., & Bao, J. (2023). Exploiting a knowledge hypergraph for modeling multi-nary relations in fault diagnosis reports. Advanced Engineering Informatics, 57, 102084.",
+    "venueText": "Advanced Engineering Informatics, 57, 102084.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                8,
+                1
+              ]
+            ],
+            "date-time": "2023-08-01T00:00:00Z",
+            "timestamp": 1690848000000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2023,
+            8
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2023.102084",
+      "page": "102084",
+      "is-referenced-by-count": 42,
+      "title": [
+        "Exploiting a knowledge hypergraph for modeling multi-nary relations in fault diagnosis reports"
+      ],
+      "volume": "57",
+      "author": [
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Fei",
+          "family": "Zhang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Qi",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Bin",
+          "family": "Zhou",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034623002124?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034623002124?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034623002124"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2023,
+            8
+          ]
+        ]
+      },
+      "article-number": "102084"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4383163865"
+    }
+  },
+  {
+    "number": 23,
+    "title": "A bio-inspired LIDA cognitive-based Digital Twin architecture for unmanned maintenance of machine tools",
+    "authorsText": "Lv, J., Li, X.*, Sun, Y., Zheng, Y., & Bao, J.*",
+    "year": 2023,
+    "citation": "23. Lv, J., Li, X.*, Sun, Y., Zheng, Y., & Bao, J.* (2023). A bio-inspired LIDA cognitive-based Digital Twin architecture for unmanned maintenance of machine tools. Robotics and Computer-Integrated Manufacturing, 80, 102489.",
+    "venueText": "Robotics and Computer-Integrated Manufacturing, 80, 102489.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                4,
+                1
+              ]
+            ],
+            "date-time": "2023-04-01T00:00:00Z",
+            "timestamp": 1680307200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2023,
+            4
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.rcim.2022.102489",
+      "page": "102489",
+      "is-referenced-by-count": 49,
+      "title": [
+        "A bio-inspired LIDA cognitive-based Digital Twin architecture for unmanned maintenance of machine tools"
+      ],
+      "volume": "80",
+      "author": [
+        {
+          "given": "Jianhao",
+          "family": "Lv",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-4117-9698",
+          "authenticated-orcid": false,
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Yicheng",
+          "family": "Sun",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Yu",
+          "family": "Zheng",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0003-1999-1003",
+          "authenticated-orcid": false,
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Robotics and Computer-Integrated Manufacturing"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0736584522001715?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0736584522001715?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0736584522001715"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2023,
+            4
+          ]
+        ]
+      },
+      "article-number": "102489"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4309470594"
+    }
+  },
+  {
+    "number": 24,
+    "title": "Dynamic knowledge modeling and fusion method for custom apparel production process based on knowledge graph",
+    "authorsText": "Shen, X., Li, X.*, Zhou, B., Jiang, Y., & Bao, J.*",
+    "year": 2023,
+    "citation": "24. Shen, X., Li, X.*, Zhou, B., Jiang, Y., & Bao, J.* (2023). Dynamic knowledge modeling and fusion method for custom apparel production process based on knowledge graph. Advanced Engineering Informatics, 55, 101880.",
+    "venueText": "Advanced Engineering Informatics, 55, 101880.",
+    "crossref": {
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2023,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2023-01-01T00:00:00Z",
+            "timestamp": 1672531200000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2023,
+            1
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.aei.2023.101880",
+      "page": "101880",
+      "is-referenced-by-count": 65,
+      "title": [
+        "Dynamic knowledge modeling and fusion method for custom apparel production process based on knowledge graph"
+      ],
+      "volume": "55",
+      "author": [
+        {
+          "given": "Xingwang",
+          "family": "Shen",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Bin",
+          "family": "Zhou",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Yanan",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "container-title": [
+        "Advanced Engineering Informatics"
+      ],
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034623000083?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S1474034623000083?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1474034623000083"
+        }
+      },
+      "published": {
+        "date-parts": [
+          [
+            2023,
+            1
+          ]
+        ]
+      },
+      "article-number": "101880"
+    },
+    "verification": "verified",
+    "matchScore": 1.0,
+    "enrichment": {
+      "abstract": "",
+      "pdfUrl": null,
+      "openAlexId": "https://openalex.org/W4318022855"
+    }
+  },
+  {
+    "number": 25,
+    "title": "结合多模态知识图谱与大语言模型的风机装配工艺问答系统",
+    "authorsText": "胡志强, 潘鑫瑜, 文思捷, 李心雨*, 鲍劲松.",
+    "year": 2023,
+    "citation": "25. 胡志强, 潘鑫瑜, 文思捷, 李心雨*, 鲍劲松. (2023). 结合多模态知识图谱与大语言模型的风机装配工艺问答系统. 机械设计, 40(S2), 20-26.",
+    "venueText": "机械设计, 40(S2), 20-26.",
+    "verification": "manual_needed"
+  }
+]

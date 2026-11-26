@@ -83,13 +83,16 @@ for filename,title in [(sys.argv[1],'Automated Product Design with Public ImageN
     assert.equal((await request('/api/papers/upload-pdf',a.token,'POST',Buffer.from('not a pdf'))).status,415);
     assert.equal((await request('/api/papers/upload-pdf',a.token,'POST',Buffer.alloc(32*1024*1024+1))).status,413);
     const initialCount=(await request('/api/papers',a.token)).data.total;
-    const upload=await request('/api/papers/upload-pdf',a.token,'POST',bytes,{'X-File-Name':encodeURIComponent('../../design.pdf'),'X-User-Id':b.user.id});
+    const upload=await request('/api/papers/upload-pdf',a.token,'POST',bytes,{'X-Library-Destination':'lab','X-File-Name':encodeURIComponent('../../design.pdf'),'X-User-Id':b.user.id});
     assert.equal(upload.status,202);const id=upload.data.job.id;
     assert.equal((await request('/api/pdf-imports/'+id,b.token)).status,404);
     assert.equal((await request('/api/pdf-imports/'+id,root.token)).status,200);
     // The accepted PDF and queue survive termination of the process handling it.
     await stop();await start();
     const job=await wait(id,a.token);
+    assert.equal(job.destination,'lab');
+    const entry=(await request('/api/lab',b.token)).data.entries.find(e=>e.paperId===job.paperId);
+    assert.ok(entry);assert.equal(entry.ownerId,a.user.id);assert.equal(entry.canEdit,false);
     assert.equal(job.alreadyExists,false);
     const paper=(await request('/api/papers/'+job.paperId,b.token)).data.paper;
     assert.equal((await request('/api/papers',b.token)).data.total,initialCount+1);

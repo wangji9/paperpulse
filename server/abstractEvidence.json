@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S001044852600179X",
+    "title": "LLM4CAD-DSL: An LLM-friendly domain-specific language for computer-aided design generation",
+    "doi": "10.1016/j.cad.2026.104208",
+    "abstract": "Large language models (LLMs) have shown potential for programmatic computer-aided design (CAD) generation, but existing representations require fragile geometric reasoning and lack support for advanced feature operations, limiting reliability and editability. We introduce LLM4CAD-DSL, an LLM-friendly domain-specific language for CAD generation and editing that features explicit semantics and a symbolic geometry selection mechanism with unique, interpretable entity names. This design decouples feature definitions from absolute coordinates, enabling topology-aware, coordinate-independent selection of geometric entities and localized editing for advanced operations such as fillet, chamfer, revolve, groove, and pocket. We further construct the LLM4CAD-DSL dataset, a large-scale benchmark of 107,994 CAD models converted from WHUCAD, providing aligned DSL scripts, STL models, and multi-view rendered images. Experiments on image-to-CAD generation with an open-source vision-language model (Janus-Pro-7B from DeepSeek) compare LLM4CAD-DSL with CadQuery baselines both with and without retrieval-augmented examples. The results show higher average parsing rate and operation-set accuracy for LLM4CAD-DSL, lower edit distance for short sequences, and generally higher IoU than CadQuery with RAG for short and medium-length sequences. Qualitative editing tests further highlight the benefit of explicit symbolic references for non-axis-aligned entity selection. Overall, LLM4CAD-DSL provides an effective interface between large language models and parametric CAD modeling, enabling more controllable, reliable CAD generation and editing.",
+    "keywords": [
+      "Generative design",
+      "Large language models",
+      "Computer-aided design (CAD)",
+      "Domain-specific language (DSL)"
+    ]
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0010448526001727",
+    "title": "Neural toolpath planning for continuous fiber composites 3D printing: Orientation-aware continuous toolpath with adaptive spacing",
+    "doi": "10.1016/j.cad.2026.104201",
+    "abstract": "A primary challenge in additive manufacturing of continuous fiber reinforced thermoplastic composites is to generate a load-oriented, globally continuous toolpath that aligns with the maximum principal stress direction, adapts its spacing to the stress magnitude, and achieves near space-filling deposition, thereby improving mechanical strength and interlayer bonding. We propose a continuous toolpath planning framework applicable to both planar and curved surfaces, which integrates learning-based discrete path planning with geometric path continuization. Specifically, a deep reinforcement learning agent first generates direction-aligned, density-adaptive discontinuous toolpaths with denser spacing in critical load-bearing regions. These paths are then transformed into a single continuous toolpath via a skeleton-based continuization strategy, eliminating the need for fiber cutting. The proposed method achieves robust alignment and high computational efficiency. Experiments on stainless-steel-fiber–reinforced PLA specimens further indicate that, at comparable or lower fiber contents, our method delivers the strongest reinforcement among the evaluated continuous-toolpath methods. At a fiber volume fraction of approximately 12.4%, the tensile strength increases by up to 68.8% relative to neat PLA. These results demonstrate the effectiveness of the proposed method in fabricating composite parts with improved mechanical performance.",
+    "keywords": [
+      "Additive manufacturing",
+      "Deep reinforcement learning",
+      "Stress-field",
+      "Path planning",
+      "Continuous fiber reinforcement"
+    ]
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S095741742500870X",
+    "title": "ISONet: Reforming 1DCNN for aero-engine system inter-shaft bearing fault diagnosis via input spatial over-parameterization",
+    "doi": "10.1016/j.eswa.2025.127248",
+    "abstract": "Data-driven neural networks have risen as avant-garde approaches to fault diagnosis. However, recent studies have indicated that traditional one-dimensional convolutional neural networks (1DCNNs) exhibit inadequate performance in diagnosing faults within the aero-engine system’s inter-shaft bearings. Addressing this, we introduces a novel 1DCNN variant, termed ISONet, which incorporates over-parameterization in the input spatial dimension to enhance the training landscape of 1DCNNs. Theoretically, we prove that this over-parameterization is akin to implicitly integrating a specific preconditioning scheme from a dynamic differential perspective. This preconditioning facilitates optimization movement along previously traversed directions, effectively acting as an acceleration procedure that amalgamates momentum with adaptive learning rates. Empirical validation confirms the irreplaceability of this implicit acceleration mechanism, demonstrating its capacity to further augment the convergence speed and stability of training, even when advanced gradient descent optimizers with explicit momentum and adaptive learning rates are employed. During the training phase, ISONet does not significantly increase training time, and it can be folded into a standard 1DCNN during the testing phase. The efficacy of the proposed ISONet architecture is substantiated through empirical testing utilizing real-world vibration data from an aero-engine test rig. Comparative analyses indicate that ISONet surpasses current state-of-the-art deep learning models, particularly under various limited-sample conditions.",
+    "keywords": [
+      "Aero-engine system",
+      "Fault diagnosis",
+      "One-dimensional convolutional neural networks",
+      "Over-parameterization",
+      "Preconditioning scheme"
+    ]
+  },
+  {
+    "title": "Double-T Model: analysis of creative design process based on the theory of categorization",
+    "doi": "10.1007/s00163-026-00512-1",
+    "url": "https://link.springer.com/article/10.1007/s00163-026-00512-1",
+    "abstract": "Creative conceptual design involves more than the generation of solution alternatives; it also depends on how problems, goals, constraints, and concepts are represented and transformed during the design process. This paper argues that creativity in design can be examined through category-level change. Drawing on categorization theory and related design-process perspectives, it develops the Double-T Model as a conceptual representation of creative conceptual design.\nThe model identifies four analytical constructs—problem category, target category, root-problem category, and design category—and describes their relations through two coupled T-shaped structures of divergence and convergence. Through this structure, the model makes visible how designers may move from initial problem interpretation to problem reconstruction and concept formation under changing goals and constraints.\nThe paper positions the Double-T Model as a category-level framework for analyzing creative change in design processes, with potential relevance to conceptual engineering design, data-informed design processes, and creative design education."
+  }
+]

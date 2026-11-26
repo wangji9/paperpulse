@@ -1,0 +1,205 @@
+[
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S1474034626009730",
+    "title": "A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions",
+    "doi": "10.1016/j.aei.2026.105281",
+    "abstract": "End-of-life automotive batteries often exhibit uncertain operating conditions typical of a VUCA environment, including structural deformation, component corrosion, and cell performance degradation, making it difficult for human operators to determine an appropriate disassembly depth based solely on experience or fixed rules. To address this problem, this paper proposes a Human-AI Agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions. First, a few-shot battery state perception and anomaly detection method is developed to identify key components and detect unstructured anomalous states in complex human-robot collaborative disassembly scenarios. Second, a multidimensional feature quantification and fuzzy evaluation method is constructed to transform anomaly detection results into structured component state profiles for subsequent reasoning. Third, a Human-AI Agents collaborative disassembly depth reasoning framework, named B-MADD, is proposed to collaboratively integrate cell-state parameters, the component anomaly state profile, historical cases, and economic evaluation results, enabling adaptive and interpretable disassembly depth recommendations under uncertain operating conditions. A case study and experiments were conducted using an end-of-life battery disassembly dataset collected from real human-robot collaborative disassembly scenarios. The results show that the proposed perception module achieves a mean class accuracy of 85.7% in key battery component recognition, while the reasoning framework reduces the average deviation between the predicted and optimal disassembly depths to 0.20. These results demonstrate the effectiveness of the proposed framework and provide methodological support for intelligent and human-centered disassembly decision-making, contributing to safer, more efficient, and more sustainable end-of-life battery recycling.",
+    "number": 1
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0957417426035335",
+    "title": "An agentic AI-enabled approach for extracting designers’ meta-knowledge in product configuration of rehabilitation assistive devices",
+    "doi": "10.1016/j.eswa.2026.134629",
+    "abstract": "Human–artificial intelligence (AI) symbiotic product configuration decision-making emphasizes the coordination between AI generative capabilities and human judgment through human–AI interaction. The judgment logic formed by humans during configuration generation, evaluation, and trade-off can be abstracted as meta-knowledge. However, such meta-knowledge is usually embedded in tacit experience, is prone to loss with personnel turnover, and is difficult to directly identify, extract, and externalize. Personalized rehabilitation assistive device configuration is a typical application scenario of this type of decision-making, in which designers’ meta-knowledge directly affects configuration outcomes. However, existing methods still struggle to effectively capture designers’ judgment logic in solution generation, evaluation, and trade-off. To address this issue, an Agentic AI-driven method for designers’ meta-knowledge extraction is proposed. First, a design meta-knowledge representation model and its instantiated graph are constructed from multi-source configuration processes and knowledge materials, and path exploration and neighborhood completion are combined to generate structured evidence-based reasoning chains. Second, a hierarchical memory mechanism shared by multiple agents is designed to support the contextualized invocation of historical experience through dynamic organization of the configuration decision context. Third, a Concept–Knowledge (C–K) theory-based designer-in-the-loop multi-agent collaboration framework is constructed. Through multi-role division and collaboration in configuration reasoning tasks, agent-generated candidate design rules are progressively revised and finally confirmed based on designer feedback. Finally, a knee-joint rehabilitation assistive device configuration case is used for validation. The ablation and framework comparison results show that the proposed method can effectively extract designers’ meta-knowledge and improve the consistency and completeness between generated rules and designer-confirmed rules, thereby supporting the structured externalization of human tacit knowledge in human–AI symbiotic decision-making.",
+    "number": 2
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S0278612526002086",
+    "title": "An LLM-KG empowered manner for extracting and representing operational knowledge under abnormal conditions: A case study in end-of-life battery disassembly",
+    "doi": "10.1016/j.jmsy.2026.07.025",
+    "abstract": "With the rapid adoption of new energy vehicles, the demand for disassembly of end-of-life battery continues to increase in maintenance, echelon utilization, and recycling. Under anomalous conditions, end-of-life battery disassembly heavily relies on the operational experience of skilled workers. When such experience is used for novice workers or machine adaptation, the extraction and structured representation of such knowledge remain difficult because the relevant knowledge is mainly held by individual workers. Therefore, the effective extraction and representation of operational experience provide an important basis for supporting human-AI collaborative evolution. To address the difficulties in extracting operational experience, representing fine-grained operational semantics, and organizing anomaly-related knowledge under anomalous operating conditions, this paper proposes a method for extracting and representing disassembly operation knowledge of end-of-life battery under anomalous operating conditions. Based on first-person disassembly videos, the proposed method performs temporal modeling and visual perception of disassembly actions and obtains action-tool-component triadic structures through semantic reasoning. Meanwhile, using the standard-condition disassembly sequence as the backbone, the method supplements anomaly types and anomalous operation branches to construct an operation knowledge graph for end-of-life battery disassembly under anomalous operating conditions, enabling the unified representation of standard procedures and anomalous operation knowledge. Experimental results show that the proposed method extracts key operational elements in anomalous disassembly scenarios more accurately. Specifically, Abnormal Operation Node Accuracy improves by about 8.0% compared with the conventional method. This improvement enhances the ability of the knowledge graph to represent anomalous operating conditions and supports knowledge accumulation, experience reuse, and human-AI collaborative evolution in end-of-life battery disassembly.",
+    "number": 3
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0278612526000300",
+    "title": "Explicating visual tacit knowledge in industrial welding inspection with context-aware cognitive pathway graph",
+    "doi": "10.1016/j.jmsy.2026.02.001",
+    "abstract": "The profound reliance of industrial smart manufacturing on human expert experience has emerged as a critical bottleneck, as traditional methods struggle to effectively computationalize the deep, contextualized tacit knowledge inherent in expert visual intuition. To address this challenge, this paper proposes a systematic methodology for the explicitation and contextualized modeling of expert Visual Tacit Knowledge. First, to address the foundational challenge of formalizing expert intuition, this work defines Visual Tacit Knowledge and its transformation pathway from tacit intuition to explicit rules, and introduces Weld-VTK, a multimodal dataset for welding inspection that provides a solid data foundation. Second, an explicit analysis method is proposed to distill structured attention cues from unstructured raw visual behavior, providing the critical structured input needed for establishing contextual associations. Finally, to model the expert’s cognitive process, a Visual Chain-of-Thought is introduced, leveraging Large Language Models to establish contextual semantic associations between cues. These chains are then aggregated to construct a hierarchical Context-Aware Cognitive Pathway Graph, completely reconstructing the expert’s cognitive strategy. Quantitative results demonstrate that the proposed method outperforms baseline models, and expert evaluations confirm its exceptional performance in causal validity and diagnostic precision. This methodology provides a new paradigm for the contextualized modeling and structured explicitation of expert Visual Tacit Knowledge.",
+    "keywords": [
+      "Visual tacit knowledge",
+      "Industrial welding inspection",
+      "Knowledge explicitation",
+      "Eye-tracking",
+      "Large language models"
+    ],
+    "number": 4
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S1474034626003873",
+    "title": "An Agentic AI-Empowered Product Family Configuration Approach for Personalizing Rehabilitation Assistive Devices with Multi-Faceted Wearing Experience",
+    "doi": "10.1016/j.aei.2026.104695",
+    "abstract": "The growing burden of population aging and chronic diseases has driven increasing demand for personalized rehabilitation assistive devices, for which product-family–based configuration has become a prevalent approach. However, existing methods often overlook cross-faceted inconsistencies when fusing verbal reports, facial expressions, and sEMG signals, leading to unreliable requirement representations; meanwhile, multi-requirement conflicts under strongly coupled constraints are difficult to resolve, resulting in configuration solutions that deviate from users’ true requirements. To address these challenges, this study proposes an Agentic AI–driven product-family configuration approach based on multi-faceted wearing experiences for personalizing rehabilitation assistive devices. First, a wearing-experience representation model integrating language, sEMG, and facial expressions is constructed, with sEMG serving as an anchor to calibrate linguistic and facial descriptions, yielding complete and reliable wearing-requirement representations. Second, a configuration knowledge graph is built on the FBS—ENV—product-family framework; subsequently, an agent reasoning chain based on path exploration and neighborhood completion is designed to produce traceable configuration evidence. Third, a collaborative configuration framework integrating TRIZ principles with product-family constraints is proposed, which decomposes the customization process into five stages and employs multi-agent interactions to identify and resolve structure–performance conflicts induced by multiple requirements, generating executable configurations under multiple constraints. Finally, a knee rehabilitation brace case study is conducted, with comparisons against MetaGPT, AutoAgents, and AutoTRIZ. Ablation and comparative results demonstrate that the proposed approach derives more complete and reliable wearing-requirements from multi-faceted wearing experiences and generates feasible configuration solutions under multi-requirement constraints.",
+    "keywords": [
+      "Rehabilitation assistive devices",
+      "Multi-faceted wearing experience",
+      "Product family configuration",
+      "Personalized product design",
+      "Large language model",
+      "Agentic AI"
+    ],
+    "number": 5
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0360835226000793",
+    "title": "Parsing and prioritizing users’ evolving requirements with large language models: A case study in personalized rehabilitation assistive devices design",
+    "doi": "10.1016/j.cie.2026.111878",
+    "abstract": "Rehabilitation is a staged and continuously evolving process, in which user requirements change across different recovery phases, posing challenges for parsing and prioritizing requirements in the design of rehabilitation assistive devices. Static requirement analysis methods fail to capture this evolving nature and often lead to mismatches between product functions and users’ real-time requirements. To address this, we propose an approach that employs large language models to parse and prioritize users’ evolving requirements for personalized rehabilitation assistive device design. First, a quantitative method integrating the importance weight and sentiment score of product attribute is proposed to identify directional shifts in attribute importance, providing data support for large language models to dynamically parse user requirements. Second, leveraging a rehabilitation device design knowledge graph, a dual-exploration reasoning chain is constructed for large language models, which, when combined with attribute importance trends, progressively parses user requirements into design requirements and dynamically updates their content as the trends evolve. Finally, a requirement evaluation method, grounded in complex network theory and employing a large language model-based multi-agent, is proposed to quantify the global influence of design requirements and support their adaptive prioritization. The proposed approach is validated using a longitudinal knee brace case spanning the acute, recovery, and consolidation stages. The results demonstrate that users’ evolving requirements can be effectively parsed and their prioritization reasonably determined. The results demonstrate that our proposed approach can effectively parse users’ evolving requirements and reasonably determine their prioritization.",
+    "number": 6
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0950705126001760",
+    "title": "Recursive Multi-modal Retrieval for Structured Semantic Trees in Engineering Documents",
+    "doi": "10.1016/j.knosys.2026.115433",
+    "abstract": "In lifecycle-oriented manufacturing systems, numerous engineering documents with text, tables, and images are continuously produced. Retrieval-augmented generation (RAG) models enhance document retrieval efficiency and adapt to evolving domain knowledge. However, existing methods struggle to achieve accurate cross-modal semantic alignment and high-precision retrieval in engineering documents. To address these limitations, this paper proposes the recursive multi-modal retrieval for structured semantic trees (RMR-SST) method for engineering documents. First, layout analysis extracts multimodal elements and divides metadata into three hierarchical levels: minimal chunks, assembly chunks, and section chunks. Domain rules are then applied to compute inter-section semantic relationships and construct the structured semantic trees (SSTs) of engineering documents. Second, a context-aware multimodal semantic alignment strategy is proposed to embed multimodal metadata chunks and their semantic relationships into a unified vector space, enabling cross-modal semantic alignment of SSTs. Finally, a recursive abstractive multimodal metadata retrieval algorithm is designed to integrate multimodal information across documents at different abstraction levels and to generate multimodal retrieval results. Based on 872 ship-design engineering documents, multiple SSTs were constructed for evaluation. Experiments show that RMR-SST outperforms conventional RAG methods in multimodal retrieval and semantic alignment tasks, achieving a Hit@5 of 88.3% when integrated with the Qwen3–235B model.",
+    "keywords": [
+      "Engineering documents",
+      "Structured semantic trees",
+      "Context-aware multimodal alignment",
+      "Recursive Multimodal Retrieval",
+      "Retrieval-augmented Language Models"
+    ],
+    "number": 7
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S1474034625003155",
+    "title": "A context-aware KG-LLM collaborated conceptual design approach for personalized products: A case in lower limbs rehabilitation assistive devices",
+    "doi": "10.1016/j.aei.2025.103422",
+    "abstract": "With the rapid increase in demand for personalized Rehabilitation Assistive Devices (RADs), significant challenges have emerged in their design processes. Particularly in practical applications, designers face challenges such as ambiguity in user requirements, inefficiencies in cross-domain knowledge sharing, and deviations of generated solutions from actual user needs. To address these issues, this paper proposes a Context-Aware Conceptual design method based on Knowledge graph (KG) and Large language models (LLM), named CACKL. Firstly, to address the high complexity involved in eliciting user requirements, user profiles are constructed by integrating multi-source data, and fine-grained “requirement-function” mappings are extracted using fine-tuned LLM, thereby reducing the cost associated with manual intervention. Secondly, a KG-LLM collaborated reasoning mechanism guided by a Chain-of-Thought (CoT) prompting approach is proposed to align structured domain knowledge with implicit semantic representations from LLM, thus enhancing the contextual relevance and practical effectiveness of concept generation, aiming to improve the efficiency of personalized conceptual design. In a practical case involving lower-limb RADs, the proposed CACKL method was evaluated regarding user requirement mining and conceptual design. Experimental results demonstrated significant advantages in the automatic generation of personalized design solutions, particularly in enhancing design efficiency and meeting user requirements, thereby validating its effectiveness in real-world applications. This study provides an innovative paradigm for the intelligent design of RADs by integrating dynamic knowledge constraints with natural language interaction.",
+    "keywords": [
+      "Conceptual design",
+      "Knowledge graph",
+      "Large language model",
+      "Lower limb rehabilitation assistive devices",
+      "User requirement mining"
+    ],
+    "number": 10
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S1474034625001284",
+    "title": "Leveraging large language models for Human-Machine collaborative troubleshooting of complex industrial equipment faults",
+    "doi": "10.1016/j.aei.2025.103235",
+    "abstract": "The continuous advancement of mechanical manufacturing technology has significantly elevated the importance of large mechanical equipment in industrial enterprises, necessitating effective fault diagnosis methods to ensure operational efficiency and safety. Traditional manual fault diagnosis methods are increasingly proving inefficient, especially when dealing with long fault chains in complex industrial equipment. Moreover, the harsh and corrosive environments in factories often prevent the large-scale deployment of sensors, making automated fault detection methods challenging to implement. This paper introduces an innovative fault diagnosis approach that leverages Large Language Models (LLMs) to enhance human–machine collaborative troubleshooting for complex industrial equipment faults. By employing methods based on LLM, such as triplet extraction, complex semantic mapping, and “5-why” causal analysis, this approach achieves semantically lossless knowledge parsing and extraction of fault knowledge. An Enhanced Causal Fault Knowledge Graph (ECFKG) is constructed, which integrates theory-based and scenario-based knowledge graphs to support fault troubleshooting. Additionally, an Interactive Diagnostic and Troubleshooting Method (IDTM) is introduced, utilizing human–machine collaboration in the fault troubleshooting process to enable dynamic fault diagnosis, thereby enhancing the accuracy and efficiency of diagnosing and resolving faults. A case study on a bridge crane in a steel mill demonstrates the feasibility and improved performance of the proposed methods in real-life scenarios. This study contributes to the field by effectively integrating human intuition with machine computational power, setting a precedent for future advancements in cognitive intelligence-enabled fault diagnosis systems. This research paves the way for more sophisticated, real-time troubleshooting solutions in industrial settings.",
+    "keywords": [
+      "Fault Troubleshooting",
+      "Human-Machine Collaboration",
+      "Industrial Knowledge Graph",
+      "Large Language Models",
+      "Knowledge Extraction and Reasoning"
+    ],
+    "number": 11
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0278612525000445",
+    "title": "Rescheduling human-robot collaboration tasks under dynamic disassembly scenarios: An MLLM-KG collaboratively enabled approach",
+    "doi": "10.1016/j.jmsy.2025.02.015",
+    "abstract": "During product recycling, the uncertainty of the degradation level of end-of-life products leads to dynamic conditions such as component corrosion and damage during the disassembly process. Therefore, enhancing the robot's perception of disassembly scenarios and matching historical disassembly experiences is crucial for task rescheduling in human-robot collaborative disassembly (HRCD) under dynamic conditions. To address this, this paper proposes a dynamic task rescheduling method for human-robot collaborative disassembly, empowered by the synergy of Knowledge Graph (KG) and Multimodal Large Language Model (MLLM). Leveraging a Mark-Aware image preprocessing module and prompt-based scene understanding, the physical characteristics and occlusion relationships of disassembly targets are extracted. The concept of affordance is introduced, and an Affordance KG is constructed to recommend disassembly actions based on the physical features of objects in the scene. A task allocation standard for human-robot collaboration is designed, which, combined with depth and human factor information from mixed reality scenarios, enables dynamic task rescheduling and reconstruction of the entire human-robot collaborative disassembly process. The proposed method is validated through a case study on human-robot collaborative disassembly of end-of-life automotive lithium-ion batteries. Experimental results demonstrate that the method exhibits strong robustness and generalizability in dynamic disassembly scenarios, accurately identifying the physical features of components and recommending appropriate disassembly actions under conditions such as component corrosion, damage, and tool unavailability, thus achieving effective task rescheduling.",
+    "keywords": [
+      "Human–robot collaboration disassembly",
+      "Multimodal large language model",
+      "Knowledge Graph",
+      "Task rescheduling",
+      "Scenario perception"
+    ],
+    "number": 12
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S147403462500504X",
+    "title": "Multi-modal causal hypergraph reasoning for enhancing collaborative diagnosis of equipment composite failures",
+    "doi": "10.1016/j.aei.2025.103611",
+    "abstract": "The causal relationships between equipment fault tickets and component production numerical data reflect the equipment’s fault state. However, given the complexity and diversity of equipment failures, existing graph construction and graph embedding methods overlook the long causal chain semantics between failures, the multivariate relationships of composite faults formed by connections of more than two entities, and the rich multimodal information in their triplets. To address these issues, this paper proposes a method based on multi-modal causal knowledge hypergraph (MCKH) inference to enhance the collaborative diagnosis of equipment composite faults. First, a few-shot chain of causal thought (CoCT) strategy is used to extract multivariate hyperedge relationships and long causal chain knowledge from fault investigation forms, combining fault factors, fault images, and numerical data to create multimodal hyper-nodes and form the MCKH. Second, a low-rank multimodal fusion strategy is adopted to achieve dynamic semantic modeling between hyper-node modalities. The MCKH encoder-decoder architecture is designed, where the encoder is a causal relation cascade graph attention network (CRCGAT) that includes a hyperedge-dominated node-level attention and layer-level attention mechanism. The joint decoder, ConvE, is used for the triplet link prediction of composite faults. Third, a collaborative fault diagnosis strategy is introduced through LLM-based human–machine interaction, leveraging CRCGAT + ConvE for MCKH inference and long causal chain backtracking to improve composite fault diagnosis accuracy. Finally, the method is applied to bridge crane composite fault diagnosis, with ablation experiments validating its effectiveness and providing a new perspective for multimodal fault diagnosis and root cause analysis in equipment spot inspection.",
+    "keywords": [
+      "Composite fault diagnosis",
+      "CoCT-prompted LLMs",
+      "Multi-modal causal knowledge hypergraph",
+      "Causal relation cascade graph attention network",
+      "Human-machine collaborative",
+      "These jointly form a composite fault and are connected via a hyperedge of type < Hyperedge: Has Joint Cause> (Case 1). Additionally, the failure of the universal shaft fracture may simultaneously cause two distinct faults: (1) the boom fails to operate correctly, and (2) damage to the drive gears inside the gearbox, forming a composite fault with a hyperedge of type < Hyperedge: Simultaneously Cause> (Case 2). Both of these composite faults involve multivariate relationships. In the construction and reasoning process of the MCKH, key issues will include how to extract composite fault semantics and long causal fault chains, fuse multimodal information within the hyper-nodes, and interact complex high-order features within the hyperedges. Designing an encoder-decoder reasoning model for MCKH to ensure the integrity of the hyperedge relationships between composite fault entities will be a critical task.",
+      "To address the aforementioned challenges, this paper proposes a multi-modal causal knowledge hypergraph inference method for enhancing the collaborative diagnosis of equipment composite faults. The key contributions of this work are summarized as follows:",
+      "* (1)",
+      "A few-shot CoCT-prompted LLMs strategy is introduced to enhance the knowledge extraction of composite fault semantics and long causal chains from long texts in fault investigation forms. Combined with fault image and numerical modal data, a causal knowledge hypergraph is constructed, containing multimodal hyper-nodes and composite fault hyperedges.",
+      "* (2)",
+      "A low-rank multimodal fusion approach is adopted for dynamic semantic modeling between hyper-node modalities. A network, CRCGAT, with hyper-edge-aware node-level attention (HNA) and hyper-edge-guided layer-level attention (HLA), is designed. The CRCGAT, in conjunction with the ConvE model, forms the encoder-decoder architecture of MCKH, significantly improving the accuracy of modeling multivariate causal relationships of composite faults and multimodal triplet prediction.",
+      "* (3)",
+      "A collaborative fault diagnosis strategy is proposed, based on multi-round human–machine interaction using LLMs."
+    ],
+    "number": 15
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S1474034623002124",
+    "title": "Exploiting a knowledge hypergraph for modeling multi-nary relations in fault diagnosis reports",
+    "doi": "10.1016/j.aei.2023.102084",
+    "abstract": "Knowledge graphs (KG) demonstrate superiority in storing and exploiting massive data and lesson-learned knowledge collected from equipment operation and maintenance management, and deliver a higher level of cognitive intelligence for fault diagnosis. However, for some indivisible multi-nary relations that connect more than two entities in complex fault diagnosis scenarios, ordinary KG has encountered many challenges in preserving their completeness and correctness with triples of < head entity, relation, tail entity >. To this end, this paper evolves the ordinary KG into Knowledge hypergraph (KHyG), based on the differentiation of schema-level and instance-level hyperedges. A pipeline for constructing KHyG using fault diagnosis reports is accordingly proposed, which adopts an end-to-end tabular information extraction manner and hyperedge-enabled schema. A two-channel KHyG embedding manner is then articulated for multi-nary relations, so as to strengthen the performance of troubleshooting solution generation in KHyG applications. To validate the proposed KHyG, real-world fault diagnosis was conducted on bridge cranes in steel factories, which demonstrated that the improvement in the modeling of multi-nary relations showed effectiveness and advances in fault investigation and troubleshooting process. It is anticipated that this study can provide several practical insights into applying more advanced KG models and techniques toward futuristic cognitive intelligence-enabled fault diagnosis.",
+    "keywords": [
+      "Knowledge hypergraph",
+      "Multi-nary relation",
+      "Knowledge representation",
+      "Graph-embedding",
+      "Fault diagnosis"
+    ],
+    "number": 22
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0736584522001715",
+    "title": "A bio-inspired LIDA cognitive-based Digital Twin architecture for unmanned maintenance of machine tools",
+    "doi": "10.1016/j.rcim.2022.102489",
+    "abstract": "Affected by COVID-19, the maintenance process of machine tools is significantly hindered, while unmanned maintenance becomes an emerging trend in such background. So far, three challenges, namely, the dependence on maintenance experts, the dynamic maintenance environments, and unsynchronized interactions between physical and information sides, exist as the main obstacles in its widespread applications. In order to fill this gap, a bio-inspired LIDA cognitive-based Digital Twin architecture is proposed, so as to achieve unmanned maintenance of machine tools through a self-constructed, self-evaluated, and self-optimized manner. A three phases process in the architecture, including the physical phase, virtual phase, and service phase, is further introduced to support the cognitive cycle for unmanned maintenance of machine tools. An illustrative example is depicted in the unmanned fault diagnosis on the rolling bearing of a drilling platform, which validates the feasibility and advantages of the proposed architecture. As an explorative study, it is wished that this work provides useful insights for unmanned maintenance of machine tools in a dynamic production environment.",
+    "keywords": [
+      "Unmanned maintenance",
+      "Digital Twin",
+      "Machine tools",
+      "Learning intelligent distribution agent (LIDA)",
+      "Cognitive manufacturing"
+    ],
+    "number": 23
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S1474034623000083",
+    "title": "Dynamic knowledge modeling and fusion method for custom apparel production process based on knowledge graph",
+    "doi": "10.1016/j.aei.2023.101880",
+    "abstract": "Compared with ordinary mass-produced apparel products, custom apparel products will generate more data at each stage of their life cycle. Such data is in a highly dynamic state, while the relationship between the data is more complex. However, the current use of traditional relational data to store the whole life cycle data of custom apparel products has several problems of high redundancy, weak correlation, discrete distribution, and certain limitation of storage capacity. Therefore, based on knowledge graph, a dynamic knowledge modeling and fusion method is proposed for the production process of custom apparel. Firstly, an ontology-based knowledge modeling method is designed for custom apparel, which defined three types of ontology modeling methods for the process, resources, and features. On this basis, a knowledge graph construction method based on bi-directional fusion for the custom apparel production system is proposed. With one order as a unit, a knowledge graph facet (KGF) model, as well as the derived knowledge representation, generation and fusion method, is established to realize dynamic knowledge fusion of the custom apparel production process. Finally, taking the suit production process of a custom apparel factory as an example, the corresponding knowledge graph is constructed based on the ontology knowledge model, and the effectiveness of the proposed knowledge fusion method is verified.",
+    "keywords": [
+      "Knowledge graph",
+      "Custom apparel",
+      "Knowledge modeling",
+      "Knowledge fusion",
+      "Knowledge generation"
+    ],
+    "number": 24
+  },
+  {
+    "url": "https://xuebao.sjtu.edu.cn/CN/abstract/article/1006-2467/46771",
+    "title": "基于多源异构数据的风机多模态装配工艺知识图谱建模",
+    "doi": "10.16183/j.cnki.jsjtu.2023.062",
+    "abstract": "风力发电机装配工艺信息通常分散于以三维模型、自然文本、图像等多模态信息构成的工艺文件中,导致数据维护和工艺知识获取成本高、效率低.针对这一问题,提出一种基于多源异构数据的风力发电机多模态装配工艺知识图谱建模方法.首先,分析工艺特点给出风力发电机多模态知识工艺图谱(MPKG-WT)中各类概念,完成图谱本体构建;其次,基于多源异构数据及各模态特点,利用数据分析、知识抽取和语义相似度计算等技术实现图谱的自动实例化;最后,以某风力发电机企业装配工艺数据为例,实现MPKG-WT构建,并开发辅助装配工艺设计系统进行验证.研究结果表明,MPKG-WT较单模态图谱蕴含更丰富的知识,且不同模态数据之间能够互补,显著提升装配工艺设计效率."
+  },
+  {
+    "url": "https://qikan.cmes.org/jxgcxb/CN/10.3901/JME.2024.17.297",
+    "title": "基于可供性推理的人机协作拆卸序列规划方法",
+    "doi": "10.3901/JME.2024.17.297",
+    "abstract": "人机协作拆卸过程中存在多机争抢拆卸工具以及人为变动拆卸操作等扰动现象，致使当前工序所需工具缺失或被占用，缺乏灵活应对策略将使机器人长时间等待工具，降低人机协作拆卸效率。因此，提高机器人对当前拆卸场景的认知能力，识别出场景中可替代的工具，提供工具替代方案，对于增强人机协作拆卸抗干扰能力、提高拆卸效率，有着重要意义。对此，提出一种基于可供性推理的人机协作拆卸序列规划方法。利用产品结构数据以及操作工艺文档建立知识图谱，为人机协作拆卸任务提供操作信息以及序列信息；针对出现工具缺失的工序，提出面向人机协作拆卸视觉场景的可供性推理方法，为当前工序推荐可替代工具；提出基于可供性推理的人机协作拆卸序列规划方法，在工具有替换的情况下对原始序列进行优化，降低人机协作拆卸总时间。以新能源汽车动力电池人机协作拆卸作为实验场景，开展了可供性检测和拆卸序列优化实验。实验结果表明，所提出的方法能够在工具被占用的情况下准确提供工具替代方案，有效减少拆卸操作所需时间，从而提高了人机协作拆卸的抗干扰能力和效率。",
+    "pdfUrl": "https://qikan.cmes.org/jxgcxb/EN/PDF/10.3901/JME.2024.17.297"
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S2452414X25001773",
+    "title": "Analysis of causes of welding defects in bridge weathering steel based on large language models",
+    "doi": "10.1016/j.jii.2025.100954",
+    "abstract": "The analysis of the causes of welding defects in bridge weathering steel necessitates a multifaceted approach integrating alloy element influences, crack control, and parameter optimization, as single-perspective methodologies inadequately address root causes and hinder effective solution development. To address these challenges, a large language model-based method for analyzing the causes of welding defects in bridge weathering steel is proposed. This method first integrates information from different welding perspectives through a multi-perspective associative memory mechanism and employs a hybrid retrieval strategy to retrieve factual memory and historical information, enabling precise recall of relevant content and providing comprehensive support for problem-solving. Second, a ”inhibition-cognition” task optimization strategy refines the problem-solving process by suppressing irrelevant information, decomposing tasks, and iteratively revising through cognitive simulation, thereby establishing a clear and efficient problem-solving pathway. Finally, the accuracy and consistency of sub-task processing are ensured by an expert-guided task verification meta-prompting method, where dynamic closed-loop validation is incorporated and expert knowledge is fused. Quantitative results demonstrate that the proposed method achieves consistent improvements in both ROUGE-L and BERTScore metrics across different models, while expert evaluations further confirm its exceptional performance in key dimensions such as rationality and comprehensiveness. This method provides a novel approach for analyzing the causes of welding defects in bridge weathering steel, playing a critical role in enhancing the accuracy and efficiency of defect analysis.",
+    "keywords": [
+      "Causal analysis",
+      "Large language model",
+      "Memory mechanism",
+      "Task decomposition",
+      "Prompt engineering"
+    ]
+  }
+]

@@ -28,6 +28,13 @@ def valid(source, target):
     comparable=unicodedata.normalize('NFKC',target)
     return all(n in comparable for n in re.findall(r'\b\d+(?:\.\d+)?\b',source))
 
+def normalize(source,target):
+    # The disease name is often rendered without its year. Retain its original
+    # technical name beside the Chinese term, rather than dropping a source token.
+    if isinstance(target,str) and 'COVID-19' in source and 'COVID-19' not in target:
+        target=re.sub(r'新冠(?:肺炎)?(?:疫情)?|新型冠状病毒(?:肺炎)?|2019冠状病毒病',lambda m:m[0]+'（COVID-19）',target,count=1)
+    return target
+
 def translate_batch(values):
     schema={'type':'object','properties':{'translations':{'type':'array','items':{'type':'string'},'minItems':len(values),'maxItems':len(values)}},'required':['translations'],'additionalProperties':False}
     result=request_json(OLLAMA+'/api/chat',{'model':MODEL,'stream':False,'keep_alive':'30m','format':schema,
@@ -44,13 +51,14 @@ def translate_single(source):
     if numbers:prompt+='\n必须逐字保留的原文数值：'+', '.join(numbers)
     response=request_json(OLLAMA+'/api/chat',{'model':MODEL,'stream':False,'keep_alive':'30m','messages':[{'role':'system','content':prompt},{'role':'user','content':source}],
         'options':{'temperature':0,'num_ctx':8192,'num_predict':4096,'repeat_penalty':1.05,'seed':11}})
-    target=response.get('message',{}).get('content','').strip()
+    target=normalize(source,response.get('message',{}).get('content','').strip())
     if response.get('done_reason')=='length' or not valid(source,target):raise ValueError('单段译文未通过检查')
     return target
 
 def translate(values):
     try:output=translate_batch(values)
     except Exception:output=[None]*len(values)
+    output=[normalize(source,target) for source,target in zip(values,output)]
     for i,source in enumerate(values):
         if output[i] and valid(source,output[i]):continue
         try:output[i]=translate_single(source)

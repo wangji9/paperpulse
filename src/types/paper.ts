@@ -189,6 +189,7 @@ export interface PaperComment {
 }
 
 export interface AcademicPaper {
+  labMetadata?: Partial<Pick<AcademicPaper,'title'|'titleZh'|'authors'|'journal'|'abstractOriginal'|'abstractZh'|'keywords'|'doi'>>;
   id: string;
   openAlexId?: string;
   title: string;
@@ -219,6 +220,7 @@ export interface AcademicPaper {
   htmlUrl?: string;
   parsing?: { status: 'metadata' | 'abstract' | 'full_text' | 'unavailable'; sourceUrl?: string; updatedAt: string; pages?: number; sections: string[]; warnings: string[] };
   abstractOriginal: string;
+  abstractZh?: string;
   digestSummary: string;
   tags: string[];
   citedByCount: number;
@@ -239,8 +241,23 @@ export interface AcademicPaper {
 }
 
 export interface PdfImportJob {
+  destination?: 'pool' | 'lab';
   id:string; fileName:string; status:'queued'|'processing'|'completed'|'failed';
   phase:string; createdAt:string; updatedAt:string; paperId?:string; alreadyExists?:boolean; error?:string;
+}
+
+export interface LabEntry {
+  paperId: string;
+  ownerId: string;
+  addedAt: string;
+  updatedAt: string;
+  source: string;
+  citation: string;
+  publicationYear?: number;
+  notes: string;
+  metadata: Partial<Pick<AcademicPaper, 'title'|'titleZh'|'authors'|'journal'|'abstractOriginal'|'abstractZh'|'keywords'|'doi'>>;
+  paper: AcademicPaper;
+  canEdit: boolean;
 }
 
 export interface AutoSyncConfig {

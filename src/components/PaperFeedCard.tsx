@@ -1,4 +1,5 @@
 import { chineseText } from '../lib/chinese';
+import { PaperAbstract } from './PaperAbstract';
 import React, { useRef, useState } from 'react';
 import {
   Heart,
@@ -228,6 +229,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
 
       <PaperKeywords paper={paper} />
+      <PaperAbstract paper={paper} compact />
       {/* Authors + Clickable DOI */}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
         <span>作者：{paper.authors.slice(0, 6).join(', ')}</span>

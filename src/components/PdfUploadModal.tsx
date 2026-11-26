@@ -4,7 +4,7 @@ import { CheckCircle2, FileText, Loader2, Upload, X } from 'lucide-react';
 import type { AcademicPaper, PdfImportJob } from '../types/paper';
 import { fetchPaperDetail, fetchPdfImportJobs, uploadPdfPaper } from '../lib/api';
 
-export function PdfUploadModal({darkMode,onClose,onOpenPaper}:{darkMode:boolean;onClose:()=>void;onOpenPaper:(paper:AcademicPaper)=>void}) {
+export function PdfUploadModal({darkMode,onClose,onOpenPaper,destination='pool'}:{darkMode:boolean;onClose:()=>void;onOpenPaper:(paper:AcademicPaper)=>void;destination?:'pool'|'lab'}) {
   const [file,setFile]=useState<File|null>(null);
   const [collect,setCollect]=useState(true);
   const [uploading,setUploading]=useState(false);
@@ -37,7 +37,7 @@ export function PdfUploadModal({darkMode,onClose,onOpenPaper}:{darkMode:boolean;
     if(!file||uploading)return;
     setUploading(true);setError('');
     try {
-      const job=await uploadPdfPaper(file,collect);
+      const job=await uploadPdfPaper(file,collect,destination);
       setJobs(previous=>[job,...previous.filter(j=>j.id!==job.id)]);setFile(null);
       if(input.current)input.current.value='';
     }catch(e){setError(e instanceof Error?e.message:'PDF上传失败');}
@@ -54,6 +54,7 @@ export function PdfUploadModal({darkMode,onClose,onOpenPaper}:{darkMode:boolean;
     <section role="dialog" aria-modal="true" aria-labelledby="pdf-upload-title" className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
       <header className="flex items-start justify-between gap-4 border-b border-slate-100 p-5 dark:border-slate-800"><div><h2 id="pdf-upload-title" className="text-lg font-semibold">上传PDF文献</h2><p className="mt-1 text-sm text-slate-500">自动提取正文、方法图与实验表格，加入公共文献池。</p></div><button aria-label="关闭PDF上传" disabled={uploading} onClick={onClose} className="rounded-lg p-1.5 hover:bg-slate-100 disabled:opacity-40 dark:hover:bg-slate-800"><X className="h-5 w-5"/></button></header>
       <div className="space-y-4 overflow-y-auto p-5">
+        {destination==='lab'&&<p className="rounded-lg bg-teal-50 p-3 text-sm text-teal-800">本次上传将同步加入课题组文献库与公共文献池。重复文献会关联已有条目；您可修订或移出自己归档的课题组成果。</p>}
         <p className="rounded-xl bg-indigo-50 p-3 text-sm leading-6 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200">用户和管理员均可上传。上传后的文献及原文对所有登录成员可见，并显示上传者；系统自动识别研究方向、期刊、数据集来源和关键词，生成中文解读。</p>
         <label onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!uploading)choose(e.dataTransfer.files[0]);}} className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-indigo-200 bg-slate-50 p-7 text-center dark:border-indigo-800 dark:bg-slate-950/40">
           <Upload className="h-8 w-8 text-indigo-500"/><span className="text-sm font-medium">{file?file.name:'选择或拖入PDF文件'}</span><span className="text-xs text-slate-500">单篇不超过32MB · 支持中英文论文</span>

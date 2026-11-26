@@ -22,6 +22,9 @@ export function isChineseText(text?:string):boolean {
   return (chinese>0 && (!english || (words.length>0 && proper/words.length>=.75))) || (chinese>=2 && (chinese/(chinese+english)>.3 || (text.match(/[A-Za-z]{3,}/g)||[]).length<4));
 }
 export function technicalName(text:string):boolean {
+  if(/^(?:AI|LLM|KG|MLLM|human)[-\s](?:enabled|powered|empowered|based|driven|assisted|machine|AI|robot)$/i.test(text))return false;
+  const words=text.trim().split(/\s+/);
+  if(words.length>1&&words.every(technicalName))return true;
   if(['Gemini','Gemini Robotics','Vicuna','Alpaca','Llama','Qwen','Transformer','Metaworld'].includes(text))return true;
   if(/^[A-Z][A-Z0-9.&-]{1,18}\s+(?:19|20)\d{2}$/.test(text) || /^[A-Z][A-Za-z0-9]+-[A-Z0-9]{1,5}$/.test(text))return true;
   if(/^(?:https?:\/\/\S+|(?:[\w-]+\.)+[\w-]+\/\s*\.?|io\/\s*\.?)$/i.test(text))return true;
@@ -39,6 +42,7 @@ export function technicalTableValue(text:string):boolean {
 export function normalizeChineseTerms(source:string,value:string):string {
   let result=value.replace(/▁/g,' ').trim();
   if(/human[-\s]in[-\s]the[-\s]loop/i.test(source))result=result.replace(/人环路|人类环路/g,'人在回路');
+  if(/meta[-\s\u2010-\u2015]?knowledge/i.test(source))result=result.replace(/元及知识/g,'元知识');
   return result;
 }
 
@@ -47,7 +51,16 @@ async function limited<T>(work:()=>Promise<T>):Promise<T> {
   if(active>=2)await new Promise<void>(resolve=>waiting.push(resolve));active++;
   try{return await work();}finally{active--;waiting.shift()?.();}
 }
-export async function translateChineseBatch(values:string[]):Promise<Array<string|null>> {
+export async function translateChineseBatch(values:string[],allowSplitRetry=true):Promise<Array<string|null>> {
+  if(values.some(s=>s.length>2800)) {
+    const groups=values.map(value=>{
+      const parts:string[]=[];let rest=value;
+      while(rest.length>2400){const head=rest.slice(0,2400);let cut=Math.max(head.lastIndexOf('. '),head.lastIndexOf('。'))+1;if(cut<1000)cut=head.lastIndexOf(' ');if(cut<1000)cut=2400;parts.push(rest.slice(0,cut));rest=rest.slice(cut);}
+      if(rest)parts.push(rest);return parts.length?parts:[''];
+    });
+    const translated=await translateChineseBatch(groups.flat());let offset=0;
+    return groups.map(parts=>{const result=translated.slice(offset,offset+parts.length);offset+=parts.length;return result.every(s=>s!==null)?result.join('\n'):null;});
+  }
   const source=values.map(cleanSourceText);
   const result:Array<string|null>=source.map(s=>!s||isChineseText(s)||technicalName(s)||!/[A-Za-z]{2,}/.test(s)?s:null);
   const pending=new Map<string,{source:string;hash:string;indices:number[]}>();
@@ -82,6 +95,20 @@ export async function translateChineseBatch(values:string[]):Promise<Array<strin
       }
     }catch(error) {console.warn('[中文翻译] 请求未完成，保留原文等待重试',error instanceof Error?error.name:'请求错误');}
   })));
+  // If a long segment still fails, translate smaller source-preserving pieces.
+  // A bounded second pass avoids permanently retrying the same failing paragraph.
+  if(allowSplitRetry)for(const item of pending.values()){
+    if(item.source.length<=500 || item.indices.every(i=>result[i]!==null))continue;
+    const parts:string[]=[];let rest=item.source;
+    while(rest.length>500){const head=rest.slice(0,500);let cut=Math.max(head.lastIndexOf('. '),head.lastIndexOf('; '))+1;if(cut<180)cut=head.lastIndexOf(' ');if(cut<180)cut=500;parts.push(rest.slice(0,cut));rest=rest.slice(cut).trimStart();}
+    if(rest)parts.push(rest);
+    const pieces=await translateChineseBatch(parts,false);
+    if(pieces.some(s=>s===null))continue;
+    const translated=pieces.join('\n');
+    if(translationProblems(item.source,translated).length)continue;
+    database().prepare('INSERT OR REPLACE INTO translations VALUES (?,?,?,?)').run(item.hash,item.source,translated,new Date().toISOString());
+    item.indices.forEach(i=>{result[i]=translated;});
+  }
   return result;
 }
 export async function translateChinese(value:string):Promise<string|null> {return (await translateChineseBatch([value]))[0];}

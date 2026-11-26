@@ -36,6 +36,7 @@ export async function localizePaper(paper:AcademicPaper):Promise<AcademicPaper> 
   }
   add('titleZh',p.titleZh,value=>{p.titleZh=value;},!isChineseText(p.titleZh)||getLegacyTranslationSource(p.titleZh)?p.title:undefined);
   add('digestSummary',p.digestSummary,value=>{p.digestSummary=value;});
+  add('abstractZh',p.abstractZh,value=>{p.abstractZh=value;},p.abstractOriginal);
   const anatomyFields=['background','problem','currentStatus','limitationsOfPriorWork','proposedMethod','experimentalValidation','conclusion','figureCaption','tableAnalysis'] as const;
   anatomyFields.forEach(key=>add('anatomy.'+key,p.anatomy[key],value=>{p.anatomy[key]=value;}));
   if(p.anatomy.modelName && !technicalName(p.anatomy.modelName))add('anatomy.modelName',p.anatomy.modelName,value=>{p.anatomy.modelName=value;});
@@ -97,7 +98,7 @@ export async function localizePaper(paper:AcademicPaper):Promise<AcademicPaper> 
     const value=translated[i];
     const bad=!value || translationProblems(item.source,value).length>0;
     const failed=bad || (/[A-Za-z]{2,}/.test(item.source) && !technicalName(item.source) && !isChineseText(value));
-    const display=bad?hasDegenerateRepetition(item.source)?'':item.source:value;
+    const display=item.key==='abstractZh'&&failed?'':bad?hasDegenerateRepetition(item.source)?'':item.source:value;
     item.set(display||'');fields[item.key]={source:item.source,translated:display||''};
     if(failed)warnings.push(`${item.key}：译文未完成或未通过质量检查，已保留可用原文。`);
   });

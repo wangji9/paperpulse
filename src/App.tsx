@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BookMarked,
   Calendar,
@@ -63,8 +63,9 @@ import { LibraryManager } from './components/LibraryManager';
 import { PaperTimeline } from './components/PaperTimeline';
 import { PaperUpdates } from './components/PaperUpdates';
 import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
+const LabLibrary=lazy(()=>import('./components/LabLibrary').then(m=>({default:m.LabLibrary})));
 
-type ViewTab = 'pool' | 'my_kb' | 'citations' | 'users' | 'automation' | 'library';
+type ViewTab = 'pool' | 'my_kb' | 'lab' | 'citations' | 'users' | 'automation' | 'library';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -120,7 +121,7 @@ export default function App() {
     if (!getAuthToken()) return;
     setPapers(list => list.map(p => p.id === updated.id ? updated : p));
     setAllPoolPapers(list => list.map(p => p.id === updated.id ? updated : p));
-    setSelectedPaper(p => p?.id === updated.id ? updated : p);
+    setSelectedPaper(p => p?.id === updated.id ? {...updated,...p.labMetadata,labMetadata:p.labMetadata} : p);
   }, []);
 
   const handleLikePaper = async (id: string) => {
@@ -301,7 +302,7 @@ export default function App() {
       const updated = await reparsePaper(id);
       setPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
       setAllPoolPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      if (selectedPaper?.id === id) setSelectedPaper(updated);
+      setSelectedPaper(p => p?.id === updated.id ? {...updated,...p.labMetadata,labMetadata:p.labMetadata} : p);
       showToast('success', '已完成文献正文结构、原文图表、作者单位与引文补全');
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : '解析失败');
@@ -316,7 +317,7 @@ export default function App() {
       const updated = await uploadPaperMedia(paperId, payload);
       setPapers((prev) => prev.map((p) => (p.id === paperId ? updated : p)));
       setAllPoolPapers((prev) => prev.map((p) => (p.id === paperId ? updated : p)));
-      if (selectedPaper?.id === paperId) setSelectedPaper(updated);
+      setSelectedPaper(p => p?.id === updated.id ? {...updated,...p.labMetadata,labMetadata:p.labMetadata} : p);
       showToast('success', '原文图表已添加到该文献');
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : '上传失败');
@@ -340,7 +341,7 @@ export default function App() {
       }
       await loadData(true);
       await refreshAuthAndUsers();
-      if (selectedPaper?.id === paper.id) setSelectedPaper(updated);
+      setSelectedPaper(p => p?.id === updated.id ? {...updated,...p.labMetadata,labMetadata:p.labMetadata} : p);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : '操作失败');
     }
@@ -351,7 +352,7 @@ export default function App() {
       const updated = await updatePaperLibraryState(id, patch);
       setPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
       setAllPoolPapers((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      if (selectedPaper?.id === id) setSelectedPaper(updated);
+      setSelectedPaper(p => p?.id === updated.id ? {...updated,...p.labMetadata,labMetadata:p.labMetadata} : p);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : '状态更新失败');
     }
@@ -720,6 +721,7 @@ export default function App() {
               >
                 我的知识库 {currentUser ? `(${myKbCount})` : ''}
               </button>
+              <button type="button" onClick={()=>setActiveTab('lab')} className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${activeTab==='lab'?'bg-indigo-600 text-white':'text-slate-600 dark:text-slate-400'}`}>课题组文献库</button>
               <button
                 type="button"
                 onClick={() => setActiveTab('citations')}
@@ -891,6 +893,8 @@ export default function App() {
             onSelectPaper={(p) => setSelectedPaper(p)}
             onImportReference={handleImportIdentifier}
           />
+        ) : activeTab === 'lab' ? (
+          <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">正在打开课题组文献库…</p>}><LabLibrary pool={allPoolPapers} darkMode={darkMode} onOpen={setSelectedPaper} onChanged={()=>{void loadData(true);}} /></Suspense>
         ) : activeTab === 'library' && currentUser.role === 'admin' ? (
           <LibraryManager onAdd={() => { setEditingPaper(null); setFormOpen(true); }} onOpen={id => { const p = allPoolPapers.find(p => p.id === id); if(p) setSelectedPaper(p); }} onEdit={id => { const p = allPoolPapers.find(p => p.id === id); if(p) { setEditingPaper(p); setFormOpen(true); } }} onChanged={() => loadData(true)} />
         ) : activeTab === 'users' ? (
@@ -1019,6 +1023,7 @@ export default function App() {
                 </div>
               ) : activeTab === 'my_kb' && currentUser ? (
                 <MyKnowledgeBaseView
+                  pool={allPoolPapers}
                   onSocialUpdate={handleSocialUpdate} onLike={handleLikePaper} onLikeComment={handleLikeComment} trackingEnabled={!selectedPaper && !formOpen && !pdfUploadOpen && !authModalOpen}
                   papers={papers}
                   currentUser={currentUser}

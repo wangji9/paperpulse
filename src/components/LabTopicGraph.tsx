@@ -1,0 +1,8 @@
+import type { AcademicPaper, ResearchTopic } from '../types/paper';
+import { TOPIC_META } from '../lib/constants';
+export function LabTopicGraph({papers,topics,onOpen}:{papers:AcademicPaper[];topics:[ResearchTopic,number][];onOpen:(p:AcademicPaper)=>void}){
+  const centers=topics.map(([t,n],i)=>({t,n,x:110+i*780/Math.max(topics.length-1,1),y:80}));
+  const nodes=papers.map((p,i)=>({p,x:70+(i%9)*106,y:205+Math.floor(i/9)*85}));
+  const height=240+Math.ceil(papers.length/9)*85;
+  return <div className="overflow-x-auto"><svg viewBox={`0 0 1000 ${height}`} className="min-w-[850px] w-full" role="img" aria-label="课题组成果与研究方向的知识图谱">{nodes.flatMap(n=>centers.filter(c=>n.p.topics.includes(c.t)).map(c=><line key={n.p.id+c.t} x1={n.x} y1={n.y} x2={c.x} y2={c.y} stroke="#a5b4fc" opacity=".35"/>))}{centers.map(c=><g key={c.t}><circle cx={c.x} cy={c.y} r={18+Math.sqrt(c.n)*3} fill="#4f46e5"/><text x={c.x} y={c.y+4} textAnchor="middle" fill="white" fontSize="12">{c.n}</text><text x={c.x} y={30} textAnchor="middle" fontSize="10" fill="currentColor">{TOPIC_META[c.t].label.replace(/ \(.*/, '')}</text></g>)}{nodes.map((n,i)=><g key={n.p.id} role="button" tabIndex={0} aria-label={'查看成果：'+n.p.titleZh} onClick={()=>onOpen(n.p)} onKeyDown={e=>{if(e.key==='Enter')onOpen(n.p);}} className="cursor-pointer"><circle cx={n.x} cy={n.y} r="18" fill="#0d9488"/><text x={n.x} y={n.y+4} textAnchor="middle" fill="white" fontSize="11">{i+1}</text><text x={n.x} y={n.y+34} textAnchor="middle" fontSize="10" fill="currentColor">{(n.p.titleZh||n.p.title).slice(0,9)}…</text><title>{n.p.titleZh||n.p.title}</title></g>)}</svg></div>;
+}

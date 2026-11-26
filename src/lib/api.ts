@@ -8,9 +8,14 @@ import type {
   ReadingStatus,
   UserProfile,
   PdfImportJob,
+  LabEntry,
 } from '../types/paper';
 
 const TOKEN_KEY = 'paperpulse_auth_token';
+export async function labRequest(method='GET',id='',body?:unknown):Promise<LabEntry[]> {
+  const res=await apiFetch('/api/lab'+(id?'/'+encodeURIComponent(id):''),{method,headers:authHeaders({'Content-Type':'application/json'}),...(body?{body:JSON.stringify(body)}:{})});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||'课题组文献操作失败');return data.entries;
+}
 
 export function getAuthToken(): string | null {
   try {
@@ -253,8 +258,8 @@ export async function reparsePaper(id: string): Promise<AcademicPaper> {
   return data.paper;
 }
 
-export async function uploadPdfPaper(file:File,addToMyKb=true):Promise<PdfImportJob> {
-  const res=await apiFetch('/api/papers/upload-pdf',{method:'POST',headers:authHeaders({'Content-Type':'application/pdf','X-File-Name':encodeURIComponent(file.name),'X-Add-To-Kb':addToMyKb?'1':'0'}),body:file});
+export async function uploadPdfPaper(file:File,addToMyKb=true,destination:'pool'|'lab'='pool'):Promise<PdfImportJob> {
+  const res=await apiFetch('/api/papers/upload-pdf',{method:'POST',headers:authHeaders({'Content-Type':'application/pdf','X-File-Name':encodeURIComponent(file.name),'X-Add-To-Kb':addToMyKb?'1':'0','X-Library-Destination':destination}),body:file});
   const data=await res.json();
   if(!res.ok)throw new Error(data.error||'PDF上传失败');
   return data.job;
