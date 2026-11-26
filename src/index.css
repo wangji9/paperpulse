@@ -2,16 +2,22 @@
 
 @layer base {
   html {
-    font-size: 16px;
+    font-size: 12pt;
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
-      "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", "Hiragino Sans GB", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12pt;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     letter-spacing: 0.01em;
   }
-  h1, h2, h3, h4, p, span, button, input, textarea, select, td, th, li {
+  h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, td, th, li, label, summary, dt, dd {
     font-family: inherit;
+  }
+  .font-mono {
+    font-family: inherit !important;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -31,8 +37,8 @@
 .original-paper-table table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 12pt;
+  line-height: 1.55;
   border-top: 2px solid #334155;
   border-bottom: 2px solid #334155;
 }
@@ -89,27 +95,34 @@
 @keyframes paper-update { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { [aria-label="文献更新动态"] button { animation: none !important; } }
 
-/* Lab Literature Library Typography Scale: strict 12pt (16px) floor + clear heading hierarchy */
-.lab-space {
-  font-size: 12pt;
-}
-.lab-space :where(.text-xs, .text-sm, .text-\[10px\], .text-\[11px\]) {
+/* Platform-Wide Unified Typography Scale: strict 12pt (16px) floor + clear heading hierarchy */
+body :where(.text-xs, .text-sm, .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\], .text-\[14px\]) {
   font-size: 12pt !important;
   line-height: 1.55 !important;
 }
-.lab-space h1 {
-  font-size: 24pt !important;
+body h1 {
+  font-size: 22pt !important;
   line-height: 1.25 !important;
 }
-.lab-space h2 {
+.app-header-row h1 {
+  font-size: 15.5pt !important;
+  line-height: 1.25 !important;
+}
+body h2 {
   font-size: 16pt !important;
   line-height: 1.35 !important;
 }
-.lab-space h3 {
+body h3 {
   font-size: 14pt !important;
   line-height: 1.4 !important;
 }
-.lab-space h4 {
+body h4 {
   font-size: 13pt !important;
   line-height: 1.45 !important;
+}
+/* Give compact circular avatars enough room for 12pt initials */
+body span.rounded-full:where(.h-5.w-5, .h-6.w-6) {
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  line-height: 1 !important;
 }
