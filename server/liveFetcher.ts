@@ -71,6 +71,11 @@ export const ALL_JOURNAL_SOURCES = [...CORE_16_JOURNAL_SOURCES, ...DESIGN_JOURNA
 const SOURCE_ID_MAP = new Map(ALL_JOURNAL_SOURCES.map((s) => [s.id, s]));
 
 const JOURNAL_NAME_SHORT_MAP: Array<[RegExp, string]> = [
+  [/computer vision and pattern recognition|\bcvpr\b/i,'CVPR'],
+  [/international conference on computer vision|\biccv\b/i,'ICCV'],
+  [/international conference on machine learning|\bicml\b/i,'ICML'],
+  [/association for computational linguistics|\bacl\b/i,'ACL'],
+  [/neural information processing systems|\bneurips\b/i,'NeurIPS'],
   [/journal of mechanical design/i, 'JMD'], [/^design studies$/i, 'DS'], [/research in engineering design/i, 'RED'], [/computer-aided design/i, 'CAD'], [/artificial intelligence for engineering design/i, 'AI EDAM'], [/^design science$/i, 'Design Science'],
   [/international journal of machine tools and manufacture/i, 'IJMTM'],
   [/journal of manufacturing systems/i, 'JMS'],
@@ -102,7 +107,7 @@ export async function translateToZh(text: string, maxTotalChars = 100000): Promi
 }
 
 /* ---------- Classification & Technical English Term Extraction ---------- */
-export function detectTopics(text: string): ResearchTopic[] {
+export function detectTopics(text: string, useDefault=true): ResearchTopic[] {
   const lower = text.toLowerCase();
   const topics: ResearchTopic[] = [];
   if (/(large language model|llm|gpt|llama|qwen|instruction tuning|rag|retrieval-augmented|language model)/.test(lower)) {
@@ -132,11 +137,11 @@ export function detectTopics(text: string): ResearchTopic[] {
   if (/(embodied|robot|manipulation|assembly|vla|policy|gripper|dexterous|navigation|cobot|tracking control|actuator)/.test(lower)) {
     topics.push('EmbodiedAI');
   }
-  if (topics.length === 0) topics.push('LLM');
+  if (topics.length === 0 && useDefault) topics.push('LLM');
   return Array.from(new Set(topics));
 }
 
-function detectDomain(text: string, journal: string): DomainCategory {
+export function detectDomain(text: string, journal: string): DomainCategory {
   const combined = `${text} ${journal}`.toLowerCase();
   const isMfg =
     /(manufactur|machining|cnc|industrial|factory|assembly|wafer|weld|additive|scheduling|fault|prognostic|maintenance|shop-floor|drilling|fmea|cirp|rcim|jms|machine tools|engineering design|product design|mechanical design)/.test(
@@ -196,7 +201,7 @@ export function extractModelAndTechTerms(title: string, abstract: string): { mod
   return { modelName, techTerms };
 }
 
-function detectDataset(abstract: string): { type: DatasetSourceType; names: string[]; summary: string } {
+export function detectDataset(abstract: string): { type: DatasetSourceType; names: string[]; summary: string } {
   const lower = abstract.toLowerCase();
   const knownPublic: Array<[RegExp, string]> = [
     [/mvtec\s*3d-ad/i, 'MVTec 3D-AD'],

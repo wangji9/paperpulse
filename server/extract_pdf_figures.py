@@ -45,12 +45,14 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
     figures = []
     tables = []
 
-    fig_re = re.compile(r"^(?:Fig\.?|Figure|FIG\.?)\s*(\d+|[IVX]+)\b[:.\s-]*([\s\S]*)", re.IGNORECASE)
-    tbl_re = re.compile(r"^(?:Table|TABLE|Tab\.?)\s*(\d+|[IVX]+)\b[:.\s-]*([\s\S]*)", re.IGNORECASE)
+    fig_re = re.compile(r"^(?:Fig\.?|Figure|FIG\.?|图)\s*(\d+|[IVX]+)[:：.\s-]*([\s\S]*)", re.IGNORECASE)
+    tbl_re = re.compile(r"^(?:Table|TABLE|Tab\.?|表)\s*(\d+|[IVX]+)[:：.\s-]*([\s\S]*)", re.IGNORECASE)
+    max_figures=min(10,int(sys.argv[4])) if len(sys.argv)>4 else 3
+    max_tables=min(6,int(sys.argv[5])) if len(sys.argv)>5 else 2
 
     max_pages = min(len(doc), 18)
     for pno in range(max_pages):
-        if len(figures) >= 3 and len(tables) >= 2:
+        if len(figures) >= max_figures and len(tables) >= max_tables:
             break
         page = doc[pno]
         prect = page.rect
@@ -72,7 +74,7 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
 
             # 1. Match Figure Caption (usually directly below visual content)
             m_fig = fig_re.match(txt)
-            if m_fig and len(figures) < 3 and len(txt) > 12:
+            if m_fig and len(figures) < max_figures and len(txt) > 8:
                 num = m_fig.group(1)
                 col_x0, col_x1 = column_bounds(brect, prect)
 
@@ -102,7 +104,7 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
                         pix.save(out_file)
                         cap_clean = clean_caption(txt)
                         low = cap_clean.lower()
-                        cat = "experiment" if re.search(r"result|comparison|ablation|accuracy|performance|error|curve|benchmark|evaluation", low) else "method"
+                        cat = "experiment" if re.search(r"result|comparison|ablation|accuracy|performance|error|curve|benchmark|evaluation|结果|对比|消融|准确率|性能|误差|实验", low) else "method"
                         figures.append({
                             "id": f"fig-{len(figures)+1}",
                             "label": f"Figure {num}",
@@ -114,7 +116,7 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
 
             # 2. Match Table Caption (usually directly above the table)
             m_tbl = tbl_re.match(txt)
-            if m_tbl and len(tables) < 2 and len(txt) > 8:
+            if m_tbl and len(tables) < max_tables and len(txt) > 5:
                 num = m_tbl.group(1)
                 col_x0, col_x1 = column_bounds(brect, prect)
                 below_lines = [

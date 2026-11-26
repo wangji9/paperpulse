@@ -424,11 +424,12 @@ async function extractFromPdfUrl(
   paperDir: string,
   urlPrefix: string,
   methodContextZh: string,
-  expContextZh: string
+  expContextZh: string,
+  uploaded=false
 ): Promise<{ figures: OriginalPaperFigure[]; tables: OriginalPaperTable[] }> {
   try {
     const scriptPath = path.resolve(process.cwd(), 'server', 'extract_pdf_figures.py');
-    const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix], {
+    const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix,...(uploaded?['6','4']:[])], {
       timeout: 60000,
       maxBuffer: 4 * 1024 * 1024,
     });
@@ -532,8 +533,8 @@ export async function extractOriginalPaperMedia(paper: AcademicPaper): Promise<{
 
   const cachedPdf=path.join(paperDir,'source.pdf');
   if(fs.existsSync(cachedPdf)) {
-    const cachedMedia=await extractFromPdfUrl(cachedPdf,paperDir,urlPrefix,methodCtx,expCtx);
-    if(cachedMedia.figures.length && cachedMedia.tables.length)return {paperFigures:cachedMedia.figures,paperTables:cachedMedia.tables};
+    const cachedMedia=await extractFromPdfUrl(cachedPdf,paperDir,urlPrefix,methodCtx,expCtx,Boolean(paper.upload));
+    if(paper.upload || (cachedMedia.figures.length && cachedMedia.tables.length))return {paperFigures:cachedMedia.figures,paperTables:cachedMedia.tables};
   }
   const { arxivId, pdfUrl } = await resolvePaperMediaEndpoints(paper);
 

@@ -5,6 +5,28 @@ import { mkdtemp, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 
+test('two-column PDF text keeps its abstract separate from the opposite column',async t=>{
+  try {execFileSync('python',['-c','import fitz'],{stdio:'ignore'});}catch {t.skip('PyMuPDF is not installed');return;}
+  const dir=await mkdtemp(path.join(tmpdir(),'paperpulse-columns-'));
+  try {
+    const file=path.join(dir,'columns.pdf');
+    execFileSync('python',['-c',String.raw`import fitz,sys
+d=fitz.open();p=d.new_page();p.insert_text((40,40),'Two Column Research Paper',fontsize=20)
+p.insert_textbox(fitz.Rect(40,80,280,180),'Abstract\nLEFT_SOURCE_ONLY. This is the original abstract describing a verified experiment.',fontsize=11)
+p.insert_textbox(fitz.Rect(40,220,280,320),'1 Introduction\nThe left column contains the introduction and research background.',fontsize=11)
+p.insert_textbox(fitz.Rect(320,80,560,180),'2 Method\nRIGHT_METHOD_ONLY. We propose a source-grounded method.',fontsize=11)
+p.insert_textbox(fitz.Rect(320,220,560,320),'3 Conclusion\nThe source-grounded method preserves original evidence.',fontsize=11)
+d.save(sys.argv[1])`,file]);
+    const parsed=JSON.parse(execFileSync('python',['server/extract_paper_text.py',file],{encoding:'utf8'}));
+    assert.match(parsed.sections.abstract,/LEFT_SOURCE_ONLY/);
+    assert.doesNotMatch(parsed.sections.abstract,/RIGHT_METHOD_ONLY/);
+    assert.match(parsed.sections.method,/RIGHT_METHOD_ONLY/);
+  }finally {
+    assert.ok(path.resolve(dir).startsWith(path.resolve(tmpdir())+path.sep));assert.ok(path.basename(dir).startsWith('paperpulse-columns-'));
+    await rm(dir,{recursive:true,force:true,maxRetries:10,retryDelay:100});
+  }
+});
+
 test('a verified cached PDF can be parsed while its external source is unavailable', async t => {
   try { execFileSync('python',['-c','import fitz'],{stdio:'ignore'}); } catch { t.skip('PyMuPDF is not installed in this test environment'); return; }
   const dir=await mkdtemp(path.join(tmpdir(),'paperpulse-cache-test-'));

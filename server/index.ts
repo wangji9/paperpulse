@@ -1,5 +1,6 @@
 import { localizePaper } from './localizePaper.js';
 import { startLocalizationQueue } from './localizationQueue.js';
+import { enqueuePdf, getPdfImportJob, listPdfImportJobs, PdfUploadError, startPdfImportQueue } from './pdfImportQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
 import { fetchOpenConferencePapers } from './conferenceFetcher.js';
 import express from 'express';
@@ -213,6 +214,7 @@ app.use('/paper-assets', requireAuth, express.static(PAPER_ASSETS_DIR), (_req, r
 app.use('/api/users', requireAuth);
 app.use('/api/kb', requireAuth);
 app.use('/api/papers', requireAuth);
+app.use('/api/pdf-imports', requireAuth);
 app.use('/api/sync', requireAuth);
 app.use('/api/auto-sync', requireAuth);
 
@@ -452,6 +454,28 @@ app.post('/api/papers', requireAdmin, async (req, res) => {
 });
 
 // Import by DOI / arXiv ID / OpenAlex ID / Keyword (auto-parses content, affiliations & citations; adds to user's KB if logged in)
+const pdfBody=express.raw({type:'application/pdf',limit:'32mb'});
+app.post('/api/papers/upload-pdf', (req,res,next)=>{
+  pdfBody(req,res,error=>{
+    if(error){res.status(413).json({error:'PDF不能超过32MB'});return;}
+    next();
+  });
+}, (req,res)=>{
+  try {
+    if(!req.is('application/pdf') || !Buffer.isBuffer(req.body)) {res.status(415).json({error:'请上传PDF文档'});return;}
+    let fileName='上传文献.pdf';
+    try {fileName=decodeURIComponent(String(req.headers['x-file-name']||fileName));}catch { /* use safe default */ }
+    const job=enqueuePdf(req.body,fileName,extractUser(req)!,req.headers['x-add-to-kb']!=='0');
+    res.status(202).json({job});
+  }catch(error) {res.status(error instanceof PdfUploadError?error.status:500).json({error:error instanceof Error?error.message:'PDF上传失败'});}
+});
+app.get('/api/pdf-imports',(req,res)=>res.json({jobs:listPdfImportJobs(extractUser(req)!)}));
+app.get('/api/pdf-imports/:id',(req,res)=>{
+  const job=getPdfImportJob(String(req.params.id),extractUser(req)!);
+  if(!job){res.status(404).json({error:'上传任务不存在'});return;}
+  res.json({job});
+});
+
 app.post('/api/papers/import', requireAdmin, async (req, res) => {
   try {
     const user = extractUser(req);
@@ -779,6 +803,7 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {
   startLocalizationQueue();
+  startPdfImportQueue();
   console.log(`PaperPulse server running at http://${HOST}:${PORT}`);
 
   const cfg = getAutoSyncConfig();

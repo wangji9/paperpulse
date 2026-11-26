@@ -151,6 +151,8 @@ test('authenticated social reading is traceable, isolated and durable', async ()
     assert.equal((await request(route, ta)).status, 401);
   } finally {
     await stop();
-    await rm(dir, { recursive: true, force: true });
+    assert.ok(path.resolve(dir).startsWith(path.resolve(tmpdir())+path.sep));
+    assert.ok(path.basename(dir).startsWith('paperpulse-test-'));
+    await rm(dir, { recursive: true, force: true, maxRetries:10, retryDelay:100 });
   }
 });

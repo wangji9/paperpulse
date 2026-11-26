@@ -23,7 +23,7 @@ WORKDIR /app
 # Install Python3 + PyMuPDF + Pillow for PDF original figure/table extraction
 RUN sed -i 's|http://deb.debian.org|http://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || true \
     && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl python3 python-is-python3 python3-pip python3-pil \
+    && apt-get install -y --no-install-recommends ca-certificates curl python3 python-is-python3 python3-pip python3-pil tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim \
     && pip3 install --no-cache-dir --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple pymupdf \
     && rm -rf /var/lib/apt/lists/*
 

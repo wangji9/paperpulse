@@ -7,6 +7,7 @@ import type {
   PaperComment,
   ReadingStatus,
   UserProfile,
+  PdfImportJob,
 } from '../types/paper';
 
 const TOKEN_KEY = 'paperpulse_auth_token';
@@ -250,6 +251,21 @@ export async function reparsePaper(id: string): Promise<AcademicPaper> {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || '自动解析失败');
   return data.paper;
+}
+
+export async function uploadPdfPaper(file:File,addToMyKb=true):Promise<PdfImportJob> {
+  const res=await apiFetch('/api/papers/upload-pdf',{method:'POST',headers:authHeaders({'Content-Type':'application/pdf','X-File-Name':encodeURIComponent(file.name),'X-Add-To-Kb':addToMyKb?'1':'0'}),body:file});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error||'PDF上传失败');
+  return data.job;
+}
+export async function fetchPdfImportJobs():Promise<PdfImportJob[]> {
+  const res=await apiFetch('/api/pdf-imports',{headers:authHeaders()});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||'无法获取解析任务');return data.jobs;
+}
+export async function fetchPaperDetail(id:string):Promise<AcademicPaper> {
+  const res=await apiFetch(`/api/papers/${encodeURIComponent(id)}`,{headers:authHeaders()});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||'无法打开文献');return data.paper;
 }
 
 export async function uploadPaperMedia(

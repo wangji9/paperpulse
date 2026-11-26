@@ -17,6 +17,7 @@ import {
   Sparkles,
   Sun,
   Users,
+  Upload,
   X,
 } from 'lucide-react';
 import type {
@@ -54,6 +55,7 @@ import { TOPIC_META, TRACKED_JOURNALS } from './lib/constants';
 import { PaperFeedCard } from './components/PaperFeedCard';
 import { DeepAnatomyModal } from './components/DeepAnatomyModal';
 import { PaperFormModal } from './components/PaperFormModal';
+import { PdfUploadModal } from './components/PdfUploadModal';
 import { GlobalCitationGraph } from './components/CitationGraph';
 import { ArchitectureObservatory } from './components/ArchitectureModal';
 import { AuthGateScreen, AuthModal, UserManagementPanel } from './components/AuthAndUsersModal';
@@ -106,6 +108,7 @@ export default function App() {
   // Modals
   const [selectedPaper, setSelectedPaper] = useState<AcademicPaper | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [pdfUploadOpen,setPdfUploadOpen]=useState(false);
   const [editingPaper, setEditingPaper] = useState<AcademicPaper | null>(null);
 
   const showToast = useCallback((type: 'success' | 'error', msg: string) => {
@@ -148,7 +151,7 @@ export default function App() {
   }, [refreshAuthAndUsers]);
 
   useEffect(() => {
-    const reset = () => { setCurrentUser(null); setPapers([]); setAllPoolPapers([]); setSelectedPaper(null); setFormOpen(false); setAuthModalOpen(false); setUsersList([]); };
+    const reset = () => { setCurrentUser(null); setPapers([]); setAllPoolPapers([]); setSelectedPaper(null); setFormOpen(false); setPdfUploadOpen(false); setAuthModalOpen(false); setUsersList([]); };
     window.addEventListener('paperpulse-auth-required', reset);
     return () => window.removeEventListener('paperpulse-auth-required', reset);
   }, []);
@@ -783,6 +786,8 @@ export default function App() {
 
             </>}
 
+            <button type="button" onClick={()=>setPdfUploadOpen(true)} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"><Upload className="h-4 w-4"/>上传PDF</button>
+
             {/* User Login / Avatar Pill */}
             {currentUser ? (
               <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900">
@@ -1014,7 +1019,7 @@ export default function App() {
                 </div>
               ) : activeTab === 'my_kb' && currentUser ? (
                 <MyKnowledgeBaseView
-                  onSocialUpdate={handleSocialUpdate} onLike={handleLikePaper} onLikeComment={handleLikeComment} trackingEnabled={!selectedPaper && !formOpen && !authModalOpen}
+                  onSocialUpdate={handleSocialUpdate} onLike={handleLikePaper} onLikeComment={handleLikeComment} trackingEnabled={!selectedPaper && !formOpen && !pdfUploadOpen && !authModalOpen}
                   papers={papers}
                   currentUser={currentUser}
                   darkMode={darkMode}
@@ -1062,7 +1067,7 @@ export default function App() {
                             ? `${date} · 今日新增`
                             : date === yesterdayStr
                               ? `${date} · 昨日新增`
-                              : date}
+                              : date || '发表时间待核实'}
                           <span className="ml-1 rounded-full bg-indigo-600 px-2 py-0.2 text-xs text-white">
                             {list.length} 篇
                           </span>
@@ -1072,7 +1077,7 @@ export default function App() {
 
                       {list.map((paper) => (
                         <PaperFeedCard
-                          trackingEnabled={!selectedPaper && !formOpen && !authModalOpen}
+                          trackingEnabled={!selectedPaper && !formOpen && !pdfUploadOpen && !authModalOpen}
                           onSocialUpdate={handleSocialUpdate}
                           onLike={handleLikePaper}
                           onLikeComment={handleLikeComment}
@@ -1150,6 +1155,10 @@ export default function App() {
       )}
 
       {/* Add / Edit Paper Modal */}
+      {pdfUploadOpen&&<PdfUploadModal darkMode={darkMode} onClose={()=>setPdfUploadOpen(false)} onOpenPaper={paper=>{
+        setPdfUploadOpen(false);setActiveTab('pool');resetFilters();
+        void loadData(true);void refreshAuthAndUsers();setSelectedPaper(paper);
+      }}/>}
       {formOpen && (
         <PaperFormModal
           editingPaper={editingPaper}

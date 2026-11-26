@@ -205,6 +205,7 @@ export interface AcademicPaper {
   doi: string;
   url: string;
   sourceOrigin: 'curated_real' | 'arxiv_live' | 'openalex_live' | 'conference_live' | 'user_created';
+  upload?: { userId:string; username:string; displayName:string; fileName:string; uploadedAt:string; sha256:string; titleFromFileName?:boolean };
   keywords?: string[];
   keywordsOriginal?: string[];
   keywordSource?: 'author' | 'extracted' | 'manual';
@@ -231,6 +232,11 @@ export interface AcademicPaper {
   myReadingStatus?: ReadingStatus;
   anatomy: PaperAnatomy;
   comments: PaperComment[];
+}
+
+export interface PdfImportJob {
+  id:string; fileName:string; status:'queued'|'processing'|'completed'|'failed';
+  phase:string; createdAt:string; updatedAt:string; paperId?:string; alreadyExists?:boolean; error?:string;
 }
 
 export interface AutoSyncConfig {
