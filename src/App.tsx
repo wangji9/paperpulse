@@ -646,40 +646,40 @@ export default function App() {
           darkMode ? 'border-slate-800 bg-slate-950/95' : 'border-slate-200/90 bg-white/95'
         }`}
       >
-        <div className="app-header-row items-center justify-between gap-4 px-4 py-2.5">
+        <div className="app-header-row items-center justify-between gap-2 px-3 py-1.5">
           {/* Brand + Mobile Filter Drawer Trigger */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {(activeTab === 'pool' || activeTab === 'my_kb') && (
               <button
                 type="button"
                 aria-label="打开筛选抽屉"
                 onClick={() => setMobileFilterOpen(true)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-2 text-sm font-medium lg:hidden dark:border-slate-700"
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-2 py-1.5 text-sm font-medium lg:hidden dark:border-slate-700"
               >
                 <Filter className="h-4 w-4" />
                 筛选
               </button>
             )}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm dark:bg-indigo-600">
-              <Compass className="h-5 w-5" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm dark:bg-indigo-600">
+              <Compass className="h-4 w-4" />
             </div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-semibold tracking-tight sm:text-lg">PaperPulse 文献平台</h1>
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-sm font-medium text-slate-600 inline-block dark:bg-slate-800 dark:text-slate-300">
-                池 {allPoolPapers.length} 篇
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-base font-semibold tracking-tight sm:text-lg">PaperPulse</h1>
+              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-sm font-medium text-slate-600 inline-block dark:bg-slate-800 dark:text-slate-300">
+                {allPoolPapers.length} 篇
               </span>
             </div>
           </div>
 
           {/* Search Input */}
           <div className="app-header-search relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索标题、作者、单位、标签、方法"
-              className={`w-full rounded-xl border py-2 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-500 ${
+              placeholder="搜索标题、作者、标签…"
+              className={`w-full rounded-xl border py-1.5 pl-8 pr-2.5 text-sm outline-none transition focus:border-indigo-500 ${
                 darkMode
                   ? 'border-slate-800 bg-slate-900 text-white placeholder:text-slate-500'
                   : 'border-slate-200 bg-slate-50 text-slate-900 focus:bg-white'
@@ -688,22 +688,22 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs & User Bar */}
-          <div className="flex flex-nowrap items-center gap-2">
+          <div className="flex flex-nowrap items-center gap-1.5">
             <div
-              className={`flex shrink-0 flex-nowrap rounded-xl border p-1 ${
+              className={`flex shrink-0 flex-nowrap rounded-xl border p-0.5 ${
                 darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-100/80'
               }`}
             >
               <button
                 type="button"
                 onClick={() => setActiveTab('pool')}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold transition ${
                   activeTab === 'pool'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                <BookMarked className="h-4 w-4" />
+                <BookMarked className="h-3.5 w-3.5" />
                 公共文献池
               </button>
               <button
@@ -715,7 +715,7 @@ export default function App() {
                   }
                   setActiveTab('my_kb');
                 }}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold transition ${
                   activeTab === 'my_kb'
                     ? 'bg-teal-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
@@ -723,43 +723,43 @@ export default function App() {
               >
                 我的知识库 {currentUser ? `(${myKbCount})` : ''}
               </button>
-              <button type="button" onClick={()=>setActiveTab('lab')} className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${activeTab==='lab'?'bg-indigo-600 text-white':'text-slate-600 dark:text-slate-400'}`}>课题组文献库</button>
+              <button type="button" onClick={()=>setActiveTab('lab')} className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-2.5 py-1 text-sm font-semibold ${activeTab==='lab'?'bg-indigo-600 text-white':'text-slate-600 dark:text-slate-400'}`}>课题组文献库</button>
               <button
                 type="button"
                 onClick={() => setActiveTab('citations')}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold transition ${
                   activeTab === 'citations'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                <GitCommitHorizontal className="h-4 w-4" />
+                <GitCommitHorizontal className="h-3.5 w-3.5" />
                 知识图谱
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('users')}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold transition ${
                   activeTab === 'users'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-3.5 w-3.5" />
                 {currentUser.role === 'admin' ? '用户管理' : '我的账户'}
               </button>
               {currentUser.role === 'admin' && <>
-              <button type="button" onClick={() => setActiveTab('library')} className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold ${activeTab === 'library' ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800' : 'text-slate-600 dark:text-slate-400'}`}><BookMarked className="h-4 w-4" />文献管理</button>
+              <button type="button" onClick={() => setActiveTab('library')} className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold ${activeTab === 'library' ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800' : 'text-slate-600 dark:text-slate-400'}`}><BookMarked className="h-3.5 w-3.5" />文献管理</button>
               <button
                 type="button"
                 onClick={() => setActiveTab('automation')}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition sm:px-3 ${
+                className={`inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold transition ${
                   activeTab === 'automation'
                     ? 'bg-white text-indigo-700 shadow-xs dark:bg-slate-800 dark:text-indigo-300'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                <Server className="h-4 w-4" />
+                <Server className="h-3.5 w-3.5" />
                 自动追踪
               </button>
               </>}
@@ -770,9 +770,9 @@ export default function App() {
               type="button"
               onClick={handleSyncLive}
               disabled={syncing}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+              className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
             >
-              <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? '检索中' : '拉取最新'}
             </button>
 
@@ -782,15 +782,15 @@ export default function App() {
                 setEditingPaper(null);
                 setFormOpen(true);
               }}
-              className="inline-flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+              className="inline-flex items-center gap-1 rounded-xl bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs transition hover:bg-indigo-700"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>添加文献</span>
             </button>
 
             </>}
 
-            <button type="button" onClick={()=>setPdfUploadOpen(true)} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"><Upload className="h-4 w-4"/>上传PDF</button>
+            <button type="button" onClick={()=>setPdfUploadOpen(true)} className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"><Upload className="h-3.5 w-3.5"/>上传PDF</button>
 
             {/* User Login / Avatar Pill */}
             {currentUser ? (
@@ -884,10 +884,8 @@ export default function App() {
       <main
         className={
           activeTab === 'citations'
-            ? 'flex w-full flex-1 flex-col px-3 py-2.5 sm:px-4 sm:py-3 lg:min-h-0 lg:overflow-hidden lg:px-5'
-            : activeTab === 'lab'
-              ? 'w-full flex-1 px-2 py-3 sm:px-3 sm:py-4 lg:px-4'
-              : 'w-full flex-1 px-3 py-4 sm:px-5 sm:py-5 lg:px-6'
+            ? 'flex w-full flex-1 flex-col px-2 py-2 sm:px-3 sm:py-2.5 lg:min-h-0 lg:overflow-hidden'
+            : 'w-full flex-1 px-2 py-2.5 sm:px-3 sm:py-3'
         }
       >
         {activeTab === 'citations' ? (
@@ -949,10 +947,10 @@ export default function App() {
             onTriggerSync={handleSyncLive}
           />
         ) : (
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          <div className="flex flex-col gap-3.5 lg:flex-row lg:items-start">
             {/* Desktop Independent Scrollable Sticky Sidebar (All Journals Reachable on Scroll!) */}
             <aside
-              className={`${activeTab === 'my_kb' ? 'hidden' : 'hidden lg:block'} w-60 shrink-0 rounded-2xl border p-4 lg:sticky lg:top-[88px] lg:max-h-[calc(100vh-104px)] lg:overflow-y-auto xl:w-64 ${
+              className={`${activeTab === 'my_kb' ? 'hidden' : 'hidden lg:block'} w-56 shrink-0 rounded-2xl border p-3 lg:sticky lg:top-[70px] lg:max-h-[calc(100vh-84px)] lg:overflow-y-auto xl:w-60 ${
                 darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
               }`}
             >
@@ -960,7 +958,7 @@ export default function App() {
             </aside>
 
             {/* Fluid Full-Width Content Stream */}
-            <section className="min-w-0 flex-1 space-y-5">
+            <section className="min-w-0 flex-1 space-y-3.5">
               {/* Public Pool Context Strip vs Personal Workbench */}
               {activeTab === 'pool' && (
                 <div

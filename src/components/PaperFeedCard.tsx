@@ -162,7 +162,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
   return (
     <article ref={cardRef}
-      className={`rounded-2xl border p-4 sm:p-6 transition-shadow hover:shadow-md ${
+      className={`rounded-2xl border p-3.5 sm:p-4 transition-shadow hover:shadow-md ${
         darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-sm'
       }`}
     >
@@ -334,7 +334,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
       {/* Core Digest */}
       {paper.digestSummary && (
         <div
-          className={`mt-4 rounded-xl border-l-4 border-indigo-600 px-4 py-3 text-base leading-7 ${
+          className={`mt-2.5 rounded-xl border-l-4 border-indigo-600 px-3.5 py-2 text-base leading-6 ${
             darkMode ? 'bg-slate-800/50 text-slate-200' : 'bg-indigo-50/40 text-slate-800'
           }`}
         >
@@ -344,15 +344,15 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
       {/* Structured 4-Part Deep Logic Grid */}
       {blocks.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="mt-2.5 grid grid-cols-1 gap-2.5 md:grid-cols-2">
           {blocks.map((b) => (
             <div
               key={b.num}
-              className={`rounded-xl border p-4 ${
+              className={`rounded-xl border p-3 ${
                 darkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-200/70 bg-slate-50/70'
               }`}
             >
-              <div className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
                 <span className="rounded bg-indigo-600 px-1.5 py-0.2 text-xs text-white">{b.num}</span>
                 <span>{b.title}</span>
               </div>
@@ -364,11 +364,11 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
 
       {/* Directly Embedded Original Paper Figures — Zero-Whitespace Compact Adaptive Gallery (ALL Figures) */}
       {paperFigures.length > 0 ? (
-        <div className="mt-4">
+        <div className="mt-2.5">
           <AdaptiveFigureGallery figures={paperFigures} darkMode={darkMode} />
         </div>
       ) : anatomy.figureUrl ? (
-        <div className="mt-4">
+        <div className="mt-2.5">
           <OriginalFiguresSection
             figures={[]}
             legacyFigureUrl={anatomy.figureUrl}

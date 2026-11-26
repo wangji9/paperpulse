@@ -30,6 +30,7 @@ import type { AcademicPaper, EntryType, LabEntry, ResearchTopic, UserProfile } f
 import { labRequest, repostPaperApi, unrepostPaperApi, uploadLabPaperPdf } from '../lib/api';
 import { TOPIC_META } from '../lib/constants';
 import { analyzeLab, type LabAnalysisResult } from '../lib/labAnalysis';
+import { extractChineseKeywordTags } from '../lib/canonicalize';
 import { PaperAbstract } from './PaperAbstract';
 import { AdaptiveFigureGallery } from './AdaptiveFigureGallery';
 import { LabTopicGraph } from './LabTopicGraph';
@@ -143,7 +144,7 @@ const LabWeiboCard: React.FC<{
 
   const yr = entry.publicationYear || Number((paper.publishedDate || '').slice(0, 4)) || '';
   const canonAuthors = analysis.paperCanonicalAuthors.get(paper.id) || [];
-  const canonKws = analysis.paperCanonicalKeywords.get(paper.id) || [];
+  const chineseTags = useMemo(() => extractChineseKeywordTags(paper, 8), [paper]);
   const leadAuthor = canonAuthors[0]?.shortName || paper.authors[0] || '课题组';
   const leadColor = pickAuthorColor(leadAuthor);
 
@@ -195,19 +196,19 @@ const LabWeiboCard: React.FC<{
       }`}
     >
       {/* 1. Weibo Author & Metadata Header */}
-      <div className="flex items-start justify-between gap-3 px-5 pt-5">
-        <div className="flex min-w-0 items-center gap-3.5">
+      <div className="flex items-start justify-between gap-2.5 px-4 pt-3.5">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={() => onSelectQuery(leadAuthor)}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900"
             style={{ backgroundColor: leadColor }}
             title={`筛选 ${leadAuthor} 的全部成果`}
           >
             {leadAuthor.slice(0, 2)}
           </button>
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => onSelectQuery(leadAuthor)}
@@ -215,23 +216,23 @@ const LabWeiboCard: React.FC<{
               >
                 {leadAuthor}
               </button>
-              <span className="rounded-md bg-[#0072BD] px-2.5 py-0.5 font-mono text-base font-bold text-white">
+              <span className="rounded-md bg-[#0072BD] px-2 py-0.5 font-mono text-base font-bold text-white">
                 {yr || '年份待核'}
               </span>
-              <span className="rounded-md bg-teal-50 px-2.5 py-0.5 text-base font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
+              <span className="rounded-md bg-teal-50 px-2 py-0.5 text-base font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
                 {paper.journal}
               </span>
               {paper.localPdfUrl && (
-                <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-base font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-base font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
                   全文PDF
                 </span>
               )}
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-slate-600 dark:text-slate-300">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base text-slate-600 dark:text-slate-300">
               <span className="font-mono font-semibold text-slate-400">#{index + 1}</span>
               <span>·</span>
               <span>
-                合作作者：
+                作者：
                 {canonAuthors.length > 0
                   ? canonAuthors.map((a, idx) => (
                       <React.Fragment key={a.id}>
@@ -252,18 +253,18 @@ const LabWeiboCard: React.FC<{
         </div>
 
         {entry.canEdit && (
-          <div className="flex shrink-0 items-center gap-2 text-base">
+          <div className="flex shrink-0 items-center gap-1 text-base">
             <button
               type="button"
               onClick={() => onEdit(entry)}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-slate-600 hover:bg-slate-100 hover:text-[#0072BD] dark:text-slate-300 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-[#0072BD] dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <Edit3 className="h-4 w-4" /> 修订
             </button>
             <button
               type="button"
               onClick={() => onDelete(entry.paperId)}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-800"
             >
               <Trash2 className="h-4 w-4" /> 移出
             </button>
@@ -272,48 +273,31 @@ const LabWeiboCard: React.FC<{
       </div>
 
       {/* 2. Weibo Main Content Body */}
-      <div className="px-5 pt-3.5 pb-4">
+      <div className="px-4 pt-2.5 pb-3">
         <button
           type="button"
           onClick={() => onOpen(paper)}
-          className="block text-left text-xl font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-[22px] dark:text-white dark:hover:text-sky-400"
+          className="block text-left text-xl font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-[21px] dark:text-white dark:hover:text-sky-400"
         >
           {paper.titleZh || paper.title}
         </button>
         {paper.titleZh && paper.title && paper.titleZh !== paper.title && (
-          <p className="mt-1.5 text-base leading-relaxed text-slate-500 dark:text-slate-400">{paper.title}</p>
+          <p className="mt-1 text-base leading-snug text-slate-500 dark:text-slate-400">{paper.title}</p>
         )}
 
-        {/* Clean Deduplicated Hashtags (Show paper's full author keywords + deduplicated tags) */}
-        {(canonKws.length > 0 || (paper.keywords?.length || 0) > 0) && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(() => {
-              const seen = new Set<string>();
-              const items: Array<{ key: string; label: string }> = [];
-              for (const kw of paper.keywordsOriginal || paper.keywords || []) {
-                const clean = kw.trim();
-                const norm = clean.toLowerCase();
-                if (!clean || clean.length > 48 || seen.has(norm)) continue;
-                seen.add(norm);
-                items.push({ key: `orig-${norm}`, label: clean });
-              }
-              for (const kw of canonKws) {
-                const norm = kw.shortLabel.toLowerCase();
-                if (seen.has(norm)) continue;
-                seen.add(norm);
-                items.push({ key: kw.id, label: kw.shortLabel });
-              }
-              return items.slice(0, 10).map((it) => (
-                <button
-                  key={it.key}
-                  type="button"
-                  onClick={() => onSelectQuery(it.label)}
-                  className="rounded-full bg-sky-50 px-3 py-0.5 text-base font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
-                >
-                  #{it.label}#
-                </button>
-              ));
-            })()}
+        {/* 100% Chinese Deduplicated Hashtags */}
+        {chineseTags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {chineseTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => onSelectQuery(tag)}
+                className="rounded-full bg-sky-50 px-2.5 py-0.5 text-base font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
+              >
+                #{tag}#
+              </button>
+            ))}
           </div>
         )}
 
@@ -880,7 +864,7 @@ export function LabLibrary({
   };
 
   return (
-    <div className="lab-space w-full space-y-5 text-base text-slate-800 dark:text-slate-100">
+    <div className="lab-space w-full space-y-3 text-base text-slate-800 dark:text-slate-100">
       <input
         ref={pdfInputRef}
         type="file"
@@ -891,23 +875,23 @@ export function LabLibrary({
 
       {/* Clean Compact Header */}
       <header
-        className={`rounded-2xl border p-5 sm:p-6 ${
+        className={`rounded-2xl border p-3.5 sm:p-4 ${
           darkMode
             ? 'border-slate-800 bg-gradient-to-r from-slate-900 via-sky-950/30 to-indigo-950/30'
             : 'border-sky-200/70 bg-gradient-to-r from-sky-50/70 via-white to-indigo-50/60 shadow-sm'
         }`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0072BD] text-white shadow-sm">
-              <Library className="h-6 w-6" />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0072BD] text-white shadow-sm">
+              <Library className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               课题组文献库
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={btnOutline} onClick={() => setArchiveOpen((v) => !v)}>
               <FolderPlus className="h-4 w-4 text-[#0072BD]" /> 从公共池归档
             </button>
@@ -917,34 +901,34 @@ export function LabLibrary({
             <button
               type="button"
               onClick={() => setUploadOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-4 py-2 text-base font-semibold text-white shadow-xs hover:bg-[#005a96]"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-3.5 py-1.5 text-base font-semibold text-white shadow-xs hover:bg-[#005a96]"
             >
               <Upload className="h-4 w-4" /> 上传课题组 PDF
             </button>
           </div>
         </div>
 
-        {/* KPI Bar */}
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {/* Compact KPI Bar */}
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ['课题组论文', syncedEntries.length, '篇', '#0072BD'],
             ['时间跨度', analysis.years.length ? `${analysis.years[0]}–${analysis.years[analysis.years.length - 1]}` : '—', '', '#7E2F8E'],
             ['核心作者', analysis.canonicalAuthors.length, '人', '#D95319'],
             ['发表期刊', analysis.journals.length, '种', '#77AC30'],
-            ['核心热词', analysis.canonicalKeywords.length, '个', '#EDB120'],
+            ['核心热词', analysis.canonicalKeywords.filter((k) => /[\u3400-\u9fff]/.test(k.info.shortLabel)).length, '个', '#EDB120'],
             ['潜在空白方向', analysis.potentialDirections.length, '项', '#A2142F'],
           ].map(([label, val, unit, color]) => (
             <div
               key={String(label)}
-              className={`rounded-xl border p-3.5 ${
+              className={`rounded-xl border px-3 py-2 ${
                 darkMode ? 'border-slate-800 bg-slate-900/80' : 'border-slate-200/70 bg-white/90'
               }`}
             >
-              <div className="font-mono text-2xl font-bold sm:text-3xl" style={{ color: String(color) }}>
+              <div className="font-mono text-xl font-bold sm:text-2xl" style={{ color: String(color) }}>
                 {val}
-                {unit && <span className="ml-1 text-base font-medium text-slate-400">{unit}</span>}
+                {unit && <span className="ml-1 text-sm font-medium text-slate-400">{unit}</span>}
               </div>
-              <div className="mt-1 text-base text-slate-600 dark:text-slate-300">{label}</div>
+              <div className="text-sm text-slate-600 dark:text-slate-300">{label}</div>
             </div>
           ))}
         </div>
@@ -1044,11 +1028,11 @@ export function LabLibrary({
 
       {mode === 'papers' ? (
         /* ==================== VIEW 1: WEIBO-STYLE LAB ACADEMIC FEED + RIGHT PLAZA SIDEBAR ==================== */
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-12">
           {/* Main Weibo Stream */}
-          <div className="space-y-4 xl:col-span-8">
+          <div className="space-y-3 xl:col-span-9">
             {/* Clean Filter Bar */}
-            <div className={`${cardCls} flex flex-wrap items-center gap-3 !p-3.5`}>
+            <div className={`${cardCls} flex flex-wrap items-center gap-2.5 !p-2.5`}>
               <div className="relative min-w-[200px] flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
@@ -1110,7 +1094,7 @@ export function LabLibrary({
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filtered.map((entry, idx) => (
                 <LabWeiboCard
                   key={entry.paperId}
@@ -1144,11 +1128,11 @@ export function LabLibrary({
           </div>
 
           {/* Right Sticky Weibo Plaza Sidebar */}
-          <aside className="space-y-4 xl:col-span-4">
-            <div className="space-y-4 xl:sticky xl:top-[84px]">
-              {/* 1. Hot Lab Topics (#Hashtags) */}
-              <section className={cardCls}>
-                <div className="mb-3 flex items-center justify-between">
+          <aside className="space-y-3 xl:col-span-3">
+            <div className="space-y-3 xl:sticky xl:top-[70px]">
+              {/* 1. Hot Lab Topics (#Hashtags — 100% Chinese) */}
+              <section className={`${cardCls} !p-3.5`}>
+                <div className="mb-2 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
                     <Hash className="h-4 w-4 text-[#0072BD]" /> 热门研究话题
                   </h2>
@@ -1161,20 +1145,23 @@ export function LabLibrary({
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {analysis.canonicalKeywords.slice(0, 14).map((kw) => (
-                    <button
-                      key={kw.info.id}
-                      type="button"
-                      onClick={() => setQuery(kw.info.shortLabel)}
-                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
-                        query === kw.info.shortLabel
-                          ? 'border-[#0072BD] bg-[#0072BD] text-white'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
-                      }`}
-                    >
-                      #{kw.info.shortLabel}# <span className="font-mono opacity-75">{kw.count}</span>
-                    </button>
-                  ))}
+                  {analysis.canonicalKeywords
+                    .filter((kw) => /[\u3400-\u9fff]/.test(kw.info.shortLabel))
+                    .slice(0, 14)
+                    .map((kw) => (
+                      <button
+                        key={kw.info.id}
+                        type="button"
+                        onClick={() => setQuery(kw.info.shortLabel)}
+                        className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${
+                          query === kw.info.shortLabel
+                            ? 'border-[#0072BD] bg-[#0072BD] text-white'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                        }`}
+                      >
+                        #{kw.info.shortLabel}# <span className="font-mono opacity-75">{kw.count}</span>
+                      </button>
+                    ))}
                 </div>
               </section>
 

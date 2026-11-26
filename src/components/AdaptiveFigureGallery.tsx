@@ -19,7 +19,7 @@ interface LayoutRow {
   tiles: LayoutTile[];
 }
 
-const GAP = 10;
+const GAP = 6;
 
 function formatCaptionText(fig: OriginalPaperFigure): string {
   const raw = (fig.captionZh || fig.analysisZh || fig.captionOriginal || '').trim();
@@ -43,11 +43,11 @@ function computeJustifiedRows(
   if (!figures.length || containerW < 120) return [];
 
   const isNarrow = containerW < 560;
-  // Compact target row height so even 10–16 figures fit densely and crisply
-  const targetRowH = isNarrow ? 165 : containerW > 1050 ? 220 : 195;
-  const minRowH = isNarrow ? 105 : 130;
-  const maxRowH = isNarrow ? 250 : 300;
-  const maxPerRow = isNarrow ? 2 : 4;
+  // Tight, high-density justified row heights with ZERO blank space
+  const targetRowH = isNarrow ? 150 : containerW > 1100 ? 195 : 175;
+  const minRowH = isNarrow ? 95 : 120;
+  const maxRowH = isNarrow ? 235 : 270;
+  const maxPerRow = isNarrow ? 2 : 5;
 
   const getRatio = (f: OriginalPaperFigure): number => {
     const measured = ratios[f.id];
@@ -136,6 +136,30 @@ function computeJustifiedRows(
     }
   }
   flushRow(true);
+
+  // Rebalance lonely 1-item final row into previous row (when safe) so EVERY row spans full width with zero right gap!
+  if (rows.length >= 2) {
+    const last = rows[rows.length - 1];
+    const prev = rows[rows.length - 2];
+    const lastUsed = last.tiles.reduce((s, t) => s + t.w, 0) + GAP * Math.max(0, last.tiles.length - 1);
+    if (last.tiles.length === 1 && lastUsed < containerW * 0.72 && prev.tiles.length <= 4) {
+      const combined = [...prev.tiles, ...last.tiles];
+      const sumR = combined.reduce((s, t) => s + getRatio(t.fig), 0);
+      const availW = Math.max(120, containerW - GAP * (combined.length - 1));
+      const newH = availW / Math.max(sumR, 0.25);
+      if (newH >= minRowH * 0.85 && newH <= maxRowH * 1.15) {
+        let used = 0;
+        const mergedTiles: LayoutTile[] = combined.map((t, idx) => {
+          const isEnd = idx === combined.length - 1;
+          const w = isEnd ? Math.max(60, Math.round(availW - used)) : Math.max(60, Math.round(newH * getRatio(t.fig)));
+          used += w;
+          return { fig: t.fig, index: t.index, w, h: Math.round(newH) };
+        });
+        rows.splice(rows.length - 2, 2, { tiles: mergedTiles });
+      }
+    }
+  }
+
   return rows;
 }
 
@@ -369,7 +393,7 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
 
   return (
     <>
-      <div ref={containerRef} className="mt-3 w-full space-y-2.5">
+      <div ref={containerRef} className="mt-2 w-full space-y-1.5">
         {rows.map((row, rowIdx) => (
           <div key={rowIdx} className="flex items-stretch" style={{ gap: `${GAP}px` }}>
             {row.tiles.map(({ fig, index, w, h }) => {
@@ -378,7 +402,7 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
                 <figure
                   key={fig.id}
                   style={{ width: `${w}px` }}
-                  className={`group flex shrink-0 flex-col overflow-hidden rounded-xl border transition-all hover:shadow-md ${
+                  className={`group flex shrink-0 flex-col overflow-hidden rounded-lg border transition-all hover:shadow-md ${
                     darkMode
                       ? 'border-slate-700 bg-slate-900 hover:border-sky-400'
                       : 'border-slate-200/90 bg-white hover:border-[#0072BD]'
@@ -399,16 +423,16 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
                       onLoad={(e) => handleImgLoad(fig.id, e)}
                       className="block h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.015]"
                     />
-                    <span className="pointer-events-none absolute top-1.5 right-1.5 rounded-md bg-slate-900/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="pointer-events-none absolute top-1 right-1 rounded bg-slate-900/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
                       <Maximize2 className="h-3.5 w-3.5" />
                     </span>
                   </button>
 
-                  {/* Paired Figure Caption Bar Below Image (Never Covers Diagram!) */}
+                  {/* Paired Figure Caption Bar Below Image (Compact & Never Covers Diagram!) */}
                   <figcaption
                     onClick={() => openLightbox(index)}
                     title={captionText ? `${fig.label}: ${captionText}` : fig.label}
-                    className={`flex flex-1 cursor-pointer items-start gap-1.5 border-t px-2.5 py-2 text-left leading-snug ${
+                    className={`flex flex-1 cursor-pointer items-start gap-1.5 border-t px-2 py-1 text-left leading-snug ${
                       darkMode
                         ? 'border-slate-800 bg-slate-900/90 text-slate-300'
                         : 'border-slate-100 bg-slate-50/90 text-slate-700'
@@ -417,7 +441,7 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
                     <span className="shrink-0 rounded bg-[#0072BD] px-1.5 py-0.5 font-mono font-bold text-white">
                       {fig.label}
                     </span>
-                    <span className="line-clamp-2 min-w-0 flex-1">
+                    <span className="line-clamp-1 min-w-0 flex-1">
                       {captionText || '点击查看原图'}
                     </span>
                   </figcaption>

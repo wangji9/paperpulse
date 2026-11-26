@@ -14,7 +14,7 @@ test('content recommendations exclude collected duplicates, merge bilingual conc
     import assert from 'node:assert/strict';
     import { relatedPapers } from './src/lib/relatedPapers.ts';
     import { analyzeLab } from './src/lib/labAnalysis.ts';
-    import { canonicalizeAuthor, canonicalizeKeyword } from './src/lib/canonicalize.ts';
+    import { canonicalizeAuthor, canonicalizeKeyword, extractChineseKeywordTags } from './src/lib/canonicalize.ts';
 
     // 1. Bilingual author deduplication & official lab roster names
     assert.equal(canonicalizeAuthor('李心雨*').id, canonicalizeAuthor('Xinyu Li').id);
@@ -26,11 +26,33 @@ test('content recommendations exclude collected duplicates, merge bilingual conc
     assert.equal(canonicalizeAuthor('Hongji Yi').cohort, '2026级 博士');
     assert.notEqual(canonicalizeAuthor('Xinyu Li').id, canonicalizeAuthor('Xinyu Pan').id);
 
-    // 2. Bilingual keyword deduplication
+    // 2. Bilingual keyword deduplication & 100% Chinese tag normalization
     assert.equal(canonicalizeKeyword('知识图谱')?.id, canonicalizeKeyword('Knowledge Graph')?.id);
     assert.equal(canonicalizeKeyword('Large Language Models')?.id, canonicalizeKeyword('大语言模型')?.id);
     assert.equal(canonicalizeKeyword('大型语言模型')?.id, canonicalizeKeyword('大语言模型')?.id);
     assert.equal(canonicalizeKeyword('Agentic AI')?.id, canonicalizeKeyword('多智能体')?.id);
+
+    const zhTags = extractChineseKeywordTags({
+      keywordsOriginal: [
+        'Tacit knowledge',
+        'Human-Centric Smart Manufacturing',
+        'Industry 5.0',
+        'Knowledge transformation',
+        'Knowledge externalization',
+        'Human-machine collaboration',
+        'Human-machine symbiosis',
+        'Human-Centric',
+        'Transformation',
+        'tacit',
+      ],
+    });
+    assert.ok(zhTags.length >= 5, 'Expected normalized Chinese tags');
+    assert.ok(zhTags.every((t) => /[\\u3400-\\u9fff]/.test(t)), 'All tags must be Chinese: ' + zhTags.join(','));
+    assert.ok(zhTags.includes('隐性知识'));
+    assert.ok(zhTags.includes('以人为本智能制造'));
+    assert.ok(zhTags.includes('工业5.0'));
+    assert.ok(zhTags.includes('人机协作'));
+    assert.ok(zhTags.includes('人机共生'));
 
     // 3. Related papers ranking & cross-language matching
     const make = (id, title, topics, doi = '', authors = ['Xinyu Li'], kws = []) => ({

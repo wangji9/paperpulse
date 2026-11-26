@@ -300,8 +300,8 @@ const CONCEPT_RULES: ConceptRule[] = [
   },
   {
     id: 'kw_agentic',
-    label: '智能体AI与多智能体 (Agentic AI)',
-    shortLabel: 'Agentic AI / 多智能体',
+    label: '智能体与多智能体协作',
+    shortLabel: '多智能体',
     category: 'method',
     patterns: [
       /agentic\s+ai/i,
@@ -312,8 +312,8 @@ const CONCEPT_RULES: ConceptRule[] = [
   },
   {
     id: 'kw_rag',
-    label: '多模态检索增强 (RAG)',
-    shortLabel: '多模态RAG',
+    label: '多模态检索增强',
+    shortLabel: '多模态检索',
     category: 'method',
     patterns: [
       /^rag$/i,
@@ -325,37 +325,65 @@ const CONCEPT_RULES: ConceptRule[] = [
   },
   {
     id: 'kw_tacit',
-    label: '隐性知识与元知识显性化',
-    shortLabel: '隐性知识转化',
+    label: '隐性知识',
+    shortLabel: '隐性知识',
     category: 'paradigm',
     patterns: [
       /(?:visual\s+)?tacit\s+knowledge/i,
+      /隐性知识/,
+    ],
+  },
+  {
+    id: 'kw_knowledge_transform',
+    label: '知识转化与外化',
+    shortLabel: '知识转化与外化',
+    category: 'paradigm',
+    patterns: [
+      /knowledge\s+(?:explicitation|externalization|transformation|lifecycle)/i,
       /meta-?knowledge/i,
-      /knowledge\s+(?:explicitation|externalization|transformation)/i,
-      /隐性知识|元知识|知识显性化|知识转化|知识外化/,
+      /元知识|知识显性化|知识转化|知识外化|知识生命周期/,
     ],
   },
   {
     id: 'kw_hrc',
-    label: '人机/人智协作 (HRC/HAI)',
-    shortLabel: '人机/人智协作',
+    label: '人机协作与共生',
+    shortLabel: '人机协作',
     category: 'paradigm',
     patterns: [
-      /human-?(?:robot|machine|ai)\s+(?:collaboration|teaming|symbiosis|interaction)/i,
-      /人机协作|人智协作|人机协同|人机共生|人-ai/i,
+      /human-?(?:robot|machine|ai)\s+(?:collaboration|teaming|interaction)/i,
+      /人机协作|人智协作|人机协同|人-ai/i,
+    ],
+  },
+  {
+    id: 'kw_symbiosis',
+    label: '人机共生',
+    shortLabel: '人机共生',
+    category: 'paradigm',
+    patterns: [
+      /human-?(?:machine|ai|robot)\s+symbiosis/i,
+      /人机共生/,
     ],
   },
   {
     id: 'kw_hcsm',
-    label: '人本智能制造 (Industry 5.0)',
-    shortLabel: '人本智造 / 工业5.0',
+    label: '以人为本智能制造',
+    shortLabel: '以人为本智能制造',
     category: 'paradigm',
     patterns: [
       /human-?centric\s+smart\s+manufacturing/i,
-      /industry\s*5\.0/i,
       /cognitive\s+manufacturing/i,
       /cognitive\s+mass\s+personalization/i,
-      /人本(?:智能)?制造|以人为中心的智能制造|人在回路智能制造|工业5\.0|认知制造/,
+      /人本(?:智能)?制造|以人为(?:本|中心)的?智能制造|人在回路智能制造|认知制造/,
+    ],
+  },
+  {
+    id: 'kw_ind5',
+    label: '工业5.0',
+    shortLabel: '工业5.0',
+    category: 'paradigm',
+    patterns: [
+      /industry\s*5\.0/i,
+      /工业\s*5\.0/,
     ],
   },
   {
@@ -644,4 +672,139 @@ export function extractCanonicalPaperKeywords(paper: {
   }
 
   return [...seen.values()];
+}
+
+const EN_ZH_PHRASE_MAP: Array<[RegExp, string]> = [
+  [/smart\s+manufacturing|intelligent\s+manufacturing/i, '智能制造'],
+  [/human-?in-?the-?loop/i, '人在回路'],
+  [/knowledge\s+lifecycle/i, '知识生命周期'],
+  [/knowledge\s+externali[sz]ation/i, '知识外化'],
+  [/knowledge\s+transformation/i, '知识转化'],
+  [/knowledge\s+acquisition/i, '知识获取'],
+  [/knowledge\s+representation/i, '知识表示'],
+  [/knowledge\s+transfer/i, '知识传递'],
+  [/knowledge\s+utilization/i, '知识利用'],
+  [/cognitive\s+pathway/i, '认知路径图'],
+  [/custom\s+apparel|apparel\s+production/i, '定制服装制造'],
+  [/question\s+answering|qa\s+system/i, '智能问答系统'],
+  [/embodied\s+ai|embodied\s+intelligence/i, '具身智能'],
+  [/computer\s+vision|visual\s+inspection/i, '计算机视觉'],
+  [/reinforcement\s+learning/i, '强化学习'],
+  [/transfer\s+learning/i, '迁移学习'],
+  [/deep\s+learning/i, '深度学习'],
+  [/machine\s+learning/i, '机器学习'],
+  [/graph\s+neural\s+network|gnn\b/i, '图神经网络'],
+  [/vision-?language\s+model|vlm\b/i, '视觉语言模型'],
+  [/diffusion\s+model/i, '扩散模型'],
+  [/generative\s+(?:ai|design)/i, '生成式设计'],
+  [/topology\s+optimization/i, '拓扑优化'],
+  [/design\s+optimization/i, '设计优化'],
+  [/product\s+design/i, '产品设计'],
+  [/industrial\s+design/i, '工业设计'],
+  [/interaction\s+design|ux\s+design/i, '交互设计'],
+  [/sustainable\s+(?:design|manufacturing)/i, '可持续制造'],
+  [/human-?robot\s+interaction/i, '人机交互'],
+  [/robot(?:ic)?\s+manipulation/i, '机器人操作'],
+  [/task\s+(?:planning|scheduling|rescheduling)/i, '任务规划调度'],
+  [/defect\s+detection|quality\s+inspection/i, '缺陷质检'],
+  [/predictive\s+maintenance|prognostics/i, '预测性维护'],
+  [/ontology/i, '本体建模'],
+  [/semantic\s+retrieval|information\s+retrieval/i, '语义检索'],
+  [/causal\s+reasoning|causal\s+inference/i, '因果推理'],
+  [/explainable\s+ai|xai\b/i, '可解释人工智能'],
+  [/edge\s+computing|industrial\s+iot|iiot\b/i, '工业物联网'],
+  [/robotics|autonomous\s+robot/i, '智能机器人'],
+  [/3d\s+reconstruction|point\s+cloud/i, '三维视觉'],
+  [/ergonomics|human\s+factors/i, '人因工程'],
+  [/supply\s+chain/i, '智能供应链'],
+  [/assembly\s+process/i, '装配工艺'],
+  [/disassembly\s+planning|remanufacturing/i, '智能拆解与再制造'],
+  [/machine\s+tools?/i, '智能机床运维'],
+  [/bridge\s+weathering\s+steel|weathering\s+steel/i, '桥梁耐候钢'],
+];
+
+const TOPIC_ZH_FALLBACK: Record<string, string> = {
+  LLM: '大语言模型',
+  KnowledgeGraph: '知识图谱',
+  ComputerVision: '计算机视觉',
+  Multimodal: '多模态融合',
+  EmbodiedAI: '具身智能',
+  AgentCollaboration: '多智能体协作',
+  HumanAICollaboration: '人机协作',
+  ProductDesign: '产品设计',
+  DesignOptimization: '设计优化',
+  InteractionDesign: '交互设计',
+  SustainableDesign: '可持续设计',
+};
+
+/**
+ * Convert a single raw keyword into a clean Chinese tag (returns null for noisy/untranslated English fragments).
+ */
+export function toChineseKeywordTag(raw: string): string | null {
+  const info = canonicalizeKeyword(raw);
+  if (info && /[\u3400-\u9fff]/.test(info.shortLabel)) {
+    return info.shortLabel;
+  }
+  const cleaned = raw
+    .normalize('NFKC')
+    .replace(/[\u00a0\t\r\n]+/g, ' ')
+    .replace(/^[#•·\-\s]+|[\s.,;；。]+$/g, '')
+    .trim();
+  if (!cleaned || cleaned.length < 2) return null;
+  if (NOISY_KEYWORDS.has(cleaned.toLowerCase())) return null;
+
+  for (const [re, zh] of EN_ZH_PHRASE_MAP) {
+    if (re.test(cleaned)) return zh;
+  }
+
+  // Keep already-Chinese tags (clean away stray English parentheticals)
+  if (/[\u3400-\u9fff]/.test(cleaned)) {
+    const pureZh = cleaned.replace(/\s*\([A-Za-z0-9\s/-]{2,24}\)\s*/g, '').trim();
+    if (pureZh.length >= 2 && pureZh.length <= 18 && !NOISY_KEYWORDS.has(pureZh.toLowerCase())) {
+      return pureZh;
+    }
+  }
+  return null;
+}
+
+/**
+ * Return clean, deduplicated, 100% Chinese keyword tags for any paper.
+ */
+export function extractChineseKeywordTags(
+  paper: {
+    title?: string;
+    titleZh?: string;
+    abstractOriginal?: string;
+    abstractZh?: string;
+    keywords?: string[];
+    keywordsOriginal?: string[];
+    topics?: string[];
+  },
+  maxCount = 8
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (zh: string | null) => {
+    if (!zh) return;
+    const norm = zh.replace(/\s+/g, '').toLowerCase();
+    if (!norm || seen.has(norm)) return;
+    seen.add(norm);
+    out.push(zh);
+  };
+
+  for (const raw of [...(paper.keywordsOriginal || []), ...(paper.keywords || [])]) {
+    push(toChineseKeywordTag(raw));
+  }
+  for (const info of extractCanonicalPaperKeywords(paper)) {
+    if (/[\u3400-\u9fff]/.test(info.shortLabel)) {
+      push(info.shortLabel);
+    }
+  }
+  if (out.length < 3 && Array.isArray(paper.topics)) {
+    for (const t of paper.topics) {
+      push(TOPIC_ZH_FALLBACK[t] || null);
+    }
+  }
+
+  return out.slice(0, maxCount);
 }

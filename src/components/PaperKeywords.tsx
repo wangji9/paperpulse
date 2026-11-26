@@ -1,13 +1,62 @@
-import { chineseText } from '../lib/chinese';
+import { extractChineseKeywordTags } from '../lib/canonicalize';
 import type { AcademicPaper } from '../types/paper';
 
-const LABELS = { metadata:'仅元数据 · 待解析摘要', abstract:'摘要已解析', full_text:'PDF正文已解析', unavailable:'暂无法获取原文' };
-export function PaperKeywords({paper}: {paper:AcademicPaper}) {
-  return <div className="my-3 space-y-2 rounded-xl border border-indigo-100 bg-indigo-50/30 p-3 dark:border-indigo-900 dark:bg-indigo-950/20">
-    <div className="flex flex-wrap items-center gap-2 text-xs"><span className="font-semibold text-indigo-600">论文关键词</span><span className="text-slate-400">{paper.keywordSource==='author'?'原文关键词及补充提取':paper.keywordSource==='manual'?'管理员维护':'根据标题与摘要自动提取'}</span>{paper.parsing && <span className="rounded-md bg-white px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">{LABELS[paper.parsing.status]}{paper.parsing.pages?` · ${paper.parsing.pages}页`:''}</span>}{(paper.localPdfUrl || paper.pdfUrl) && <a href={paper.localPdfUrl || paper.pdfUrl} target="_blank" rel="noreferrer" className="font-medium text-indigo-600">{paper.localPdfUrl?'站内原文PDF ↗':'开放PDF ↗'}</a>}{paper.codeUrl && <a href={paper.codeUrl} target="_blank" rel="noreferrer" className="font-medium text-teal-600">代码仓库 ↗</a>}</div>
-    <div className="flex flex-wrap gap-1.5">{(paper.keywords||[]).map(k=><span key={k} className="rounded-full border border-indigo-100 bg-white px-2.5 py-1 text-xs text-indigo-700 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300">{chineseText(k)}</span>)}{!paper.keywords?.length&&<span className="text-xs text-slate-400">关键词待提取</span>}</div>
-    {paper.upload&&<p className="text-xs text-slate-500">PDF上传者：{paper.upload.displayName}（{paper.upload.username}） · {paper.upload.uploadedAt.slice(0,10)} · {paper.upload.fileName}</p>}
-    {paper.localization&&<div className="text-xs text-slate-500"><span className={paper.localization.status==='complete'?'text-teal-700 dark:text-teal-300':'text-amber-700 dark:text-amber-300'}>{paper.localization.status==='complete'?'中文译文已更新':'部分译文等待重试，已保留可用原文'}</span><details className="mt-1"><summary className="cursor-pointer">原文与译文核对（机器翻译）</summary><div className="mt-2 space-y-3">{Object.entries(paper.localization.fields).filter(([key,value])=>['titleZh','digestSummary','anatomy.background','anatomy.problem','anatomy.currentStatus','anatomy.proposedMethod','anatomy.experimentalValidation','anatomy.conclusion'].includes(key)&&value.source!==value.translated).map(([key,value])=><div key={key} className="rounded-lg border border-slate-200 bg-white p-3 leading-6 dark:border-slate-700 dark:bg-slate-900"><p className="font-medium text-slate-700 dark:text-slate-200">{{titleZh:'题名',digestSummary:'摘要解读','anatomy.background':'研究背景','anatomy.problem':'核心问题','anatomy.currentStatus':'研究现状','anatomy.proposedMethod':'提出方法','anatomy.experimentalValidation':'实验验证','anatomy.conclusion':'结论'}[key]}</p><p className="mt-1 whitespace-pre-line break-words">原文：{value.source}</p><p className="mt-1 whitespace-pre-line break-words text-slate-800 dark:text-slate-200">译文：{value.translated}</p></div>)}</div></details></div>}
-    {Boolean(paper.parsing?.warnings.length)&&<details className="text-xs text-slate-500"><summary className="cursor-pointer">原文获取说明</summary>{paper.parsing!.warnings.map((w,i)=><p key={i} className="mt-1 break-words">{w}</p>)}</details>}
-  </div>;
+const LABELS = {
+  metadata: '仅元数据',
+  abstract: '摘要已解析',
+  full_text: '全文已解析',
+  unavailable: '暂无法获取原文',
+};
+
+export function PaperKeywords({ paper }: { paper: AcademicPaper }) {
+  const tags = extractChineseKeywordTags(paper, 8);
+
+  return (
+    <div className="my-2 space-y-1.5 rounded-xl border border-indigo-100/90 bg-indigo-50/30 px-3 py-2 dark:border-indigo-900 dark:bg-indigo-950/20">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="font-semibold text-indigo-700 dark:text-indigo-300">关键词：</span>
+        {tags.length > 0 ? (
+          tags.map((k) => (
+            <span
+              key={k}
+              className="rounded-full border border-indigo-100 bg-white px-2.5 py-0.5 font-medium text-indigo-700 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300"
+            >
+              #{k}#
+            </span>
+          ))
+        ) : (
+          <span className="text-slate-400">待提取</span>
+        )}
+        <div className="ml-auto flex flex-wrap items-center gap-2 text-slate-500">
+          {paper.parsing && (
+            <span className="rounded-md bg-white px-2 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {LABELS[paper.parsing.status]}
+              {paper.parsing.pages ? ` · ${paper.parsing.pages}页` : ''}
+            </span>
+          )}
+          {(paper.localPdfUrl || paper.pdfUrl) && (
+            <a
+              href={paper.localPdfUrl || paper.pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            >
+              {paper.localPdfUrl ? '站内PDF ↗' : '开放PDF ↗'}
+            </a>
+          )}
+          {paper.codeUrl && (
+            <a href={paper.codeUrl} target="_blank" rel="noreferrer" className="font-medium text-teal-600 hover:underline">
+              代码 ↗
+            </a>
+          )}
+        </div>
+      </div>
+
+      {paper.upload && (
+        <p className="text-slate-500">
+          PDF上传者：{paper.upload.displayName}（{paper.upload.username}） · {paper.upload.uploadedAt.slice(0, 10)} · {paper.upload.fileName}
+        </p>
+      )}
+    </div>
+  );
 }
