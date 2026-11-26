@@ -1,32 +1,50 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BarChart3,
-  BookOpen,
+  BookmarkCheck,
+  BookmarkPlus,
   BookOpenCheck,
   Compass,
   Edit3,
   ExternalLink,
   FileText,
   FileUp,
+  Flame,
   FolderPlus,
+  Hash,
+  Heart,
   Library,
+  MessageSquare,
   Plus,
+  Repeat2,
   Search,
+  Send,
   Sparkles,
   Trash2,
   Upload,
+  Users,
   X,
 } from 'lucide-react';
-import type { AcademicPaper, LabEntry, ResearchTopic } from '../types/paper';
-import { labRequest, uploadLabPaperPdf } from '../lib/api';
+import type { AcademicPaper, EntryType, LabEntry, ResearchTopic, UserProfile } from '../types/paper';
+import { labRequest, repostPaperApi, unrepostPaperApi, uploadLabPaperPdf } from '../lib/api';
 import { TOPIC_META } from '../lib/constants';
-import { analyzeLab } from '../lib/labAnalysis';
+import { analyzeLab, type LabAnalysisResult } from '../lib/labAnalysis';
 import { PaperAbstract } from './PaperAbstract';
 import { LabTopicGraph } from './LabTopicGraph';
 import { PdfUploadModal } from './PdfUploadModal';
 import { RelatedPapers } from './RelatedPapers';
+import { CommentsAndThoughts } from './CommentsAndThoughts';
+import {
+  PaperSocialFootprintPanel,
+  formatRelativeTimeZh,
+  useCardReadingTracker,
+} from './SocialEngagement';
 import {
   MatlabAuthorContributionChart,
+  MatlabAuthorSocialBubbleChart,
+  MatlabAuthorThemeBubbleMatrix,
+  MatlabCoauthorAffinityHeatmap,
+  MatlabEngagementBubbleChart,
   MatlabGapOpportunityMatrix,
   MatlabJournalBarChart,
   MatlabKeywordBubbleChart,
@@ -34,17 +52,530 @@ import {
   MatlabTopicYearHeatmap,
 } from './MatlabCharts';
 
-export function LabLibrary({
-  pool,
-  darkMode,
-  onOpen,
-  onChanged,
-}: {
+interface LabLibraryProps {
   pool: AcademicPaper[];
+  currentUser: UserProfile | null;
   darkMode: boolean;
   onOpen: (p: AcademicPaper) => void;
   onChanged: () => void;
-}) {
+  onSocialUpdate: (paper: AcademicPaper) => void;
+  onLike: (id: string) => Promise<void>;
+  onLikeComment: (paperId: string, commentId: string) => Promise<void>;
+  onToggleMyKb: (paper: AcademicPaper, personalTags?: string[]) => Promise<void>;
+  onAddEntry: (
+    paperId: string,
+    payload: { content: string; entryType: EntryType; parentId?: string; replyToAuthor?: string }
+  ) => Promise<void>;
+  onEditEntry: (
+    paperId: string,
+    commentId: string,
+    payload: { content: string; entryType: EntryType }
+  ) => Promise<void>;
+  onDeleteEntry: (paperId: string, commentId: string) => Promise<void>;
+}
+
+const AVATAR_PALETTE = ['#0072BD', '#D95319', '#7E2F8E', '#77AC30', '#0F766E', '#A2142F', '#2563EB'];
+function pickAuthorColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+}
+
+/* ============================================================================
+ * Weibo-Style Lab Publication Post Card
+ * ============================================================================ */
+const LabWeiboCard: React.FC<{
+  entry: LabEntry;
+  index: number;
+  analysis: LabAnalysisResult;
+  currentUser: UserProfile | null;
+  darkMode: boolean;
+  attachingPdf: boolean;
+  onOpen: (p: AcademicPaper) => void;
+  onEdit: (e: LabEntry) => void;
+  onDelete: (paperId: string) => void;
+  onOpenPdf: (p: AcademicPaper) => void;
+  onAttachPdf: (paperId: string) => void;
+  onSelectQuery: (q: string) => void;
+  onPaperUpdated: (p: AcademicPaper) => void;
+  onLike: (id: string) => Promise<void>;
+  onLikeComment: (paperId: string, commentId: string) => Promise<void>;
+  onToggleMyKb: (paper: AcademicPaper) => Promise<void>;
+  onAddEntry: LabLibraryProps['onAddEntry'];
+  onEditEntry: LabLibraryProps['onEditEntry'];
+  onDeleteEntry: LabLibraryProps['onDeleteEntry'];
+}> = ({
+  entry,
+  index,
+  analysis,
+  currentUser,
+  darkMode,
+  attachingPdf,
+  onOpen,
+  onEdit,
+  onDelete,
+  onOpenPdf,
+  onAttachPdf,
+  onSelectQuery,
+  onPaperUpdated,
+  onLike,
+  onLikeComment,
+  onToggleMyKb,
+  onAddEntry,
+  onEditEntry,
+  onDeleteEntry,
+}) => {
+  const cardRef = useRef<HTMLElement | null>(null);
+  const paper = entry.paper;
+  useCardReadingTracker(paper.id, cardRef, Boolean(currentUser), onPaperUpdated);
+
+  const [showComments, setShowComments] = useState(false);
+  const [showRepostBox, setShowRepostBox] = useState(false);
+  const [repostNote, setRepostNote] = useState('');
+  const [repostAlsoCollect, setRepostAlsoCollect] = useState(false);
+  const [reposting, setReposting] = useState(false);
+  const [liking, setLiking] = useState(false);
+
+  const yr = entry.publicationYear || Number((paper.publishedDate || '').slice(0, 4)) || '';
+  const canonAuthors = analysis.paperCanonicalAuthors.get(paper.id) || [];
+  const canonKws = analysis.paperCanonicalKeywords.get(paper.id) || [];
+  const leadAuthor = canonAuthors[0]?.shortName || paper.authors[0] || '课题组';
+  const leadColor = pickAuthorColor(leadAuthor);
+
+  const reposts = paper.reposts || [];
+  const likers = paper.likers || [];
+  const collectors = paper.collectors || [];
+  const comments = paper.comments || [];
+
+  const handleRepostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReposting(true);
+    try {
+      const updated = await repostPaperApi(paper.id, repostNote.trim());
+      onPaperUpdated(updated);
+      if (repostAlsoCollect && !paper.inMyKb) {
+        await onToggleMyKb(paper);
+      }
+      setRepostNote('');
+      setShowRepostBox(false);
+    } finally {
+      setReposting(false);
+    }
+  };
+
+  const handleCancelRepost = async () => {
+    setReposting(true);
+    try {
+      const updated = await unrepostPaperApi(paper.id);
+      onPaperUpdated(updated);
+    } finally {
+      setReposting(false);
+    }
+  };
+
+  const handleLikeClick = async () => {
+    setLiking(true);
+    try {
+      await onLike(paper.id);
+    } finally {
+      setLiking(false);
+    }
+  };
+
+  return (
+    <article
+      ref={cardRef}
+      className={`rounded-2xl border transition-shadow hover:shadow-md ${
+        darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-xs'
+      }`}
+    >
+      {/* 1. Weibo Author & Metadata Header */}
+      <div className="flex items-start justify-between gap-3 px-5 pt-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onSelectQuery(leadAuthor)}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-xs ring-2 ring-white dark:ring-slate-900"
+            style={{ backgroundColor: leadColor }}
+            title={`筛选 ${leadAuthor} 的全部成果`}
+          >
+            {leadAuthor.slice(0, 2)}
+          </button>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onSelectQuery(leadAuthor)}
+                className="text-sm font-bold text-slate-900 hover:text-[#0072BD] dark:text-white dark:hover:text-sky-400"
+              >
+                {leadAuthor}
+              </button>
+              <span className="rounded-md bg-[#0072BD] px-2 py-0.5 font-mono text-[11px] font-bold text-white">
+                {yr || '年份待核'}
+              </span>
+              <span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
+                {paper.journal}
+              </span>
+              {paper.localPdfUrl && (
+                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                  全文PDF
+                </span>
+              )}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
+              <span>#{index + 1}</span>
+              <span>·</span>
+              <span>
+                合作作者：
+                {canonAuthors.length > 0
+                  ? canonAuthors.map((a, idx) => (
+                      <React.Fragment key={a.id}>
+                        {idx > 0 && '、'}
+                        <button
+                          type="button"
+                          onClick={() => onSelectQuery(a.shortName)}
+                          className="hover:text-[#0072BD] hover:underline"
+                        >
+                          {a.shortName}
+                        </button>
+                      </React.Fragment>
+                    ))
+                  : paper.authors.join('、')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {entry.canEdit && (
+          <div className="flex shrink-0 items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => onEdit(entry)}
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-[#0072BD] dark:hover:bg-slate-800"
+            >
+              <Edit3 className="h-3.5 w-3.5" /> 修订
+            </button>
+            <button
+              type="button"
+              onClick={() => onDelete(entry.paperId)}
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-800"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> 移出
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Weibo Main Content Body */}
+      <div className="px-5 pt-3 pb-3">
+        <button
+          type="button"
+          onClick={() => onOpen(paper)}
+          className="block text-left text-base font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-lg dark:text-white dark:hover:text-sky-400"
+        >
+          {paper.titleZh || paper.title}
+        </button>
+        {paper.titleZh && paper.title && paper.titleZh !== paper.title && (
+          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{paper.title}</p>
+        )}
+
+        {/* Clean Deduplicated Hashtags */}
+        {canonKws.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {canonKws.slice(0, 6).map((kw) => (
+              <button
+                key={kw.id}
+                type="button"
+                onClick={() => onSelectQuery(kw.shortLabel)}
+                className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-[#0072BD] hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300"
+              >
+                #{kw.shortLabel}#
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Full Paper Abstract */}
+        <PaperAbstract paper={paper} compact />
+
+        {/* Original Figures Preview Strip (if extracted) */}
+        {(paper.anatomy?.paperFigures?.length || 0) > 0 && (
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {paper.anatomy.paperFigures!.slice(0, 3).map((fig) => (
+              <button
+                key={fig.id}
+                type="button"
+                onClick={() => onOpen(paper)}
+                className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
+              >
+                <img
+                  src={fig.url}
+                  alt={fig.label}
+                  loading="lazy"
+                  className="h-28 w-full object-contain p-1 transition-transform group-hover:scale-[1.03]"
+                />
+                <span className="absolute bottom-1 left-1 rounded bg-slate-900/75 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  {fig.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Quick Resource Bar (Deep Read / PDF / DOI) */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() => onOpen(paper)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-3 py-1.5 font-semibold text-white hover:bg-[#005a96]"
+          >
+            <BookOpenCheck className="h-3.5 w-3.5" /> 精读与单篇图谱
+          </button>
+
+          {paper.localPdfUrl ? (
+            <button
+              type="button"
+              onClick={() => onOpenPdf(paper)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+            >
+              <FileText className="h-3.5 w-3.5" /> 在线全文 PDF
+            </button>
+          ) : (
+            <>
+              {paper.pdfUrl && (
+                <a
+                  href={paper.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 font-semibold text-teal-700 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-300"
+                >
+                  <FileText className="h-3.5 w-3.5" /> 公开 PDF
+                </a>
+              )}
+              {entry.canEdit && (
+                <button
+                  type="button"
+                  disabled={attachingPdf}
+                  onClick={() => onAttachPdf(entry.paperId)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
+                >
+                  <FileUp className="h-3.5 w-3.5" /> {attachingPdf ? '上传中…' : '关联 PDF'}
+                </button>
+              )}
+            </>
+          )}
+
+          {paper.doi && (
+            <a
+              href={`https://doi.org/${paper.doi.replace(/^https?:\/\/doi\.org\//i, '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> DOI
+            </a>
+          )}
+
+          {entry.citation && (
+            <details className="ml-auto text-[11px] text-slate-400">
+              <summary className="cursor-pointer hover:text-slate-600">引用格式</summary>
+              <p className="mt-1 max-w-xl rounded-lg bg-slate-50 p-2 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                {entry.citation}
+              </p>
+            </details>
+          )}
+        </div>
+
+        {/* Shared Repost Recommendation Strip (Visible to all members) */}
+        {reposts.length > 0 && (
+          <div
+            className={`mt-3 space-y-1.5 rounded-xl border px-3.5 py-2.5 text-xs ${
+              darkMode ? 'border-slate-800 bg-slate-800/50' : 'border-sky-100 bg-sky-50/50'
+            }`}
+          >
+            <div className="flex items-center gap-1.5 font-semibold text-[#0072BD] dark:text-sky-400">
+              <Repeat2 className="h-3.5 w-3.5" /> 组内转发推荐 ({reposts.length})
+            </div>
+            {reposts.slice(0, 4).map((rp) => (
+              <div key={rp.id} className="flex items-start gap-2">
+                <span
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                  style={{ backgroundColor: rp.avatarColor }}
+                >
+                  {rp.displayName.slice(0, 1)}
+                </span>
+                <div className="min-w-0 flex-1 leading-5">
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">{rp.displayName}</span>
+                  <span className="mx-1.5 text-[11px] text-slate-400">{formatRelativeTimeZh(rp.repostedAt)}</span>
+                  <span className="text-slate-600 dark:text-slate-300">
+                    {rp.note || '转发推荐了这篇课题组成果'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Visible Shared Social Footprint & Reader Bubble Strip */}
+        <PaperSocialFootprintPanel paper={paper} darkMode={darkMode} />
+      </div>
+
+      {/* 3. Classic Weibo 4-Column Social Action Footer */}
+      <div
+        className={`grid grid-cols-4 divide-x border-t text-xs font-semibold sm:text-sm ${
+          darkMode ? 'divide-slate-800 border-slate-800' : 'divide-slate-100 border-slate-100'
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShowRepostBox((v) => !v);
+            setShowComments(false);
+          }}
+          className={`flex items-center justify-center gap-1.5 py-2.5 transition ${
+            paper.repostedByMe
+              ? 'text-[#0072BD] dark:text-sky-400'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-[#0072BD] dark:text-slate-300 dark:hover:bg-slate-800/70'
+          }`}
+        >
+          <Repeat2 className="h-4 w-4" />
+          <span>转发{reposts.length > 0 ? ` ${reposts.length}` : ''}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setShowComments((v) => !v);
+            setShowRepostBox(false);
+          }}
+          className={`flex items-center justify-center gap-1.5 py-2.5 transition ${
+            showComments
+              ? 'text-indigo-600 dark:text-indigo-400'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800/70'
+          }`}
+        >
+          <MessageSquare className="h-4 w-4" />
+          <span>评论{comments.length > 0 ? ` ${comments.length}` : ''}</span>
+        </button>
+
+        <button
+          type="button"
+          disabled={liking}
+          onClick={() => void handleLikeClick()}
+          className={`flex items-center justify-center gap-1.5 py-2.5 transition ${
+            paper.likedByMe
+              ? 'text-rose-600'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-rose-600 dark:text-slate-300 dark:hover:bg-slate-800/70'
+          }`}
+        >
+          <Heart className={`h-4 w-4 ${paper.likedByMe ? 'fill-current' : ''}`} />
+          <span>点赞{likers.length > 0 ? ` ${likers.length}` : ''}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void onToggleMyKb(paper)}
+          className={`flex items-center justify-center gap-1.5 py-2.5 transition ${
+            paper.inMyKb
+              ? 'text-teal-700 dark:text-teal-400'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-teal-700 dark:text-slate-300 dark:hover:bg-slate-800/70'
+          }`}
+        >
+          {paper.inMyKb ? <BookmarkCheck className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
+          <span>收藏{collectors.length > 0 ? ` ${collectors.length}` : ''}</span>
+        </button>
+      </div>
+
+      {/* 4. Expandable Weibo Repost Composer */}
+      {showRepostBox && (
+        <form
+          onSubmit={(e) => void handleRepostSubmit(e)}
+          className={`border-t px-5 py-3.5 ${
+            darkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-100 bg-slate-50/70'
+          }`}
+        >
+          <div className="flex items-start gap-2.5">
+            <input
+              type="text"
+              value={repostNote}
+              onChange={(e) => setRepostNote(e.target.value)}
+              placeholder="附上一句转发推荐心得（选填），全组同学均可看到…"
+              className={`flex-1 rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#0072BD] ${
+                darkMode ? 'border-slate-700 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-900'
+              }`}
+            />
+            <button
+              type="submit"
+              disabled={reposting}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#0072BD] px-4 py-2 text-xs font-semibold text-white hover:bg-[#005a96] disabled:opacity-50"
+            >
+              <Send className="h-3.5 w-3.5" /> {reposting ? '转发中…' : '立即转发'}
+            </button>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <label className="inline-flex cursor-pointer items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={repostAlsoCollect}
+                onChange={(e) => setRepostAlsoCollect(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              同时收藏到我的知识库
+            </label>
+            {paper.repostedByMe && (
+              <button
+                type="button"
+                disabled={reposting}
+                onClick={() => void handleCancelRepost()}
+                className="text-rose-600 hover:underline"
+              >
+                撤销我的转发记录
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+
+      {/* 5. Expandable Weibo Bubble Comments & Thoughts */}
+      {showComments && (
+        <div
+          className={`border-t px-5 py-4 ${
+            darkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-100 bg-slate-50/70'
+          }`}
+        >
+          <CommentsAndThoughts
+            paperId={paper.id}
+            comments={paper.comments}
+            currentUser={currentUser}
+            darkMode={darkMode}
+            onToggleLike={onLikeComment}
+            onAdd={onAddEntry}
+            onEdit={onEditEntry}
+            onDelete={onDeleteEntry}
+          />
+        </div>
+      )}
+    </article>
+  );
+};
+
+/* ============================================================================
+ * Main LabLibrary Component
+ * ============================================================================ */
+export function LabLibrary({
+  pool,
+  currentUser,
+  darkMode,
+  onOpen,
+  onChanged,
+  onSocialUpdate,
+  onLike,
+  onLikeComment,
+  onToggleMyKb,
+  onAddEntry,
+  onEditEntry,
+  onDeleteEntry,
+}: LabLibraryProps) {
   const [entries, setEntries] = useState<LabEntry[]>([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -101,12 +632,35 @@ export function LabLibrary({
     };
   }, []);
 
-  const analysis = useMemo(() => analyzeLab(entries), [entries]);
+  // Merge live social state from global pool into lab entries so likes/comments/reposts update instantaneously!
+  const syncedEntries = useMemo(() => {
+    const poolMap = new Map(pool.map((p) => [p.id, p]));
+    return entries.map((e) => {
+      const fresh = poolMap.get(e.paperId);
+      if (!fresh) return e;
+      return {
+        ...e,
+        paper: {
+          ...fresh,
+          ...e.metadata,
+          labMetadata: e.metadata,
+        },
+      };
+    });
+  }, [entries, pool]);
 
-  // Smart bilingual search: matches canonical Chinese/English authors, keywords, titles, journal & abstract
+  const handleLabPaperUpdated = (updated: AcademicPaper) => {
+    setEntries((prev) =>
+      prev.map((e) => (e.paperId === updated.id ? { ...e, paper: { ...updated, ...e.metadata, labMetadata: e.metadata } } : e))
+    );
+    onSocialUpdate(updated);
+  };
+
+  const analysis = useMemo(() => analyzeLab(syncedEntries), [syncedEntries]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return entries.filter((e) => {
+    return syncedEntries.filter((e) => {
       const yr = String(e.publicationYear || e.paper.publishedDate.slice(0, 4));
       if (year !== 'all' && yr !== year) return false;
       if (topic !== 'all' && !(e.paper.topics || []).includes(topic as ResearchTopic)) return false;
@@ -134,7 +688,48 @@ export function LabLibrary({
         .toLowerCase();
       return blob.includes(q);
     });
-  }, [entries, query, year, topic, analysis]);
+  }, [syncedEntries, query, year, topic, analysis]);
+
+  // Right-sidebar Weibo Plaza data: Hot Papers & Latest Repost Stream
+  const hotPapers = useMemo(() => {
+    return [...syncedEntries]
+      .map((e) => {
+        const p = e.paper;
+        const heat =
+          (p.likers?.length || 0) * 3 +
+          (p.reposts?.length || 0) * 4 +
+          (p.comments?.length || 0) * 3 +
+          (p.collectors?.length || 0) * 2 +
+          (p.totalVisits || 0);
+        return { entry: e, heat };
+      })
+      .sort((a, b) => b.heat - a.heat || (b.entry.publicationYear || 0) - (a.entry.publicationYear || 0))
+      .slice(0, 6);
+  }, [syncedEntries]);
+
+  const recentReposts = useMemo(() => {
+    const list: Array<{
+      id: string;
+      displayName: string;
+      avatarColor: string;
+      note: string;
+      repostedAt: string;
+      paper: AcademicPaper;
+    }> = [];
+    for (const e of syncedEntries) {
+      for (const rp of e.paper.reposts || []) {
+        list.push({
+          id: rp.id,
+          displayName: rp.displayName,
+          avatarColor: rp.avatarColor,
+          note: rp.note,
+          repostedAt: rp.repostedAt,
+          paper: e.paper,
+        });
+      }
+    }
+    return list.sort((a, b) => b.repostedAt.localeCompare(a.repostedAt)).slice(0, 8);
+  }, [syncedEntries]);
 
   const mutate = async (method: string, id: string, body?: unknown, successMsg?: string) => {
     setSaving(true);
@@ -203,7 +798,7 @@ export function LabLibrary({
     try {
       const next = await uploadLabPaperPdf(targetId, file);
       setEntries(next);
-      setNotice('原文 PDF 已成功关联到该课题组文献，可直接在线阅读全文');
+      setNotice('原文 PDF 已关联，可直接在线全文阅读');
       setTimeout(() => setNotice(''), 3500);
       onChanged();
     } catch (err) {
@@ -242,7 +837,7 @@ export function LabLibrary({
         onChange={(e) => void handleAttachPdfSelected(e)}
       />
 
-      {/* Hero Header */}
+      {/* Clean Compact Header */}
       <header
         className={`rounded-2xl border p-5 ${
           darkMode
@@ -250,18 +845,19 @@ export function LabLibrary({
             : 'border-sky-200/70 bg-gradient-to-r from-sky-50/70 via-white to-indigo-50/60 shadow-sm'
         }`}
       >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#0072BD]/10 px-3 py-1 text-xs font-bold tracking-wider text-[#0072BD] dark:bg-sky-500/20 dark:text-sky-300">
-              <Library className="h-3.5 w-3.5" />
-              课题组成果知识库 · 脉络梳理 · 潜在研究方向挖掘
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0072BD] text-white shadow-sm">
+              <Library className="h-5 w-5" />
             </div>
-            <h1 className="mt-2.5 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              课题组文献库与研究演进观测台
-            </h1>
-            <p className="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              系统收录课题组发表论文（支持上传 PDF、手动新增、修订与全文在线阅读），自动完成中英文作者/热词合并去重，并以 MATLAB 学术图表与动态力导向知识图谱梳理既有方向并探测潜在研究空白。
-            </p>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+                课题组文献库
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                课题组成果交流广场 · 方向演进梳理 · 合作网络与前沿探索
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -269,7 +865,7 @@ export function LabLibrary({
               <FolderPlus className="h-4 w-4 text-[#0072BD]" /> 从公共池归档
             </button>
             <button type="button" className={btnOutline} onClick={openCreate}>
-              <Plus className="h-4 w-4 text-teal-600" /> 手动录入文献
+              <Plus className="h-4 w-4 text-teal-600" /> 手动录入
             </button>
             <button
               type="button"
@@ -281,14 +877,14 @@ export function LabLibrary({
           </div>
         </div>
 
-        {/* KPI Cards (All Deduplicated!) */}
+        {/* KPI Bar */}
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
-            ['课题组论文', entries.length, '篇', '#0072BD'],
+            ['课题组论文', syncedEntries.length, '篇', '#0072BD'],
             ['时间跨度', analysis.years.length ? `${analysis.years[0]}–${analysis.years[analysis.years.length - 1]}` : '—', '', '#7E2F8E'],
-            ['核心作者(已去重)', analysis.canonicalAuthors.length, '人', '#D95319'],
-            ['发表期刊载体', analysis.journals.length, '种', '#77AC30'],
-            ['合并核心热词', analysis.canonicalKeywords.length, '个', '#EDB120'],
+            ['核心作者', analysis.canonicalAuthors.length, '人', '#D95319'],
+            ['发表期刊', analysis.journals.length, '种', '#77AC30'],
+            ['核心热词', analysis.canonicalKeywords.length, '个', '#EDB120'],
             ['潜在空白方向', analysis.potentialDirections.length, '项', '#A2142F'],
           ].map(([label, val, unit, color]) => (
             <div
@@ -334,8 +930,8 @@ export function LabLibrary({
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'
             }`}
           >
-            <BookOpen className="h-4 w-4" />
-            成果目录与全文阅读 ({entries.length})
+            <Flame className="h-4 w-4" />
+            学术动态流 ({syncedEntries.length})
           </button>
           <button
             type="button"
@@ -347,29 +943,23 @@ export function LabLibrary({
             }`}
           >
             <BarChart3 className="h-4 w-4" />
-            知识图谱 · MATLAB统计 · 潜在方向分析
+            知识图谱与可视化分析
           </button>
         </div>
-
-        <span className="text-xs text-slate-500">
-          {mode === 'analysis'
-            ? '中英文作者与热词已自动合并去重；所有 MATLAB 图表均支持导出高清矢量 SVG / PNG'
-            : '支持中英文作者别名（如“李心雨”与“Xinyu Li”）、标题、期刊、摘要与热词联动检索'}
-        </span>
       </div>
 
       {/* Archive from Public Pool Drawer */}
       {archiveOpen && (
         <section className={cardCls}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-bold">从公共文献池选择并归档到课题组文献库</h2>
+            <h2 className="text-base font-bold">从公共文献池归档到课题组文献库</h2>
             <button type="button" onClick={() => setArchiveOpen(false)} className="rounded p-1 text-slate-400 hover:bg-slate-100">
               <X className="h-4 w-4" />
             </button>
           </div>
           <input
             className={inputCls}
-            placeholder="输入论文标题、作者或期刊搜索公共池文献…"
+            placeholder="搜索公共池文献标题、作者或期刊…"
             value={archiveQuery}
             onChange={(e) => setArchiveQuery(e.target.value)}
           />
@@ -377,7 +967,7 @@ export function LabLibrary({
             {pool
               .filter(
                 (p) =>
-                  !entries.some((e) => e.paperId === p.id) &&
+                  !syncedEntries.some((e) => e.paperId === p.id) &&
                   `${p.title} ${p.titleZh} ${p.authors.join(' ')} ${p.journal}`
                     .toLowerCase()
                     .includes(archiveQuery.toLowerCase())
@@ -406,257 +996,276 @@ export function LabLibrary({
       )}
 
       {mode === 'papers' ? (
-        /* ==================== VIEW 1: LAB PUBLICATIONS CATALOG ==================== */
-        <div className="space-y-4">
-          {/* Filter Bar */}
-          <div className={`${cardCls} flex flex-wrap items-center gap-3 !p-3.5`}>
-            <div className="relative min-w-[240px] flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                aria-label="搜索课题组成果"
-                className={`${inputCls} pl-9`}
-                placeholder="搜索题名、作者（支持中英文如 李心雨 / Wang J）、期刊、关键词或摘要…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-            <select
-              aria-label="成果年份"
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            >
-              <option value="all">全部年份</option>
-              {[...analysis.years].reverse().map((y) => (
-                <option key={y} value={String(y)}>
-                  {y} 年
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="成果研究方向"
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            >
-              <option value="all">全部研究方向</option>
-              {analysis.topics.map(([t, n]) => (
-                <option key={t} value={t}>
-                  {TOPIC_META[t]?.label || t} ({n})
-                </option>
-              ))}
-            </select>
-            {(query || year !== 'all' || topic !== 'all') && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  setYear('all');
-                  setTopic('all');
-                }}
-                className="text-xs font-semibold text-[#0072BD] hover:underline"
+        /* ==================== VIEW 1: WEIBO-STYLE LAB ACADEMIC FEED + RIGHT PLAZA SIDEBAR ==================== */
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+          {/* Main Weibo Stream */}
+          <div className="space-y-4 xl:col-span-8">
+            {/* Clean Filter Bar */}
+            <div className={`${cardCls} flex flex-wrap items-center gap-3 !p-3.5`}>
+              <div className="relative min-w-[200px] flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  aria-label="搜索课题组成果"
+                  className={`${inputCls} pl-9`}
+                  placeholder="搜索题名、作者、期刊、关键词或摘要"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+              <select
+                aria-label="成果年份"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
               >
-                清除筛选
-              </button>
-            )}
-            <span className="ml-auto font-mono text-xs text-slate-500">
-              当前展示 {filtered.length} / {entries.length} 篇
-            </span>
-          </div>
-
-          {!loaded && <p className="py-10 text-center text-sm text-slate-500">正在读取课题组成果…</p>}
-          {loaded && !filtered.length && (
-            <div className={`${cardCls} py-12 text-center text-sm text-slate-500`}>
-              暂无匹配成果。可清除筛选条件，或上传课题组 PDF / 手动录入新文献。
+                <option value="all">全部年份</option>
+                {[...analysis.years].reverse().map((y) => (
+                  <option key={y} value={String(y)}>
+                    {y} 年
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="成果研究方向"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              >
+                <option value="all">全部方向</option>
+                {analysis.topics.map(([t, n]) => (
+                  <option key={t} value={t}>
+                    {TOPIC_META[t]?.label || t} ({n})
+                  </option>
+                ))}
+              </select>
+              {(query || year !== 'all' || topic !== 'all') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('');
+                    setYear('all');
+                    setTopic('all');
+                  }}
+                  className="text-xs font-semibold text-[#0072BD] hover:underline"
+                >
+                  清除筛选
+                </button>
+              )}
+              <span className="ml-auto font-mono text-xs text-slate-500">
+                {filtered.length} / {syncedEntries.length} 篇
+              </span>
             </div>
-          )}
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {filtered.map((e, idx) => {
-              const yr = e.publicationYear || Number(e.paper.publishedDate.slice(0, 4)) || '';
-              const canonAuthors = analysis.paperCanonicalAuthors.get(e.paper.id) || [];
-              const canonKws = analysis.paperCanonicalKeywords.get(e.paper.id) || [];
-              return (
-                <article key={e.paperId} className={`${cardCls} flex flex-col justify-between transition-shadow hover:shadow-md`}>
-                  <div>
-                    {/* Top Row */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className="rounded-md bg-[#0072BD] px-2 py-0.5 font-mono font-bold text-white">
-                          {yr || '年份待核'}
-                        </span>
-                        <span className="rounded-md bg-teal-50 px-2 py-0.5 font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
-                          {e.paper.journal}
-                        </span>
-                        {e.paper.localPdfUrl && (
-                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                            站内全文PDF就绪
-                          </span>
-                        )}
-                      </div>
+            {!loaded && <p className="py-10 text-center text-sm text-slate-500">正在加载课题组成果…</p>}
+            {loaded && !filtered.length && (
+              <div className={`${cardCls} py-12 text-center text-sm text-slate-500`}>
+                暂无匹配成果。
+              </div>
+            )}
 
-                      {e.canEdit && (
-                        <div className="flex shrink-0 items-center gap-2 text-xs">
-                          <button
-                            type="button"
-                            onClick={() => openEdit(e)}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-[#0072BD] hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-slate-800"
-                          >
-                            <Edit3 className="h-3.5 w-3.5" /> 修订
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm('确认将该文献移出课题组文献库吗？（公共池文献与个人收藏会保留）')) {
-                                void mutate('DELETE', e.paperId, undefined, '已移出课题组文献库');
-                              }
-                            }}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" /> 移出
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <button
-                      type="button"
-                      onClick={() => onOpen(e.paper)}
-                      className="mt-2.5 block text-left text-base font-bold leading-snug text-slate-900 hover:text-[#0072BD] sm:text-lg dark:text-white dark:hover:text-sky-400"
-                    >
-                      {idx + 1}. {e.paper.titleZh || e.paper.title}
-                    </button>
-                    {e.paper.titleZh && e.paper.title && e.paper.titleZh !== e.paper.title && (
-                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{e.paper.title}</p>
-                    )}
-
-                    {/* Deduplicated Bilingual Authors */}
-                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-                      <span className="font-medium text-slate-500">作者：</span>
-                      {canonAuthors.length > 0 ? (
-                        canonAuthors.map((au) => (
-                          <button
-                            key={au.id}
-                            type="button"
-                            title={`点击筛选 ${au.displayName} 的全部成果`}
-                            onClick={() => setQuery(au.shortName)}
-                            className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-medium text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                          >
-                            {au.shortName}
-                          </button>
-                        ))
-                      ) : (
-                        <span className="text-slate-600 dark:text-slate-300">{e.paper.authors.join('；')}</span>
-                      )}
-                    </div>
-
-                    {/* Deduplicated Bilingual Keywords */}
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {canonKws.slice(0, 7).map((kw) => (
-                        <button
-                          key={kw.id}
-                          type="button"
-                          onClick={() => setQuery(kw.shortLabel)}
-                          className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300"
-                        >
-                          #{kw.shortLabel}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Full Paper Abstract */}
-                    <PaperAbstract paper={e.paper} compact />
-                  </div>
-
-                  {/* Action Footer */}
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => onOpen(e.paper)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#005a96]"
-                      >
-                        <BookOpenCheck className="h-3.5 w-3.5" /> 精读与单篇关联图谱
-                      </button>
-
-                      {e.paper.localPdfUrl ? (
-                        <button
-                          type="button"
-                          onClick={() => setPdfPaper(e.paper)}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-                        >
-                          <FileText className="h-3.5 w-3.5" /> 在线阅读全文 PDF
-                        </button>
-                      ) : (
-                        <>
-                          {e.paper.pdfUrl && (
-                            <a
-                              href={e.paper.pdfUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-300"
-                            >
-                              <FileText className="h-3.5 w-3.5" /> 访问公开 PDF
-                            </a>
-                          )}
-                          {e.canEdit && (
-                            <button
-                              type="button"
-                              disabled={attachingPaperId === e.paperId}
-                              onClick={() => triggerAttachPdf(e.paperId)}
-                              className={btnOutline}
-                            >
-                              <FileUp className="h-3.5 w-3.5" />
-                              {attachingPaperId === e.paperId ? '上传中…' : '关联全文 PDF'}
-                            </button>
-                          )}
-                        </>
-                      )}
-
-                      {e.paper.doi && (
-                        <a
-                          href={`https://doi.org/${e.paper.doi.replace(/^https?:\/\/doi\.org\//i, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={btnOutline}
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" /> DOI 原文
-                        </a>
-                      )}
-                    </div>
-
-                    <details className="mt-2.5 text-xs leading-5 text-slate-500">
-                      <summary className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300">
-                        引用格式与收录说明
-                      </summary>
-                      <div className="mt-1.5 space-y-1 rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800/60">
-                        {e.citation && <p>{e.citation}</p>}
-                        {e.notes && <p className="text-indigo-700 dark:text-indigo-300">研究备注：{e.notes}</p>}
-                        <p className="text-[11px] text-slate-400">
-                          来源：{e.source} · 归档时间：{new Date(e.addedAt).toLocaleDateString('zh-CN')}
-                        </p>
-                      </div>
-                    </details>
-                  </div>
-                </article>
-              );
-            })}
+            <div className="space-y-4">
+              {filtered.map((entry, idx) => (
+                <LabWeiboCard
+                  key={entry.paperId}
+                  entry={entry}
+                  index={idx}
+                  analysis={analysis}
+                  currentUser={currentUser}
+                  darkMode={darkMode}
+                  attachingPdf={attachingPaperId === entry.paperId}
+                  onOpen={onOpen}
+                  onEdit={openEdit}
+                  onDelete={(pid) => {
+                    if (window.confirm('确认将该文献移出课题组文献库吗？（公共池与个人收藏会保留）')) {
+                      void mutate('DELETE', pid, undefined, '已移出课题组文献库');
+                    }
+                  }}
+                  onOpenPdf={setPdfPaper}
+                  onAttachPdf={triggerAttachPdf}
+                  onSelectQuery={setQuery}
+                  onPaperUpdated={handleLabPaperUpdated}
+                  onLike={onLike}
+                  onLikeComment={onLikeComment}
+                  onToggleMyKb={(p) => onToggleMyKb(p)}
+                  onAddEntry={onAddEntry}
+                  onEditEntry={onEditEntry}
+                  onDeleteEntry={onDeleteEntry}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* Right Sticky Weibo Plaza Sidebar */}
+          <aside className="space-y-4 xl:col-span-4">
+            <div className="space-y-4 xl:sticky xl:top-[84px]">
+              {/* 1. Hot Lab Topics (#Hashtags) */}
+              <section className={cardCls}>
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                    <Hash className="h-4 w-4 text-[#0072BD]" /> 热门研究话题
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setMode('analysis')}
+                    className="text-xs font-medium text-[#0072BD] hover:underline"
+                  >
+                    热词气泡 →
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {analysis.canonicalKeywords.slice(0, 14).map((kw) => (
+                    <button
+                      key={kw.info.id}
+                      type="button"
+                      onClick={() => setQuery(kw.info.shortLabel)}
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                        query === kw.info.shortLabel
+                          ? 'border-[#0072BD] bg-[#0072BD] text-white'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                      }`}
+                    >
+                      #{kw.info.shortLabel}# <span className="font-mono opacity-75">{kw.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {/* 2. Latest Group Reposts & Recommendations */}
+              <section className={cardCls}>
+                <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                  <Repeat2 className="h-4 w-4 text-[#D95319]" /> 组内最新转发推荐
+                </h2>
+                {recentReposts.length === 0 ? (
+                  <p className="text-xs text-slate-500">暂无转发推荐，点击任意论文底部「转发」分享您的阅读心得。</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recentReposts.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-slate-100 bg-slate-50/70 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-800/40"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                              style={{ backgroundColor: item.avatarColor }}
+                            >
+                              {item.displayName.slice(0, 1)}
+                            </span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-100">{item.displayName}</span>
+                          </div>
+                          <span className="text-[11px] text-slate-400">{formatRelativeTimeZh(item.repostedAt)}</span>
+                        </div>
+                        {item.note && (
+                          <p className="mt-1.5 leading-5 text-slate-700 dark:text-slate-200">“{item.note}”</p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onOpen(item.paper)}
+                          className="mt-1.5 block w-full truncate text-left font-medium text-[#0072BD] hover:underline dark:text-sky-400"
+                        >
+                          ↗ {item.paper.titleZh || item.paper.title}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* 3. Lab Hot Engagement Leaderboard */}
+              <section className={cardCls}>
+                <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                  <Flame className="h-4 w-4 text-rose-500" /> 组内热度榜
+                </h2>
+                <div className="space-y-2.5">
+                  {hotPapers.map(({ entry, heat }, idx) => (
+                    <button
+                      key={entry.paperId}
+                      type="button"
+                      onClick={() => onOpen(entry.paper)}
+                      className="flex w-full items-start gap-2.5 text-left group"
+                    >
+                      <span
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded font-mono text-[11px] font-bold ${
+                          idx < 3 ? 'bg-[#D95319] text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                        }`}
+                      >
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="line-clamp-2 text-xs font-medium leading-5 text-slate-800 group-hover:text-[#0072BD] dark:text-slate-200 dark:group-hover:text-sky-400">
+                          {entry.paper.titleZh || entry.paper.title}
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-slate-400">
+                          <span>{entry.publicationYear}</span>
+                          <span>·</span>
+                          <span>赞 {entry.paper.likers?.length || 0}</span>
+                          <span>评 {entry.paper.comments?.length || 0}</span>
+                          <span>转 {entry.paper.reposts?.length || 0}</span>
+                          {heat > 0 && <span className="text-rose-500">热 {heat}</span>}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {/* 4. Core Authors Quick Social Cards */}
+              <section className={cardCls}>
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                    <Users className="h-4 w-4 text-[#7E2F8E]" /> 核心成员与角色
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setMode('analysis')}
+                    className="text-xs font-medium text-[#0072BD] hover:underline"
+                  >
+                    社交图谱 →
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {analysis.canonicalAuthors.slice(0, 10).map((a) => (
+                    <button
+                      key={a.info.id}
+                      type="button"
+                      onClick={() => setQuery(a.info.shortName)}
+                      className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-2 text-left hover:border-[#0072BD] dark:border-slate-800 dark:bg-slate-800/50"
+                    >
+                      <span
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                        style={{ backgroundColor: pickAuthorColor(a.info.shortName) }}
+                      >
+                        {a.info.shortName.slice(0, 1)}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">
+                          {a.info.shortName}
+                        </div>
+                        <div className="truncate text-[10px] text-slate-500">
+                          {a.socialRole} · {a.count}篇
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </aside>
         </div>
       ) : (
-        /* ==================== VIEW 2: KNOWLEDGE GRAPH, MATLAB CHARTS & FRONTIER INSIGHTS ==================== */
+        /* ==================== VIEW 2: KNOWLEDGE GRAPHS, SOCIAL ATTRIBUTES & FRONTIER ANALYTICS ==================== */
         <div className="space-y-6">
-          {/* 1. Three-Stage Research Trajectory Synthesis */}
+          {/* 1. Three-Stage Research Evolution Trajectory */}
           <section className={cardCls}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Compass className="h-5 w-5 text-[#0072BD]" />
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                  课题组既有研究方向系统梳理（2023 → 2027 演进脉络）
+                  课题组既有研究脉络梳理（2023 → 2027）
                 </h2>
               </div>
-              <span className="text-xs text-slate-500">基于全部 {entries.length} 篇已收录成果自动聚合</span>
+              <span className="font-mono text-xs text-slate-500">{syncedEntries.length} 篇成果</span>
             </div>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -674,7 +1283,7 @@ export function LabLibrary({
                     >
                       {c.period}
                     </span>
-                    <span className="font-mono text-xs font-semibold text-slate-500">{c.papers.length} 篇成果</span>
+                    <span className="font-mono text-xs font-semibold text-slate-500">{c.papers.length} 篇</span>
                   </div>
                   <h3 className="mt-2.5 text-sm font-bold text-slate-900 dark:text-white">{c.title}</h3>
                   <p className="mt-1.5 text-xs leading-6 text-slate-600 dark:text-slate-300">{c.summary}</p>
@@ -705,7 +1314,7 @@ export function LabLibrary({
             </div>
           </section>
 
-          {/* 2. Flagship 4-Mode Interactive Dynamic Force-Directed Knowledge Graph */}
+          {/* 2. 5-Mode Dynamic Force-Directed Knowledge Graph */}
           <LabTopicGraph
             analysis={analysis}
             darkMode={darkMode}
@@ -715,7 +1324,7 @@ export function LabLibrary({
             onFilterByTopic={(t) => jumpFilter({ topic: t, year: 'all', query: '' })}
           />
 
-          {/* 3. MATLAB Publication-Quality Statistical Charts Grid (Fig. 1 — Fig. 5) */}
+          {/* 3. Publication & Author Contribution Charts (Fig. 1 — Fig. 4) */}
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             <MatlabPublicationTimeline
               yearCounts={analysis.yearCounts}
@@ -739,22 +1348,47 @@ export function LabLibrary({
             />
           </div>
 
+          {/* 4. Hot-Word Bubble Field (Fig. 5) */}
           <MatlabKeywordBubbleChart
             analysis={analysis}
             darkMode={darkMode}
             onSelectKeyword={(kw) => jumpFilter({ query: kw, year: 'all', topic: 'all' })}
           />
 
-          {/* 4. Technology × Industrial Domain Coverage Matrix & Potential Research Frontier Discovery (Fig. 6) */}
+          {/* 5. NEW: Author Social Attributes, Division-of-Labor Bubble Matrix, Affinity Heatmap & Engagement Bubble Chart (Fig. 7 — Fig. 10) */}
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <MatlabAuthorSocialBubbleChart
+              analysis={analysis}
+              darkMode={darkMode}
+              onSelectAuthor={(a) => jumpFilter({ query: a, year: 'all', topic: 'all' })}
+            />
+            <MatlabAuthorThemeBubbleMatrix
+              analysis={analysis}
+              darkMode={darkMode}
+              onSelectAuthor={(a) => jumpFilter({ query: a, year: 'all', topic: 'all' })}
+            />
+            <MatlabCoauthorAffinityHeatmap
+              analysis={analysis}
+              darkMode={darkMode}
+              onSelectAuthor={(a) => jumpFilter({ query: a, year: 'all', topic: 'all' })}
+            />
+            <MatlabEngagementBubbleChart
+              analysis={analysis}
+              darkMode={darkMode}
+              onOpenPaper={onOpen}
+            />
+          </div>
+
+          {/* 6. Technology × Industrial Domain Coverage Matrix & Frontier Opportunities (Fig. 6a & 6b) */}
           <MatlabGapOpportunityMatrix analysis={analysis} darkMode={darkMode} onOpenPaper={onOpen} />
 
-          {/* 5. External Related Literature Recommendations for the Lab */}
+          {/* 7. External Related Literature Recommendations */}
           <RelatedPapers
             seeds={analysis.papers}
             pool={pool}
             darkMode={darkMode}
             onOpen={onOpen}
-            title="面向课题组研究方向的外部高关联前沿文献推荐"
+            title="面向课题组方向的外部高关联文献推荐"
           />
         </div>
       )}
@@ -786,14 +1420,7 @@ export function LabLibrary({
             className={`${cardCls} max-h-[90vh] w-full max-w-3xl space-y-3 overflow-y-auto`}
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div>
-                <h2 className="text-base font-bold">{editing ? '修订课题组文献信息' : '手动录入课题组新文献'}</h2>
-                <p className="text-xs text-slate-500">
-                  {editing
-                    ? '修订仅作用于课题组条目，不影响公共文献池原始记录'
-                    : '录入后可随时点击「关联全文 PDF」上传对应论文 PDF 并在线全文阅读'}
-                </p>
-              </div>
+              <h2 className="text-base font-bold">{editing ? '修订课题组文献信息' : '手动录入课题组新文献'}</h2>
               <button
                 type="button"
                 onClick={() => {
@@ -828,7 +1455,7 @@ export function LabLibrary({
             </div>
 
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">
-              关键词（分号或逗号分隔，中英文均自动合并去重）
+              关键词（分号或逗号分隔）
               <input
                 className={`${inputCls} mt-1`}
                 value={draft.keywords || ''}
@@ -855,7 +1482,7 @@ export function LabLibrary({
             </label>
 
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">
-              研究方向梳理与组内备注
+              组内备注
               <textarea
                 className={`${inputCls} mt-1 min-h-16`}
                 value={draft.notes || ''}

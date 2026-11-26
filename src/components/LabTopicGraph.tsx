@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpenCheck, Compass, Flame, GitBranch, Network, Users } from 'lucide-react';
+import { BookOpenCheck, Compass, Flame, GitBranch, Network, Share2, Users } from 'lucide-react';
 import type { AcademicPaper, ResearchTopic } from '../types/paper';
 import { TOPIC_META } from '../lib/constants';
 import type { LabAnalysisResult } from '../lib/labAnalysis';
 import { DynamicKnowledgeGraph, type KnowledgeGraphLink, type KnowledgeGraphNode, type GraphLegendItem } from './DynamicKnowledgeGraph';
 import { MATLAB_COLORS, parulaColor } from './MatlabCharts';
 
-type LabGraphMode = 'heterogeneous' | 'coauthor' | 'keywords' | 'frontier';
+type LabGraphMode = 'heterogeneous' | 'coauthor' | 'social_clusters' | 'keywords' | 'frontier';
 
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
@@ -32,8 +32,8 @@ export const LabTopicGraph: React.FC<{
     let subtitle = '';
 
     if (mode === 'heterogeneous') {
-      title = '课题组全景异构力导向知识图谱（研究方向 — 成果论文 — 合并热词）';
-      subtitle = '实时物理力导向聚类；六边形为研究方向，圆节点为课题组论文（颜色映射发表年份），菱形为中英文合并核心热词';
+      title = '课题组全景知识图谱';
+      subtitle = '研究方向 — 成果论文 — 核心热词动态力导向关联';
       legend = [
         { group: 'topic', label: '研究方向枢纽', color: MATLAB_COLORS[3], shape: 'hex' },
         { group: 'paper_new', label: '2026-2027 前沿成果', color: MATLAB_COLORS[1], shape: 'circle' },
@@ -111,8 +111,8 @@ export const LabTopicGraph: React.FC<{
         }
       });
     } else if (mode === 'coauthor') {
-      title = '课题组作者协作力导向网络（已自动合并中英文同名与缩写）';
-      subtitle = '节点半径映射发文总量，连线粗细表示共同署名次数；如 李心雨/Xinyu Li/Li, X.* 已合并为单一节点';
+      title = '作者协作力导向网络';
+      subtitle = '共同署名合作强度与核心学术枢纽';
       legend = [
         { group: 'pi', label: '课题组核心导师 / 通讯枢纽', color: MATLAB_COLORS[1], shape: 'hex' },
         { group: 'lead', label: '主力一作研究者', color: MATLAB_COLORS[0], shape: 'circle' },
@@ -150,9 +150,67 @@ export const LabTopicGraph: React.FC<{
           animated: e.weight >= 6,
         });
       });
+    } else if (mode === 'social_clusters') {
+      title = '作者社交属性与研发子群图谱';
+      subtitle = '按主攻工业场景聚类，展示枢纽导师、跨方向桥梁与子团队分工关联';
+      const domColorMap = new Map<string, string>(
+        analysis.domainAxes.map((ax, i) => [ax.id, MATLAB_COLORS[i % MATLAB_COLORS.length]])
+      );
+      legend = analysis.domainAxes.map((ax) => ({
+        group: ax.id,
+        label: ax.shortLabel,
+        color: domColorMap.get(ax.id) || MATLAB_COLORS[0],
+        shape: 'circle',
+      }));
+
+      const topAuthors = analysis.canonicalAuthors.slice(0, 22);
+      const idSet = new Set(topAuthors.map((a) => a.info.id));
+
+      // Domain cluster anchors in a clean ring
+      const domAnchors = new Map<string, { x: number; y: number }>();
+      analysis.domainAxes.forEach((ax, i) => {
+        const ang = (i / Math.max(analysis.domainAxes.length, 1)) * Math.PI * 2 - Math.PI / 2;
+        domAnchors.set(ax.id, { x: 490 + Math.cos(ang) * 245, y: 270 + Math.sin(ang) * 155 });
+      });
+
+      topAuthors.forEach((a) => {
+        const anchor = domAnchors.get(a.primaryDomainId) || { x: 490, y: 270 };
+        const isHub = a.socialRole === '枢纽导师';
+        const isBridge = a.socialRole === '跨方向桥梁';
+        nodes.push({
+          id: `a:${a.info.id}`,
+          label: a.info.shortName,
+          subLabel: `${a.socialRole} · 合作${a.coauthorDegree}人 · 发文${a.count}篇`,
+          group: a.primaryDomainId,
+          color: domColorMap.get(a.primaryDomainId) || MATLAB_COLORS[0],
+          radius: 14 + Math.sqrt(a.coauthorDegree + a.count) * 3.1,
+          shape: isHub ? 'hex' : isBridge ? 'diamond' : 'circle',
+          badge: String(a.coauthorDegree),
+          targetX: isHub ? 490 : anchor.x,
+          targetY: isHub ? 270 : anchor.y,
+          meta: { kind: 'author', stat: a },
+        });
+      });
+
+      analysis.coauthors.forEach((e) => {
+        if (!idSet.has(e.sourceId) || !idSet.has(e.targetId)) return;
+        const sa = topAuthors.find((x) => x.info.id === e.sourceId);
+        const ta = topAuthors.find((x) => x.info.id === e.targetId);
+        const crossCluster = sa && ta && sa.primaryDomainId !== ta.primaryDomainId;
+        links.push({
+          id: `sc:${e.sourceId}-${e.targetId}`,
+          source: `a:${e.sourceId}`,
+          target: `a:${e.targetId}`,
+          weight: e.weight,
+          label: crossCluster ? `跨群合作 ${e.weight} 篇` : `组内合作 ${e.weight} 篇`,
+          color: crossCluster ? MATLAB_COLORS[1] : domColorMap.get(sa?.primaryDomainId || '') || MATLAB_COLORS[0],
+          dashed: Boolean(crossCluster),
+          animated: Boolean(crossCluster && e.weight >= 3),
+        });
+      });
     } else if (mode === 'keywords') {
-      title = '中英文去重关键词共现与技术演进力导向图谱（Parula 年份色标）';
-      subtitle = '节点大小＝出现频次，颜色由深蓝(2023)→明黄(2027)表征演进年代，连线强度＝同篇共现次数';
+      title = '热词共现与演进图谱';
+      subtitle = '节点大小对应频次，Parula色带映射活跃年份（2023→2027）';
       legend = [
         { group: 'y23', label: '2023-2024 早期基石概念', color: parulaColor(0.12), shape: 'circle' },
         { group: 'y25', label: '2025 融合演进概念', color: parulaColor(0.52), shape: 'circle' },
@@ -293,7 +351,8 @@ export const LabTopicGraph: React.FC<{
 
   const modeButtons: Array<{ id: LabGraphMode; label: string; icon: React.ReactNode }> = [
     { id: 'heterogeneous', label: '全景知识图谱', icon: <Network className="h-3.5 w-3.5" /> },
-    { id: 'coauthor', label: '作者协作网络(去重)', icon: <Users className="h-3.5 w-3.5" /> },
+    { id: 'coauthor', label: '作者协作网络', icon: <Users className="h-3.5 w-3.5" /> },
+    { id: 'social_clusters', label: '作者社交群落', icon: <Share2 className="h-3.5 w-3.5" /> },
     { id: 'keywords', label: '热词共现演进', icon: <Flame className="h-3.5 w-3.5" /> },
     { id: 'frontier', label: '脉络与潜在前沿', icon: <Compass className="h-3.5 w-3.5" /> },
   ];

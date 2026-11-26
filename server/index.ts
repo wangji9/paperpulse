@@ -30,7 +30,9 @@ import {
   recordPaperReading,
   recordSyncLog,
   registerUser,
+  removePaperRepost,
   removeUserKbItem,
+  repostPaper,
   saveAutoSyncConfig,
   toggleCommentLike,
   togglePaperLike,
@@ -722,6 +724,35 @@ app.post('/api/papers/:id/like', (req, res) => {
     return;
   }
   const paper = togglePaperLike(user.id, String(req.params.id));
+  if (!paper) {
+    res.status(404).json({ error: 'Paper not found' });
+    return;
+  }
+  res.json({ paper });
+});
+
+app.post('/api/papers/:id/repost', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  const note = typeof req.body?.note === 'string' ? req.body.note : '';
+  const paper = repostPaper(user.id, String(req.params.id), note);
+  if (!paper) {
+    res.status(404).json({ error: 'Paper not found' });
+    return;
+  }
+  res.status(201).json({ paper });
+});
+
+app.delete('/api/papers/:id/repost', (req, res) => {
+  const user = extractUser(req);
+  if (!user) {
+    res.status(401).json({ error: '请先登录' });
+    return;
+  }
+  const paper = removePaperRepost(user.id, String(req.params.id), user.role === 'admin');
   if (!paper) {
     res.status(404).json({ error: 'Paper not found' });
     return;

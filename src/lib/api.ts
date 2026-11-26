@@ -352,6 +352,27 @@ export async function toggleLikePaper(paperId: string): Promise<AcademicPaper> {
   return data.paper;
 }
 
+export async function repostPaperApi(paperId: string, note = ''): Promise<AcademicPaper> {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/repost`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ note }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '转发失败');
+  return data.paper;
+}
+
+export async function unrepostPaperApi(paperId: string): Promise<AcademicPaper> {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/repost`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '取消转发失败');
+  return data.paper;
+}
+
 export async function toggleLikeComment(paperId: string, commentId: string): Promise<PaperComment> {
   const res = await apiFetch(
     `/api/papers/${encodeURIComponent(paperId)}/comments/${encodeURIComponent(commentId)}/like`,

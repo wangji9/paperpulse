@@ -11,6 +11,7 @@ import type {
   PaperComment,
   PaperLikerBadge,
   PaperReaderTrace,
+  PaperRepostBadge,
   ReadingStatus,
   ReadingAnalytics,
   UserProfile,
@@ -127,6 +128,16 @@ db.exec(`
     PRIMARY KEY (user_id, comment_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS paper_reposts (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    paper_id TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS sync_logs (
@@ -422,6 +433,7 @@ export function deleteUserById(userId: string): boolean {
   db.prepare('DELETE FROM reading_sessions WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM paper_reads WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM paper_likes WHERE user_id = ?').run(userId);
+  db.prepare('DELETE FROM paper_reposts WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM comment_likes WHERE user_id = ?').run(userId);
   const res = db.prepare('DELETE FROM users WHERE id = ?').run(userId);
   return Number(res.changes) > 0;
@@ -497,6 +509,7 @@ function getCollectorsMap(): Map<string, PaperCollectorBadge[]> {
 interface SocialHydrationContext {
   collectorsMap: Map<string, PaperCollectorBadge[]>;
   likesMap: Map<string, PaperLikerBadge[]>;
+  repostsMap: Map<string, PaperRepostBadge[]>;
   readsMap: Map<string, Array<{
     userId: string;
     username: string;
@@ -515,6 +528,7 @@ function emptySocialContext(): SocialHydrationContext {
   return {
     collectorsMap: new Map(),
     likesMap: new Map(),
+    repostsMap: new Map(),
     readsMap: new Map(),
     commentLikesMap: new Map(),
     userColorsMap: new Map(),
@@ -604,10 +618,38 @@ function getSocialHydrationContext(): SocialHydrationContext {
     commentLikesMap.set(cid, arr);
   }
 
+  const repostRows = db
+    .prepare(`
+      SELECT rp.id, rp.paper_id, rp.user_id, rp.note, rp.created_at,
+             u.username, u.display_name, u.avatar_color, u.user_tags
+      FROM paper_reposts rp
+      JOIN users u ON rp.user_id = u.id
+      ORDER BY rp.created_at DESC
+    `)
+    .all() as Record<string, unknown>[];
+  const repostsMap = new Map<string, PaperRepostBadge[]>();
+  for (const r of repostRows) {
+    const pid = String(r.paper_id);
+    let uTags: string[] = [];
+    try { uTags = JSON.parse(String(r.user_tags || '[]')); } catch {}
+    const arr = repostsMap.get(pid) || [];
+    arr.push({
+      id: String(r.id),
+      userId: String(r.user_id),
+      username: String(r.username),
+      displayName: String(r.display_name),
+      avatarColor: String(r.avatar_color || '#4F46E5'),
+      userTags: uTags,
+      note: String(r.note || ''),
+      repostedAt: String(r.created_at),
+    });
+    repostsMap.set(pid, arr);
+  }
+
   const userRows = db.prepare('SELECT id, avatar_color FROM users').all() as Array<{ id: string; avatar_color: string }>;
   const userColorsMap = new Map(userRows.map((u) => [String(u.id), String(u.avatar_color || '#4F46E5')]));
 
-  return { collectorsMap, likesMap, readsMap, commentLikesMap, userColorsMap };
+  return { collectorsMap, likesMap, repostsMap, readsMap, commentLikesMap, userColorsMap };
 }
 
 /* ---------- Reading Footprints & Social Likes ---------- */
@@ -661,6 +703,32 @@ export function togglePaperLike(userId: string, paperId: string): AcademicPaper 
     const now = new Date().toISOString();
     db.prepare('INSERT INTO paper_likes (user_id, paper_id, created_at) VALUES (?, ?, ?)').run(userId, paperId, now);
 
+  }
+  return getPaperById(paperId, userId);
+}
+
+export function repostPaper(userId: string, paperId: string, note = ''): AcademicPaper | null {
+  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+  if (!exists) return null;
+  const id = `rp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const now = new Date().toISOString();
+  db.prepare('INSERT INTO paper_reposts (id, user_id, paper_id, note, created_at) VALUES (?, ?, ?, ?, ?)').run(
+    id,
+    userId,
+    paperId,
+    String(note || '').trim().slice(0, 500),
+    now
+  );
+  return getPaperById(paperId, userId);
+}
+
+export function removePaperRepost(userId: string, paperId: string, isAdmin = false): AcademicPaper | null {
+  const exists = db.prepare('SELECT id FROM papers WHERE id = ?').get(paperId);
+  if (!exists) return null;
+  if (isAdmin) {
+    db.prepare('DELETE FROM paper_reposts WHERE paper_id = ? AND user_id = ?').run(paperId, userId);
+  } else {
+    db.prepare('DELETE FROM paper_reposts WHERE paper_id = ? AND user_id = ?').run(paperId, userId);
   }
   return getPaperById(paperId, userId);
 }
@@ -751,6 +819,7 @@ function hydratePaper(
   const comments = rawComments.map((rc) => hydrateCommentRow(rc, ctx, currentUserId));
   const collectors = ctx.collectorsMap.get(pid) || [];
   const likers = ctx.likesMap.get(pid) || [];
+  const reposts = ctx.repostsMap.get(pid) || [];
   const rawReads = ctx.readsMap.get(pid) || [];
   const myEntry = currentUserId ? collectors.find((c) => c.userId === currentUserId) : undefined;
 
@@ -852,6 +921,8 @@ function hydratePaper(
     collectors,
     likers,
     likedByMe: currentUserId ? likers.some((l) => l.userId === currentUserId) : false,
+    reposts,
+    repostedByMe: currentUserId ? reposts.some((rp) => rp.userId === currentUserId) : false,
     readers,
     totalVisits,
     totalDwellSeconds,
@@ -1001,6 +1072,8 @@ export function upsertPaper(paper: AcademicPaper, currentUserId?: string): Acade
     collectors: _c,
     likers: _l,
     likedByMe: _lm,
+    reposts: _rp,
+    repostedByMe: _rpm,
     readers: _r,
     totalVisits: _tv,
     totalDwellSeconds: _td,

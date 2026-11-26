@@ -183,8 +183,7 @@ export const MatlabPublicationTimeline: React.FC<{
   return (
     <MatlabFigureShell
       figNum="Fig. 1"
-      title="课题组年度发表趋势与累计增长曲线（Dual-Axis）"
-      subtitle="左轴：年度发文篇数（MATLAB Blue）；右轴：累计成果规模（MATLAB Vermilion），点击柱体按年份筛选"
+      title="年度发表趋势与累计增长"
       filename="paperpulse-lab-fig1-timeline"
       darkMode={darkMode}
       svgRef={svgRef}
@@ -347,8 +346,7 @@ export const MatlabJournalBarChart: React.FC<{
   return (
     <MatlabFigureShell
       figNum="Fig. 2"
-      title="发表期刊与核心载体分布（MATLAB barh）"
-      subtitle="按中英文期刊名规范化合并统计；点击条形筛选该期刊全部成果"
+      title="发表期刊与核心载体分布"
       filename="paperpulse-lab-fig2-journals"
       darkMode={darkMode}
       svgRef={svgRef}
@@ -463,8 +461,7 @@ export const MatlabTopicYearHeatmap: React.FC<{
   return (
     <MatlabFigureShell
       figNum="Fig. 3"
-      title="研究方向 × 年份演进热力矩阵（Parula Colormap）"
-      subtitle="采用 MATLAB imagesc + Parula 连续色标，直观展现课题组研究重心随时间跃迁；点击任意色块查看支撑文献"
+      title="研究方向 × 年份演进热力矩阵"
       filename="paperpulse-lab-fig3-topic-heatmap"
       darkMode={darkMode}
       svgRef={svgRef}
@@ -582,7 +579,7 @@ export const MatlabAuthorContributionChart: React.FC<{
 
   const W = 620;
   const rowH = 22;
-  const pad = { top: 26, right: 56, bottom: 40, left: 146 };
+  const pad = { top: 36, right: 56, bottom: 40, left: 146 };
   const plotH = Math.max(190, items.length * rowH + 8);
   const H = plotH + pad.top + pad.bottom;
   const plotW = W - pad.left - pad.right;
@@ -597,8 +594,7 @@ export const MatlabAuthorContributionChart: React.FC<{
   return (
     <MatlabFigureShell
       figNum="Fig. 4"
-      title="核心作者贡献排行（已自动合并中英文同名）"
-      subtitle="如 李心雨 / Xinyu Li / Li, X.* 已自动归并去重；区分「一作/通讯核心贡献」与「合作署名」"
+      title="核心作者贡献排行"
       filename="paperpulse-lab-fig4-authors"
       darkMode={darkMode}
       svgRef={svgRef}
@@ -654,13 +650,13 @@ export const MatlabAuthorContributionChart: React.FC<{
           );
         })}
 
-        {/* Legend */}
-        <g transform={`translate(${pad.left + plotW - 210}, ${pad.top + 6})`}>
-          <rect width={202} height={22} rx={2} fill={plotBg} fillOpacity={0.92} stroke={gridInk} strokeWidth={0.9} />
-          <rect x={7} y={6} width={10} height={9} fill={MATLAB_COLORS[1]} />
-          <text x={21} y={14} fontSize="10" fill={axisInk}>一作/通讯</text>
-          <rect x={88} y={6} width={10} height={9} fill={MATLAB_COLORS[0]} />
-          <text x={102} y={14} fontSize="10" fill={axisInk}>共同署名参与</text>
+        {/* Legend neatly placed above plot box so it never overlaps top bar */}
+        <g transform={`translate(${pad.left + plotW - 204}, 6)`}>
+          <rect width={204} height={22} rx={3} fill={plotBg} stroke={gridInk} strokeWidth={0.9} />
+          <rect x={8} y={6} width={10} height={9} fill={MATLAB_COLORS[1]} />
+          <text x={22} y={14} fontSize="10" fill={axisInk}>一作/通讯</text>
+          <rect x={92} y={6} width={10} height={9} fill={MATLAB_COLORS[0]} />
+          <text x={106} y={14} fontSize="10" fill={axisInk}>共同署名参与</text>
         </g>
 
         <text x={pad.left + plotW / 2} y={H - 8} textAnchor="middle" fontSize="11" fontWeight="600" fill={axisInk}>
@@ -692,19 +688,25 @@ export const MatlabKeywordBubbleChart: React.FC<{
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [hovered, setHovered] = useState<KwBubbleNode | null>(null);
 
-  const W = 740;
-  const H = 360;
+  const W = 760;
+  const H = 430;
+  const boxX = 12;
+  const boxY = 12;
+  const boxW = W - 92;
+  const boxH = H - 24;
   const minYear = Math.min(...analysis.years, 2023);
   const maxYear = Math.max(...analysis.years, 2027);
   const spanYear = Math.max(1, maxYear - minYear);
 
   const bubbles = useMemo<KwBubbleNode[]>(() => {
-    const top = analysis.canonicalKeywords.slice(0, 26);
+    const top = analysis.canonicalKeywords.slice(0, 20);
     const maxCnt = Math.max(...top.map((k) => k.count), 1);
+    const cx0 = boxX + boxW / 2;
+    const cy0 = boxY + boxH / 2;
     const nodes: KwBubbleNode[] = top.map((k, idx) => {
-      const r = 22 + Math.sqrt(k.count / maxCnt) * 32;
+      const r = 24 + Math.sqrt(k.count / maxCnt) * 28;
       const angle = idx * 2.39996;
-      const rad = 28 + idx * 5.2;
+      const rad = 26 + idx * 7.2;
       return {
         id: k.info.id,
         label: k.info.label,
@@ -713,32 +715,33 @@ export const MatlabKeywordBubbleChart: React.FC<{
         avgYear: k.avgYear,
         category: k.info.category,
         r,
-        x: (W - 70) / 2 + Math.cos(angle) * rad,
-        y: H / 2 + Math.sin(angle) * rad * 0.6,
+        x: cx0 + Math.cos(angle) * rad,
+        y: cy0 + Math.sin(angle) * rad * 0.58,
       };
     });
     const sim = forceSimulation(nodes)
-      .force('center', forceCenter((W - 72) / 2, H / 2))
-      .force('charge', forceManyBody().strength(6))
-      .force('x', forceX<KwBubbleNode>((W - 72) / 2).strength(0.08))
-      .force('y', forceY<KwBubbleNode>(H / 2).strength(0.16))
-      .force('collide', forceCollide<KwBubbleNode>((d) => d.r + 3.5).iterations(4))
+      .force('center', forceCenter(cx0, cy0))
+      .force('charge', forceManyBody().strength(-14))
+      .force('x', forceX<KwBubbleNode>(cx0).strength(0.06))
+      .force('y', forceY<KwBubbleNode>(cy0).strength(0.11))
+      .force('collide', forceCollide<KwBubbleNode>((d) => d.r + 5).iterations(8))
       .stop();
-    for (let i = 0; i < 140; i++) sim.tick();
-    return nodes.map((n) => ({
-      ...n,
-      x: Math.max(n.r + 12, Math.min(W - 86 - n.r, n.x || W / 2)),
-      y: Math.max(n.r + 16, Math.min(H - 16 - n.r, n.y || H / 2)),
-    }));
-  }, [analysis.canonicalKeywords]);
+    for (let i = 0; i < 200; i++) {
+      sim.tick();
+      for (const n of nodes) {
+        n.x = Math.max(boxX + n.r + 6, Math.min(boxX + boxW - n.r - 6, n.x || cx0));
+        n.y = Math.max(boxY + n.r + 6, Math.min(boxY + boxH - n.r - 6, n.y || cy0));
+      }
+    }
+    return nodes;
+  }, [analysis.canonicalKeywords, boxW, boxH]);
 
   const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
 
   return (
     <MatlabFigureShell
       figNum="Fig. 5"
-      title="课题组核心热词力导向气泡图（已合并中英文同义词 · Parula年份演进色标）"
-      subtitle="气泡面积映射文献出现频次，颜色由深紫(2023)→湖蓝(2025)→明黄(2027)表征前沿活跃年份；点击热词筛选成果"
+      title="核心热词演进气泡图"
       filename="paperpulse-lab-fig5-keyword-bubbles"
       darkMode={darkMode}
       svgRef={svgRef}
@@ -754,13 +757,15 @@ export const MatlabKeywordBubbleChart: React.FC<{
           </linearGradient>
         </defs>
         <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
-        <rect x={10} y={10} width={W - 88} height={H - 20} rx={4} fill={darkMode ? '#0b1220' : '#f8fafc'} stroke={axisInk} strokeWidth={1.1} />
+        <rect x={boxX} y={boxY} width={boxW} height={boxH} rx={4} fill={darkMode ? '#0b1220' : '#f8fafc'} stroke={axisInk} strokeWidth={1.1} />
 
         {bubbles.map((b) => {
           const t = (b.avgYear - minYear) / spanYear;
           const fill = parulaColor(t);
           const isHov = hovered?.id === b.id;
           const darkText = t > 0.62;
+          const maxChars = b.r >= 40 ? 8 : b.r >= 32 ? 6 : 5;
+          const displayTxt = b.shortLabel.length > maxChars ? `${b.shortLabel.slice(0, maxChars - 1)}…` : b.shortLabel;
           return (
             <g
               key={b.id}
@@ -774,23 +779,23 @@ export const MatlabKeywordBubbleChart: React.FC<{
               <circle
                 r={b.r}
                 fill={fill}
-                fillOpacity={isHov ? 0.98 : 0.88}
+                fillOpacity={isHov ? 0.98 : 0.9}
                 stroke={darkMode ? '#e2e8f0' : '#0f172a'}
                 strokeWidth={isHov ? 1.8 : 0.9}
               />
               <text
-                y={b.r > 32 ? -2 : 0}
+                y={-2}
                 textAnchor="middle"
-                fontSize={Math.max(9.5, Math.min(13, b.r * 0.27))}
+                fontSize={Math.max(8.5, Math.min(12, b.r * 0.25))}
                 fontWeight="700"
                 fill={darkText ? '#0f172a' : '#ffffff'}
               >
-                {b.shortLabel.length > 9 ? `${b.shortLabel.slice(0, 8)}…` : b.shortLabel}
+                {displayTxt}
               </text>
               <text
-                y={b.r > 32 ? 14 : 12}
+                y={12}
                 textAnchor="middle"
-                fontSize="10"
+                fontSize="9"
                 fontFamily="ui-monospace, monospace"
                 fontWeight="700"
                 fill={darkText ? '#1e293b' : '#e2e8f0'}
@@ -872,8 +877,7 @@ export const MatlabGapOpportunityMatrix: React.FC<{
         <div className="xl:col-span-7">
           <MatlabFigureShell
             figNum="Fig. 6a"
-            title="核心技术 × 工业应用场景覆盖矩阵与空白机会探测"
-            subtitle="深色实心格＝已有核心成果积累；琥珀虚线星标(★)＝双侧积累深厚但尚未交叉的高潜力空白方向，点击格子展开证据"
+            title="核心技术 × 工业场景覆盖矩阵与空白探测"
             filename="paperpulse-lab-fig6a-gap-matrix"
             darkMode={darkMode}
             svgRef={matrixSvgRef}
@@ -1048,22 +1052,42 @@ export const MatlabGapOpportunityMatrix: React.FC<{
         <div className="xl:col-span-5">
           <MatlabFigureShell
             figNum="Fig. 6b"
-            title="潜在研究方向「创新度 × 可行性」战略象限"
-            subtitle="横轴：基于课题组现有积累的可行性；纵轴：前沿创新度与空白稀缺度（点击气泡查看完整选题剖析）"
+            title="潜在方向「创新度 × 可行性」战略象限"
             filename="paperpulse-lab-fig6b-frontier-quadrant"
             darkMode={darkMode}
             svgRef={quadSvgRef}
           >
             {(() => {
               const QW = 520;
-              const QH = 330;
-              const qPad = { top: 24, right: 26, bottom: 48, left: 54 };
+              const QH = 350;
+              const qPad = { top: 32, right: 26, bottom: 48, left: 54 };
               const qpW = QW - qPad.left - qPad.right;
               const qpH = QH - qPad.top - qPad.bottom;
-              const xScale = (v: number) => qPad.left + ((v - 40) / 60) * qpW;
-              const yScale = (v: number) => qPad.top + qpH - ((v - 50) / 50) * qpH;
+              const opps = analysis.potentialDirections.slice(0, 8);
+              const xScale = (v: number) => qPad.left + ((v - 45) / 55) * qpW;
+              const yScale = (v: number) => qPad.top + qpH - ((v - 55) / 45) * qpH;
               const midX = xScale(72);
               const midY = yScale(78);
+
+              // Collision-free bubble positions so P1..P8 never overlap!
+              type QNode = SimulationNodeDatum & { opp: PotentialDirectionInsight; idx: number; tx: number; ty: number };
+              const qNodes: QNode[] = opps.map((opp, idx) => {
+                const tx = xScale(opp.feasibilityScore);
+                const ty = yScale(opp.noveltyScore);
+                return { opp, idx, tx, ty, x: tx + ((idx % 3) - 1) * 14, y: ty + (idx % 2 === 0 ? -12 : 12) };
+              });
+              const qSim = forceSimulation<QNode>(qNodes)
+                .force('x', forceX<QNode>((d) => d.tx).strength(0.28))
+                .force('y', forceY<QNode>((d) => d.ty).strength(0.28))
+                .force('collide', forceCollide<QNode>(26).iterations(6))
+                .stop();
+              for (let k = 0; k < 120; k++) {
+                qSim.tick();
+                for (const qn of qNodes) {
+                  qn.x = Math.max(qPad.left + 28, Math.min(qPad.left + qpW - 28, qn.x || qn.tx));
+                  qn.y = Math.max(qPad.top + 24, Math.min(qPad.top + qpH - 28, qn.y || qn.ty));
+                }
+              }
 
               return (
                 <svg ref={quadSvgRef} viewBox={`0 0 ${QW} ${QH}`} className="w-full select-none" role="img" aria-label="潜在方向创新度与可行性象限图">
@@ -1072,14 +1096,14 @@ export const MatlabGapOpportunityMatrix: React.FC<{
 
                   {/* Highlight Top-Right Priority Quadrant */}
                   <rect x={midX} y={qPad.top} width={qPad.left + qpW - midX} height={midY - qPad.top} fill={darkMode ? 'rgba(217,83,25,0.12)' : 'rgba(217,83,25,0.07)'} />
-                  <text x={qPad.left + qpW - 8} y={qPad.top + 16} textAnchor="end" fontSize="10" fontWeight="700" fill={MATLAB_COLORS[1]}>
-                    优先攻关区（高创新·高可行）
+                  <text x={qPad.left + qpW} y={qPad.top - 10} textAnchor="end" fontSize="10" fontWeight="700" fill={MATLAB_COLORS[1]}>
+                    右上象限：优先攻关区（高创新 · 高可行）
                   </text>
                   <line x1={midX} y1={qPad.top} x2={midX} y2={qPad.top + qpH} stroke={gridInk} strokeDasharray="4 3" strokeWidth={1} />
                   <line x1={qPad.left} y1={midY} x2={qPad.left + qpW} y2={midY} stroke={gridInk} strokeDasharray="4 3" strokeWidth={1} />
 
                   {/* Ticks */}
-                  {[40, 55, 70, 85, 100].map((v) => (
+                  {[45, 58, 72, 86, 100].map((v) => (
                     <g key={`qx-${v}`}>
                       <line x1={xScale(v)} y1={qPad.top + qpH} x2={xScale(v)} y2={qPad.top + qpH - 4} stroke={axisInk} />
                       <text x={xScale(v)} y={qPad.top + qpH + 15} textAnchor="middle" fontSize="10" fontFamily="ui-monospace, monospace" fill={axisInk}>
@@ -1087,7 +1111,7 @@ export const MatlabGapOpportunityMatrix: React.FC<{
                       </text>
                     </g>
                   ))}
-                  {[50, 62, 75, 88, 100].map((v) => (
+                  {[55, 66, 78, 89, 100].map((v) => (
                     <g key={`qy-${v}`}>
                       <line x1={qPad.left} y1={yScale(v)} x2={qPad.left + 4} y2={yScale(v)} stroke={axisInk} />
                       <text x={qPad.left - 8} y={yScale(v) + 3.5} textAnchor="end" fontSize="10" fontFamily="ui-monospace, monospace" fill={axisInk}>
@@ -1096,21 +1120,32 @@ export const MatlabGapOpportunityMatrix: React.FC<{
                     </g>
                   ))}
 
-                  {/* Opportunity Bubbles */}
-                  {analysis.potentialDirections.slice(0, 8).map((opp, idx) => {
-                    const cx = Math.max(qPad.left + 20, Math.min(qPad.left + qpW - 20, xScale(opp.feasibilityScore) + ((idx % 3) - 1) * 7));
-                    const cy = Math.max(qPad.top + 20, Math.min(qPad.top + qpH - 20, yScale(opp.noveltyScore) + (idx % 2 === 0 ? -5 : 5)));
+                  {/* Collision-free Opportunity Bubbles */}
+                  {qNodes.map((qn) => {
+                    const { opp, idx } = qn;
+                    const cx = qn.x || qn.tx;
+                    const cy = qn.y || qn.ty;
                     const isSel = selectedOpportunity?.id === opp.id;
                     const color = MATLAB_COLORS[idx % MATLAB_COLORS.length];
                     return (
                       <g key={opp.id} className="cursor-pointer" onClick={() => setSelectedOpportunity(opp)}>
-                        {isSel && <circle cx={cx} cy={cy} r={20} fill="none" stroke={color} strokeWidth={2} strokeDasharray="3 2" />}
-                        <circle cx={cx} cy={cy} r={14} fill={color} fillOpacity={isSel ? 0.96 : 0.78} stroke="#ffffff" strokeWidth={1.5} />
-                        <text x={cx} y={cy + 4} textAnchor="middle" fontSize="10.5" fontWeight="700" fontFamily="ui-monospace, monospace" fill="#ffffff">
+                        {isSel && <circle cx={cx} cy={cy} r={19} fill="none" stroke={color} strokeWidth={2} strokeDasharray="3 2" />}
+                        <circle cx={cx} cy={cy} r={13.5} fill={color} fillOpacity={isSel ? 0.96 : 0.84} stroke="#ffffff" strokeWidth={1.5} />
+                        <text x={cx} y={cy + 3.8} textAnchor="middle" fontSize="10" fontWeight="700" fontFamily="ui-monospace, monospace" fill="#ffffff">
                           P{idx + 1}
                         </text>
-                        <text x={cx} y={cy + 26} textAnchor="middle" fontSize="9.5" fontWeight={isSel ? '700' : '500'} fill={axisInk}>
-                          {opp.techAxis.shortLabel.slice(0, 6)}×{opp.domainAxis.shortLabel.slice(0, 4)}
+                        <text
+                          x={cx}
+                          y={cy + 23}
+                          textAnchor="middle"
+                          fontSize="8.5"
+                          fontWeight={isSel ? '700' : '600'}
+                          fill={axisInk}
+                          paintOrder="stroke"
+                          stroke={darkMode ? '#0b1220' : '#ffffff'}
+                          strokeWidth={2.5}
+                        >
+                          {opp.techAxis.shortLabel.slice(0, 4)}×{opp.domainAxis.shortLabel.slice(0, 4)}
                         </text>
                         <title>{`P${idx + 1}: ${opp.title}（可行性 ${opp.feasibilityScore} / 创新度 ${opp.noveltyScore}）`}</title>
                       </g>
@@ -1259,5 +1294,565 @@ export const MatlabGapOpportunityMatrix: React.FC<{
         </div>
       )}
     </div>
+  );
+};
+
+
+/* ============================================================================
+ * Fig. 7: Author Social Attributes Bubble Chart
+ *         X: Co-author Degree | Y: Cross-Domain/Tech Span | Size: Output | Color: Social Role
+ * ============================================================================ */
+export const MatlabAuthorSocialBubbleChart: React.FC<{
+  analysis: LabAnalysisResult;
+  darkMode: boolean;
+  onSelectAuthor: (authorName: string) => void;
+}> = ({ analysis, darkMode, onSelectAuthor }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const items = analysis.canonicalAuthors.slice(0, 18);
+  const W = 640;
+  const H = 340;
+  const pad = { top: 26, right: 32, bottom: 48, left: 54 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const maxDeg = Math.max(...items.map((a) => a.coauthorDegree), 6) + 2;
+  const maxSpan = Math.max(...items.map((a) => a.techSpan + a.domainSpan), 6) + 2;
+  const maxCount = Math.max(...items.map((a) => a.count), 1);
+
+  const xScale = (v: number) => pad.left + (v / maxDeg) * plotW;
+  const yScale = (v: number) => pad.top + plotH - (v / maxSpan) * plotH;
+
+  const roleColors: Record<string, string> = {
+    '枢纽导师': MATLAB_COLORS[1],
+    '跨方向桥梁': MATLAB_COLORS[3],
+    '核心主力': MATLAB_COLORS[0],
+    '合作成员': MATLAB_COLORS[4],
+  };
+
+  const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
+  const gridInk = darkMode ? '#334155' : '#cbd5e1';
+  const plotBg = darkMode ? '#0b1220' : '#ffffff';
+
+  const xTicks = Array.from({ length: 6 }, (_, i) => Math.round((maxDeg * i) / 5));
+  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round((maxSpan * i) / 4));
+
+  return (
+    <MatlabFigureShell
+      figNum="Fig. 7"
+      title="作者社交中心性 × 跨方向融合度气泡图"
+      filename="paperpulse-lab-fig7-author-social-bubble"
+      darkMode={darkMode}
+      svgRef={svgRef}
+    >
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="img" aria-label="作者社交中心性与跨方向融合气泡图">
+        <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
+        <rect x={pad.left} y={pad.top} width={plotW} height={plotH} fill={plotBg} stroke={axisInk} strokeWidth={1.25} />
+
+        {/* Dashed Grid */}
+        {xTicks.map((v, i) => {
+          const x = xScale(v);
+          return (
+            <g key={`x-${i}`}>
+              {i > 0 && i < xTicks.length - 1 && (
+                <line x1={x} y1={pad.top} x2={x} y2={pad.top + plotH} stroke={gridInk} strokeDasharray="3 3" strokeWidth={0.8} />
+              )}
+              <line x1={x} y1={pad.top + plotH} x2={x} y2={pad.top + plotH - 4} stroke={axisInk} />
+              <text x={x} y={pad.top + plotH + 16} textAnchor="middle" fontSize="10.5" fontFamily="ui-monospace, monospace" fill={axisInk}>
+                {v}
+              </text>
+            </g>
+          );
+        })}
+        {yTicks.map((v, i) => {
+          const y = yScale(v);
+          return (
+            <g key={`y-${i}`}>
+              {i > 0 && i < yTicks.length - 1 && (
+                <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke={gridInk} strokeDasharray="3 3" strokeWidth={0.8} />
+              )}
+              <line x1={pad.left} y1={y} x2={pad.left + 4} y2={y} stroke={axisInk} />
+              <text x={pad.left - 8} y={y + 3.5} textAnchor="end" fontSize="10.5" fontFamily="ui-monospace, monospace" fill={axisInk}>
+                {v}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Legend */}
+        <g transform={`translate(${pad.left + 10}, ${pad.top + 8})`}>
+          <rect width={302} height={24} rx={3} fill={plotBg} fillOpacity={0.92} stroke={gridInk} strokeWidth={0.9} />
+          {Object.entries(roleColors).map(([role, col], idx) => (
+            <g key={role} transform={`translate(${10 + idx * 73}, 12)`}>
+              <circle r={4.5} fill={col} />
+              <text x={8} y={3.5} fontSize="10" fill={axisInk}>{role}</text>
+            </g>
+          ))}
+        </g>
+
+        {/* Bubbles */}
+        {items.map((a, idx) => {
+          const cx = Math.max(pad.left + 18, Math.min(pad.left + plotW - 18, xScale(a.coauthorDegree) + ((idx % 3) - 1) * 4));
+          const cy = Math.max(pad.top + 24, Math.min(pad.top + plotH - 18, yScale(a.techSpan + a.domainSpan) + (idx % 2 === 0 ? -3 : 3)));
+          const r = 9 + Math.sqrt(a.count / maxCount) * 20;
+          const col = roleColors[a.socialRole] || MATLAB_COLORS[0];
+          const isHov = hoveredId === a.info.id;
+          return (
+            <g
+              key={a.info.id}
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredId(a.info.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onSelectAuthor(a.info.shortName)}
+            >
+              {isHov && <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke={col} strokeWidth={1.8} strokeDasharray="3 2" />}
+              <circle cx={cx} cy={cy} r={r} fill={col} fillOpacity={isHov ? 0.94 : 0.72} stroke="#ffffff" strokeWidth={1.5} />
+              <text
+                x={cx}
+                y={cy + 3.5}
+                textAnchor="middle"
+                fontSize={r > 16 ? '10.5' : '9'}
+                fontWeight="700"
+                fill="#ffffff"
+              >
+                {a.info.shortName.slice(0, 3)}
+              </text>
+              <title>{`${a.info.displayName} [${a.socialRole}] · 发文 ${a.count} 篇 · 合作者 ${a.coauthorDegree} 人 · 覆盖技术 ${a.techSpan} + 场景 ${a.domainSpan}`}</title>
+            </g>
+          );
+        })}
+
+        <text x={pad.left + plotW / 2} y={H - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill={axisInk}>
+          Co-author Degree / 合作者广度（人）
+        </text>
+        <text
+          x={16}
+          y={pad.top + plotH / 2}
+          textAnchor="middle"
+          fontSize="11"
+          fontWeight="600"
+          fill={axisInk}
+          transform={`rotate(-90 16 ${pad.top + plotH / 2})`}
+        >
+          Cross-Direction Span (技术+场景跨度)
+        </text>
+      </svg>
+    </MatlabFigureShell>
+  );
+};
+
+/* ============================================================================
+ * Fig. 8: Author × Tech/Domain Specialization Bubble Matrix
+ * ============================================================================ */
+export const MatlabAuthorThemeBubbleMatrix: React.FC<{
+  analysis: LabAnalysisResult;
+  darkMode: boolean;
+  onSelectAuthor: (authorName: string) => void;
+}> = ({ analysis, darkMode, onSelectAuthor }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [axisType, setAxisType] = useState<'tech' | 'domain'>('tech');
+
+  const authors = analysis.canonicalAuthors.slice(0, 12);
+  const axes = axisType === 'tech' ? analysis.techAxes : analysis.domainAxes;
+  const countsSource = axisType === 'tech' ? analysis.authorTechCounts : analysis.authorDomainCounts;
+
+  const minYear = Math.min(...analysis.years, 2023);
+  const maxYear = Math.max(...analysis.years, 2027);
+  const spanYear = Math.max(1, maxYear - minYear);
+
+  let maxCell = 1;
+  for (const a of authors) {
+    const m = countsSource.get(a.info.id);
+    if (m) m.forEach((v) => { if (v.count > maxCell) maxCell = v.count; });
+  }
+
+  const W = 680;
+  const rowH = 26;
+  const pad = { top: 44, right: 64, bottom: 26, left: 108 };
+  const plotH = Math.max(200, authors.length * rowH);
+  const H = plotH + pad.top + pad.bottom;
+  const plotW = W - pad.left - pad.right;
+  const colW = plotW / Math.max(axes.length, 1);
+
+  const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
+  const gridInk = darkMode ? '#1e293b' : '#e2e8f0';
+
+  return (
+    <MatlabFigureShell
+      figNum="Fig. 8"
+      title="成员 × 方向学术分工与互补气泡矩阵"
+      filename={`paperpulse-lab-fig8-author-${axisType}-bubbles`}
+      darkMode={darkMode}
+      svgRef={svgRef}
+      extraControls={
+        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px] dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setAxisType('tech')}
+            className={`rounded px-2 py-0.5 font-semibold ${axisType === 'tech' ? 'bg-[#0072BD] text-white' : 'text-slate-500'}`}
+          >
+            技术方法
+          </button>
+          <button
+            type="button"
+            onClick={() => setAxisType('domain')}
+            className={`rounded px-2 py-0.5 font-semibold ${axisType === 'domain' ? 'bg-[#0072BD] text-white' : 'text-slate-500'}`}
+          >
+            工业场景
+          </button>
+        </div>
+      }
+    >
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="img" aria-label="成员与研究方向分工气泡矩阵">
+        <defs>
+          <linearGradient id="matlab-parula-f8" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor={parulaColor(0)} />
+            <stop offset="50%" stopColor={parulaColor(0.5)} />
+            <stop offset="100%" stopColor={parulaColor(1)} />
+          </linearGradient>
+        </defs>
+        <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
+        <rect x={pad.left} y={pad.top} width={plotW} height={plotH} fill={darkMode ? '#0b1220' : '#ffffff'} stroke={axisInk} strokeWidth={1.2} />
+
+        {/* Column headers & vertical guide lines */}
+        {axes.map((ax, ci) => {
+          const cx = pad.left + (ci + 0.5) * colW;
+          return (
+            <g key={ax.id}>
+              <line x1={cx} y1={pad.top} x2={cx} y2={pad.top + plotH} stroke={gridInk} strokeDasharray="2 3" />
+              <text x={cx} y={pad.top - 12} textAnchor="middle" fontSize="10" fontWeight="700" fill={axisInk}>
+                {ax.shortLabel}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Rows & Bubbles */}
+        {authors.map((a, ri) => {
+          const cy = pad.top + (ri + 0.5) * rowH;
+          const m = countsSource.get(a.info.id);
+          return (
+            <g key={a.info.id}>
+              <line x1={pad.left} y1={cy} x2={pad.left + plotW} y2={cy} stroke={gridInk} strokeDasharray="2 3" />
+              <text
+                x={pad.left - 8}
+                y={cy + 4}
+                textAnchor="end"
+                fontSize="10.5"
+                fontWeight="600"
+                fill={axisInk}
+                className="cursor-pointer"
+                onClick={() => onSelectAuthor(a.info.shortName)}
+              >
+                {a.info.shortName}
+              </text>
+              {axes.map((ax, ci) => {
+                const cell = m?.get(ax.id);
+                if (!cell || cell.count <= 0) return null;
+                const cx = pad.left + (ci + 0.5) * colW;
+                const r = 5 + Math.sqrt(cell.count / maxCell) * 7.5;
+                const t = (cell.lastYear - minYear) / spanYear;
+                const fill = parulaColor(t);
+                const darkTxt = t > 0.62;
+                return (
+                  <g key={ax.id} className="cursor-pointer" onClick={() => onSelectAuthor(a.info.shortName)}>
+                    <circle cx={cx} cy={cy} r={r} fill={fill} stroke={darkMode ? '#e2e8f0' : '#0f172a'} strokeWidth={0.8} />
+                    <text
+                      x={cx}
+                      y={cy + 3.2}
+                      textAnchor="middle"
+                      fontSize="9"
+                      fontWeight="700"
+                      fontFamily="ui-monospace, monospace"
+                      fill={darkTxt ? '#0f172a' : '#ffffff'}
+                    >
+                      {cell.count}
+                    </text>
+                    <title>{`${a.info.displayName} × ${ax.label}：${cell.count} 篇（最新 ${cell.lastYear}）`}</title>
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
+
+        {/* Colorbar */}
+        <g transform={`translate(${pad.left + plotW + 14}, ${pad.top})`}>
+          <rect width={12} height={plotH} fill="url(#matlab-parula-f8)" stroke={axisInk} strokeWidth={0.9} />
+          <text x={16} y={9} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{maxYear}</text>
+          <text x={16} y={plotH} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{minYear}</text>
+        </g>
+      </svg>
+    </MatlabFigureShell>
+  );
+};
+
+/* ============================================================================
+ * Fig. 9: Symmetric Co-Authorship Affinity Heatmap (Sub-Team Discovery)
+ * ============================================================================ */
+export const MatlabCoauthorAffinityHeatmap: React.FC<{
+  analysis: LabAnalysisResult;
+  darkMode: boolean;
+  onSelectAuthor: (authorName: string) => void;
+}> = ({ analysis, darkMode, onSelectAuthor }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const top = analysis.canonicalAuthors.slice(0, 12);
+
+  let maxPair = 1;
+  const weightOf = (aId: string, bId: string): number => {
+    if (aId === bId) return top.find((x) => x.info.id === aId)?.count || 0;
+    const [u, v] = [aId, bId].sort();
+    return analysis.coauthorEdgeMap.get(`${u}__${v}`)?.weight || 0;
+  };
+  for (let i = 0; i < top.length; i++) {
+    for (let j = i + 1; j < top.length; j++) {
+      const w = weightOf(top[i].info.id, top[j].info.id);
+      if (w > maxPair) maxPair = w;
+    }
+  }
+
+  const cell = 28;
+  const pad = { top: 68, right: 68, bottom: 20, left: 74 };
+  const gridSize = top.length * cell;
+  const W = pad.left + gridSize + pad.right;
+  const H = pad.top + gridSize + pad.bottom;
+  const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
+
+  return (
+    <MatlabFigureShell
+      figNum="Fig. 9"
+      title="核心作者协作紧密度对称矩阵"
+      filename="paperpulse-lab-fig9-coauthor-affinity"
+      darkMode={darkMode}
+      svgRef={svgRef}
+    >
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full max-h-[420px] select-none" role="img" aria-label="作者合作紧密度热力矩阵">
+        <defs>
+          <linearGradient id="matlab-parula-f9" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor={parulaColor(0.05)} />
+            <stop offset="50%" stopColor={parulaColor(0.5)} />
+            <stop offset="100%" stopColor={parulaColor(0.98)} />
+          </linearGradient>
+        </defs>
+        <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
+
+        {top.map((a, i) => (
+          <g key={`lbl-${a.info.id}`}>
+            <text
+              x={pad.left - 8}
+              y={pad.top + i * cell + cell / 2 + 3.5}
+              textAnchor="end"
+              fontSize="10"
+              fontWeight="600"
+              fill={axisInk}
+              className="cursor-pointer"
+              onClick={() => onSelectAuthor(a.info.shortName)}
+            >
+              {a.info.shortName}
+            </text>
+            <text
+              x={pad.left + i * cell + cell / 2}
+              y={pad.top - 8}
+              textAnchor="start"
+              fontSize="10"
+              fontWeight="600"
+              fill={axisInk}
+              transform={`rotate(-42 ${pad.left + i * cell + cell / 2} ${pad.top - 8})`}
+            >
+              {a.info.shortName}
+            </text>
+          </g>
+        ))}
+
+        {top.map((rowA, r) =>
+          top.map((colA, c) => {
+            const x = pad.left + c * cell;
+            const y = pad.top + r * cell;
+            const isDiag = r === c;
+            const w = weightOf(rowA.info.id, colA.info.id);
+            const norm = isDiag ? 0 : w > 0 ? 0.12 + 0.86 * (w / maxPair) : 0;
+            const fill = isDiag
+              ? darkMode ? '#1e293b' : '#e2e8f0'
+              : w > 0
+                ? parulaColor(norm)
+                : darkMode ? '#0b1220' : '#f8fafc';
+            const txtFill = isDiag ? axisInk : norm > 0.62 ? '#0f172a' : '#ffffff';
+
+            return (
+              <g key={`${r}-${c}`}>
+                <rect x={x} y={y} width={cell} height={cell} fill={fill} stroke={darkMode ? '#0f172a' : '#ffffff'} strokeWidth={1.2} />
+                {(isDiag || w > 0) && (
+                  <text
+                    x={x + cell / 2}
+                    y={y + cell / 2 + 3.5}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fontWeight={isDiag ? '700' : '600'}
+                    fontFamily="ui-monospace, monospace"
+                    fill={txtFill}
+                  >
+                    {w}
+                  </text>
+                )}
+                <title>
+                  {isDiag
+                    ? `${rowA.info.displayName}：个人总发文 ${w} 篇`
+                    : `${rowA.info.shortName} × ${colA.info.shortName}：共同署名 ${w} 篇`}
+                </title>
+              </g>
+            );
+          })
+        )}
+
+        <rect x={pad.left} y={pad.top} width={gridSize} height={gridSize} fill="none" stroke={axisInk} strokeWidth={1.2} />
+
+        <g transform={`translate(${pad.left + gridSize + 14}, ${pad.top})`}>
+          <rect width={12} height={gridSize} fill="url(#matlab-parula-f9)" stroke={axisInk} strokeWidth={0.9} />
+          <text x={16} y={9} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{maxPair}</text>
+          <text x={16} y={gridSize / 2 + 3} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{Math.round(maxPair / 2)}</text>
+          <text x={16} y={gridSize} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>0</text>
+        </g>
+      </svg>
+    </MatlabFigureShell>
+  );
+};
+
+/* ============================================================================
+ * Fig. 10: Lab Papers Platform Social Engagement Bubble Chart
+ *          X: Total Visits | Y: Social Actions (Like+Comment+Repost+Collect) | Size: Dwell Seconds
+ * ============================================================================ */
+export const MatlabEngagementBubbleChart: React.FC<{
+  analysis: LabAnalysisResult;
+  darkMode: boolean;
+  onOpenPaper: (paper: AcademicPaper) => void;
+}> = ({ analysis, darkMode, onOpenPaper }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const pts = useMemo(
+    () =>
+      analysis.papers.map((p, idx) => {
+        const visits = p.totalVisits || 0;
+        const dwell = p.totalDwellSeconds || 0;
+        const actions =
+          (p.likers?.length || 0) +
+          (p.comments?.length || 0) +
+          (p.reposts?.length || 0) +
+          (p.collectors?.length || 0);
+        const yr = analysis.paperYearById.get(p.id) || 2025;
+        return { paper: p, idx: idx + 1, visits, dwell, actions, yr };
+      }),
+    [analysis]
+  );
+
+  const W = 640;
+  const H = 310;
+  const pad = { top: 24, right: 34, bottom: 48, left: 54 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const maxV = Math.max(...pts.map((d) => d.visits), 5) + 1;
+  const maxA = Math.max(...pts.map((d) => d.actions), 4) + 1;
+  const maxD = Math.max(...pts.map((d) => d.dwell), 30);
+
+  const minYear = Math.min(...analysis.years, 2023);
+  const maxYear = Math.max(...analysis.years, 2027);
+  const spanYear = Math.max(1, maxYear - minYear);
+
+  const xScale = (v: number) => pad.left + (v / maxV) * plotW;
+  const yScale = (v: number) => pad.top + plotH - (v / maxA) * plotH;
+
+  const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
+  const gridInk = darkMode ? '#334155' : '#cbd5e1';
+  const plotBg = darkMode ? '#0b1220' : '#ffffff';
+
+  const xTicks = Array.from({ length: 5 }, (_, i) => Math.round((maxV * i) / 4));
+  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round((maxA * i) / 4));
+
+  return (
+    <MatlabFigureShell
+      figNum="Fig. 10"
+      title="组内论文「阅读访问 × 社交互动」热度气泡图"
+      filename="paperpulse-lab-fig10-engagement-bubbles"
+      darkMode={darkMode}
+      svgRef={svgRef}
+    >
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="img" aria-label="论文阅读与社交互动气泡图">
+        <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
+        <rect x={pad.left} y={pad.top} width={plotW} height={plotH} fill={plotBg} stroke={axisInk} strokeWidth={1.25} />
+
+        {xTicks.map((v, i) => {
+          const x = xScale(v);
+          return (
+            <g key={`ex-${i}`}>
+              {i > 0 && i < xTicks.length - 1 && (
+                <line x1={x} y1={pad.top} x2={x} y2={pad.top + plotH} stroke={gridInk} strokeDasharray="3 3" strokeWidth={0.8} />
+              )}
+              <line x1={x} y1={pad.top + plotH} x2={x} y2={pad.top + plotH - 4} stroke={axisInk} />
+              <text x={x} y={pad.top + plotH + 15} textAnchor="middle" fontSize="10" fontFamily="ui-monospace, monospace" fill={axisInk}>
+                {v}
+              </text>
+            </g>
+          );
+        })}
+        {yTicks.map((v, i) => {
+          const y = yScale(v);
+          return (
+            <g key={`ey-${i}`}>
+              {i > 0 && i < yTicks.length - 1 && (
+                <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke={gridInk} strokeDasharray="3 3" strokeWidth={0.8} />
+              )}
+              <line x1={pad.left} y1={y} x2={pad.left + 4} y2={y} stroke={axisInk} />
+              <text x={pad.left - 8} y={y + 3.5} textAnchor="end" fontSize="10" fontFamily="ui-monospace, monospace" fill={axisInk}>
+                {v}
+              </text>
+            </g>
+          );
+        })}
+
+        {pts.map((d) => {
+          const jitterX = ((d.idx * 7) % 15) - 7;
+          const jitterY = ((d.idx * 11) % 13) - 6;
+          const cx = Math.max(pad.left + 14, Math.min(pad.left + plotW - 14, xScale(d.visits) + jitterX));
+          const cy = Math.max(pad.top + 14, Math.min(pad.top + plotH - 14, yScale(d.actions) + jitterY));
+          const r = 7 + Math.sqrt(Math.max(d.dwell, 4) / maxD) * 16;
+          const t = (d.yr - minYear) / spanYear;
+          const col = parulaColor(t);
+          const isHov = hoveredId === d.paper.id;
+          return (
+            <g
+              key={d.paper.id}
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredId(d.paper.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onOpenPaper(d.paper)}
+            >
+              {isHov && <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke={MATLAB_COLORS[1]} strokeWidth={2} />}
+              <circle cx={cx} cy={cy} r={r} fill={col} fillOpacity={isHov ? 0.96 : 0.78} stroke="#ffffff" strokeWidth={1.3} />
+              <text x={cx} y={cy + 3.5} textAnchor="middle" fontSize="9.5" fontWeight="700" fontFamily="ui-monospace, monospace" fill={t > 0.62 ? '#0f172a' : '#ffffff'}>
+                #{d.idx}
+              </text>
+              <title>{`#${d.idx} ${d.paper.titleZh || d.paper.title}｜访问 ${d.visits} 次 · 阅读 ${d.dwell} 秒 · 互动(赞/评/转/藏) ${d.actions} 次`}</title>
+            </g>
+          );
+        })}
+
+        <text x={pad.left + plotW / 2} y={H - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill={axisInk}>
+          Total Visits / 组内访问次数（气泡大小＝累计阅读时长）
+        </text>
+        <text
+          x={16}
+          y={pad.top + plotH / 2}
+          textAnchor="middle"
+          fontSize="11"
+          fontWeight="600"
+          fill={axisInk}
+          transform={`rotate(-90 16 ${pad.top + plotH / 2})`}
+        >
+          Social Actions (赞/评/转/藏)
+        </text>
+      </svg>
+    </MatlabFigureShell>
   );
 };

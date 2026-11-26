@@ -894,7 +894,22 @@ export default function App() {
             onImportReference={handleImportIdentifier}
           />
         ) : activeTab === 'lab' ? (
-          <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">正在打开课题组文献库…</p>}><LabLibrary pool={allPoolPapers} darkMode={darkMode} onOpen={setSelectedPaper} onChanged={()=>{void loadData(true);}} /></Suspense>
+          <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">正在打开课题组文献库…</p>}>
+            <LabLibrary
+              pool={allPoolPapers}
+              currentUser={currentUser}
+              darkMode={darkMode}
+              onOpen={setSelectedPaper}
+              onChanged={() => { void loadData(true); }}
+              onSocialUpdate={handleSocialUpdate}
+              onLike={handleLikePaper}
+              onLikeComment={handleLikeComment}
+              onToggleMyKb={handleToggleMyKb}
+              onAddEntry={handleAddEntry}
+              onEditEntry={handleEditEntry}
+              onDeleteEntry={handleDeleteEntry}
+            />
+          </Suspense>
         ) : activeTab === 'library' && currentUser.role === 'admin' ? (
           <LibraryManager onAdd={() => { setEditingPaper(null); setFormOpen(true); }} onOpen={id => { const p = allPoolPapers.find(p => p.id === id); if(p) setSelectedPaper(p); }} onEdit={id => { const p = allPoolPapers.find(p => p.id === id); if(p) { setEditingPaper(p); setFormOpen(true); } }} onChanged={() => loadData(true)} />
         ) : activeTab === 'users' ? (

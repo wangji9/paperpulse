@@ -53,6 +53,17 @@ export interface PaperLikerBadge {
   likedAt: string;
 }
 
+export interface PaperRepostBadge {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  userTags: string[];
+  note: string;
+  repostedAt: string;
+}
+
 export interface PaperReaderTrace {
   userId: string;
   username: string;
@@ -230,6 +241,8 @@ export interface AcademicPaper {
   collectors?: PaperCollectorBadge[];
   likers?: PaperLikerBadge[];
   likedByMe?: boolean;
+  reposts?: PaperRepostBadge[];
+  repostedByMe?: boolean;
   readers?: PaperReaderTrace[];
   totalVisits?: number;
   totalDwellSeconds?: number;

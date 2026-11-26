@@ -16,9 +16,17 @@ export interface CanonicalAuthorStat {
   firstAuthorCount: number;
   correspondingCount: number;
   years: number[];
+  lastYear: number;
   papers: AcademicPaper[];
   topTopics: ResearchTopic[];
   rawVariants: string[];
+  // Social network attributes
+  coauthorDegree: number;           // Number of distinct co-authors
+  coauthorWeightedStrength: number; // Sum of co-authorship edges
+  techSpan: number;                 // Distinct technical method axes covered
+  domainSpan: number;               // Distinct industrial domains covered
+  primaryDomainId: string;          // Primary industrial community cluster
+  socialRole: '枢纽导师' | '跨方向桥梁' | '核心主力' | '合作成员';
 }
 
 export interface CanonicalKeywordStat {
@@ -280,9 +288,16 @@ export function analyzeLab(entries: LabEntry[]) {
         firstAuthorCount: 0,
         correspondingCount: 0,
         years: [],
+        lastYear: 0,
         papers: [],
         topTopics: [],
         rawVariants: [],
+        coauthorDegree: 0,
+        coauthorWeightedStrength: 0,
+        techSpan: 0,
+        domainSpan: 0,
+        primaryDomainId: 'dom_hcsm_doc',
+        socialRole: '合作成员' as const,
       };
       existing.count += 1;
       if (idx === 0) existing.firstAuthorCount += 1;
@@ -296,28 +311,18 @@ export function analyzeLab(entries: LabEntry[]) {
           }));
       if (isCorr) existing.correspondingCount += 1;
       if (yr >= 1900 && !existing.years.includes(yr)) existing.years.push(yr);
+      if (yr > existing.lastYear) existing.lastYear = yr;
       existing.papers.push(p);
       if (matchingRaw && !existing.rawVariants.includes(matchingRaw)) existing.rawVariants.push(matchingRaw);
       authorStatMap.set(info.id, existing);
     });
   }
 
-  const canonicalAuthors: CanonicalAuthorStat[] = [...authorStatMap.values()]
-    .map((stat) => {
-      const tCounts = count(stat.papers.flatMap((p) => p.topics || [])) as [ResearchTopic, number][];
-      return {
-        ...stat,
-        years: stat.years.sort((a, b) => a - b),
-        topTopics: tCounts.slice(0, 3).map(([t]) => t),
-      };
-    })
-    .sort((a, b) => b.count - a.count || b.correspondingCount - a.correspondingCount || a.info.shortName.localeCompare(b.info.shortName));
-
-  // Backward-compatible [name, count] tuple using deduplicated canonical shortName
-  const authors: [string, number][] = canonicalAuthors.map((a) => [a.info.shortName, a.count]);
-
   // Co-author network edges (deduplicated!)
   const coauthorEdgeMap = new Map<string, CoauthorEdge>();
+  const degreeSets = new Map<string, Set<string>>();
+  const weightedStrengths = new Map<string, number>();
+
   for (const p of papers) {
     const aList = paperCanonicalAuthors.get(p.id) || [];
     for (let i = 0; i < aList.length; i++) {
@@ -328,10 +333,81 @@ export function analyzeLab(entries: LabEntry[]) {
         edge.weight += 1;
         edge.papers.push(p);
         coauthorEdgeMap.set(k, edge);
+
+        if (!degreeSets.has(a)) degreeSets.set(a, new Set());
+        if (!degreeSets.has(b)) degreeSets.set(b, new Set());
+        degreeSets.get(a)!.add(b);
+        degreeSets.get(b)!.add(a);
+        weightedStrengths.set(a, (weightedStrengths.get(a) || 0) + 1);
+        weightedStrengths.set(b, (weightedStrengths.get(b) || 0) + 1);
       }
     }
   }
   const coauthors = [...coauthorEdgeMap.values()].sort((a, b) => b.weight - a.weight);
+
+  const authorTechCounts = new Map<string, Map<string, { count: number; lastYear: number }>>();
+  const authorDomainCounts = new Map<string, Map<string, { count: number; lastYear: number }>>();
+
+  const canonicalAuthors: CanonicalAuthorStat[] = [...authorStatMap.values()]
+    .map((stat) => {
+      const tCounts = count(stat.papers.flatMap((p) => p.topics || [])) as [ResearchTopic, number][];
+      const tMap = new Map<string, { count: number; lastYear: number }>();
+      const dMap = new Map<string, { count: number; lastYear: number }>();
+
+      for (const p of stat.papers) {
+        const py = paperYearById.get(p.id) || 2025;
+        for (const ax of LAB_TECH_AXES) {
+          if (matchesAxis(p, ax)) {
+            const cur = tMap.get(ax.id) || { count: 0, lastYear: 0 };
+            cur.count += 1;
+            if (py > cur.lastYear) cur.lastYear = py;
+            tMap.set(ax.id, cur);
+          }
+        }
+        for (const ax of LAB_DOMAIN_AXES) {
+          if (matchesAxis(p, ax)) {
+            const cur = dMap.get(ax.id) || { count: 0, lastYear: 0 };
+            cur.count += 1;
+            if (py > cur.lastYear) cur.lastYear = py;
+            dMap.set(ax.id, cur);
+          }
+        }
+      }
+      authorTechCounts.set(stat.info.id, tMap);
+      authorDomainCounts.set(stat.info.id, dMap);
+
+      const primaryDomEntry = [...dMap.entries()].sort((a, b) => b[1].count - a[1].count)[0];
+      const deg = degreeSets.get(stat.info.id)?.size || 0;
+      const wStr = weightedStrengths.get(stat.info.id) || 0;
+      const techSpan = tMap.size;
+      const domainSpan = dMap.size;
+
+      const socialRole: CanonicalAuthorStat['socialRole'] =
+        stat.correspondingCount >= 3 || stat.count >= 12
+          ? '枢纽导师'
+          : domainSpan >= 3 && deg >= 7
+            ? '跨方向桥梁'
+            : stat.firstAuthorCount >= 1 || stat.count >= 4
+              ? '核心主力'
+              : '合作成员';
+
+      return {
+        ...stat,
+        years: stat.years.sort((a, b) => a - b),
+        lastYear: stat.lastYear || years[years.length - 1] || 2025,
+        topTopics: tCounts.slice(0, 3).map(([t]) => t),
+        coauthorDegree: deg,
+        coauthorWeightedStrength: wStr,
+        techSpan,
+        domainSpan,
+        primaryDomainId: primaryDomEntry ? primaryDomEntry[0] : 'dom_hcsm_doc',
+        socialRole,
+      };
+    })
+    .sort((a, b) => b.count - a.count || b.correspondingCount - a.correspondingCount || a.info.shortName.localeCompare(b.info.shortName));
+
+  // Backward-compatible [name, count] tuple using deduplicated canonical shortName
+  const authors: [string, number][] = canonicalAuthors.map((a) => [a.info.shortName, a.count]);
 
   // 2. Bilingual Keyword / Concept Deduplication & Co-occurrence
   const kwStatMap = new Map<string, { info: CanonicalKeywordInfo; papers: AcademicPaper[]; years: number[] }>();
@@ -386,16 +462,17 @@ export function analyzeLab(entries: LabEntry[]) {
   }
   const keywordCooccurrence = [...kwEdgeMap.values()].sort((a, b) => b.weight - a.weight);
 
-  // 3. Normalized Journals
+  // 3. Normalized Journals (decode HTML entities like &amp;)
   const normalizeJournal = (j: string) => {
-    const low = j.trim().toLowerCase();
+    const clean = j.replace(/&amp;/gi, '&').replace(/&#38;/g, '&').replace(/\s+/g, ' ').trim();
+    const low = clean.toLowerCase();
     if (low === 'journal of engineering design') return 'Journal of Engineering Design';
     if (low === 'advanced engineering informatics') return 'Advanced Engineering Informatics';
     if (low === 'journal of manufacturing systems') return 'Journal of Manufacturing Systems';
     if (low === 'computers in industry') return 'Computers in Industry';
     if (low === 'expert systems with applications') return 'Expert Systems with Applications';
     if (low === 'knowledge-based systems') return 'Knowledge-Based Systems';
-    return j.trim();
+    return clean;
   };
   const journals = count(papers.map((p) => normalizeJournal(p.journal || '未知期刊')));
 
@@ -530,6 +607,9 @@ export function analyzeLab(entries: LabEntry[]) {
     canonicalAuthors,
     canonicalKeywords,
     coauthors,
+    coauthorEdgeMap,
+    authorTechCounts,
+    authorDomainCounts,
     keywordCooccurrence,
     paperCanonicalAuthors,
     paperCanonicalKeywords,
