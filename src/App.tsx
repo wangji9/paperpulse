@@ -63,6 +63,7 @@ import { LibraryManager } from './components/LibraryManager';
 import { PaperTimeline } from './components/PaperTimeline';
 import { PaperUpdates } from './components/PaperUpdates';
 import { MyKnowledgeBaseView } from './components/MyKnowledgeBaseView';
+import { PaperQaDialog } from './components/PaperQaDialog';
 const LabLibrary=lazy(()=>import('./components/LabLibrary').then(m=>({default:m.LabLibrary})));
 
 type ViewTab = 'pool' | 'my_kb' | 'lab' | 'citations' | 'users' | 'automation' | 'library';
@@ -108,6 +109,7 @@ export default function App() {
 
   // Modals
   const [selectedPaper, setSelectedPaper] = useState<AcademicPaper | null>(null);
+  const [qaPaper, setQaPaper] = useState<AcademicPaper | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [pdfUploadOpen,setPdfUploadOpen]=useState(false);
   const [editingPaper, setEditingPaper] = useState<AcademicPaper | null>(null);
@@ -902,6 +904,7 @@ export default function App() {
               currentUser={currentUser}
               darkMode={darkMode}
               onOpen={setSelectedPaper}
+              onAskAi={(p) => setQaPaper(p)}
               onChanged={() => { void loadData(true); }}
               onSocialUpdate={handleSocialUpdate}
               onLike={handleLikePaper}
@@ -1046,6 +1049,7 @@ export default function App() {
                   currentUser={currentUser}
                   darkMode={darkMode}
                   onOpenDetail={(p) => setSelectedPaper(p)}
+                  onAskAi={(p) => setQaPaper(p)}
                   onEdit={(p) => {
                     setEditingPaper(p);
                     setFormOpen(true);
@@ -1108,6 +1112,7 @@ export default function App() {
                           currentUser={currentUser}
                           darkMode={darkMode}
                           onOpenDetail={(p) => setSelectedPaper(p)}
+                          onAskAi={(p) => setQaPaper(p)}
                           onEdit={(p) => {
                             setEditingPaper(p);
                             setFormOpen(true);
@@ -1159,6 +1164,7 @@ export default function App() {
           currentUser={currentUser}
           darkMode={darkMode}
           onClose={() => setSelectedPaper(null)}
+          onAskAi={(p) => setQaPaper(p)}
           onEdit={(p) => {
             setSelectedPaper(null);
             setEditingPaper(p);
@@ -1195,6 +1201,18 @@ export default function App() {
             setSelectedPaper(savedPaper);
             showToast('success', isNew ? '新文献已自动解析入库' : '文献已更新');
           }}
+        />
+      )}
+
+      {/* Compact Floating Multi-Paper AI Q&A Dialog (Non-Fullscreen) */}
+      {qaPaper && (
+        <PaperQaDialog
+          paper={qaPaper}
+          allPapers={allPoolPapers}
+          darkMode={darkMode}
+          onClose={() => setQaPaper(null)}
+          onOpenPaper={(p) => setSelectedPaper(p)}
+          onGoToUserSettings={() => setActiveTab('users')}
         />
       )}
 

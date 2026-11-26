@@ -59,6 +59,7 @@ interface LabLibraryProps {
   currentUser: UserProfile | null;
   darkMode: boolean;
   onOpen: (p: AcademicPaper) => void;
+  onAskAi?: (p: AcademicPaper) => void;
   onChanged: () => void;
   onSocialUpdate: (paper: AcademicPaper) => void;
   onLike: (id: string) => Promise<void>;
@@ -94,6 +95,7 @@ const LabWeiboCard: React.FC<{
   darkMode: boolean;
   attachingPdf: boolean;
   onOpen: (p: AcademicPaper) => void;
+  onAskAi?: (p: AcademicPaper) => void;
   onEdit: (e: LabEntry) => void;
   onDelete: (paperId: string) => void;
   onOpenPdf: (p: AcademicPaper) => void;
@@ -114,6 +116,7 @@ const LabWeiboCard: React.FC<{
   darkMode,
   attachingPdf,
   onOpen,
+  onAskAi,
   onEdit,
   onDelete,
   onOpenPdf,
@@ -314,6 +317,16 @@ const LabWeiboCard: React.FC<{
           >
             <BookOpenCheck className="h-3.5 w-3.5" /> 精读与单篇图谱
           </button>
+
+          {onAskAi && (
+            <button
+              type="button"
+              onClick={() => onAskAi(paper)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-1.5 font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-300"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> 智能问答
+            </button>
+          )}
 
           {paper.localPdfUrl ? (
             <>
@@ -560,6 +573,7 @@ export function LabLibrary({
   currentUser,
   darkMode,
   onOpen,
+  onAskAi,
   onChanged,
   onSocialUpdate,
   onLike,
@@ -1065,6 +1079,7 @@ export function LabLibrary({
                   darkMode={darkMode}
                   attachingPdf={attachingPaperId === entry.paperId}
                   onOpen={onOpen}
+                  onAskAi={onAskAi}
                   onEdit={openEdit}
                   onDelete={(pid) => {
                     if (window.confirm('确认将该文献移出课题组文献库吗？（公共池与个人收藏会保留）')) {

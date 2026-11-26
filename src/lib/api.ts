@@ -517,3 +517,132 @@ export async function uploadAndParsePaperPdf(paperId: string, file: File): Promi
   if (!res.ok) throw new Error(data.error || 'PDF 上传与解析失败');
   return data.paper as AcademicPaper;
 }
+
+/* ---------- CCSwitch-Style LLM API Profiles & Multi-Paper Q&A ---------- */
+export async function fetchLlmProfiles(): Promise<import('../types/paper').LlmProfile[]> {
+  const res = await apiFetch('/api/llm/profiles', { headers: authHeaders() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '读取大模型配置失败');
+  return (data.profiles || []) as import('../types/paper').LlmProfile[];
+}
+
+export async function saveLlmProfile(payload: {
+  id?: string;
+  name: string;
+  protocol: import('../types/paper').LlmProtocol;
+  baseUrl: string;
+  apiKey?: string;
+  model: string;
+  temperature?: number;
+  isActive?: boolean;
+}): Promise<{ profile: import('../types/paper').LlmProfile; profiles: import('../types/paper').LlmProfile[] }> {
+  const url = payload.id ? `/api/llm/profiles/${encodeURIComponent(payload.id)}` : '/api/llm/profiles';
+  const res = await apiFetch(url, {
+    method: payload.id ? 'PUT' : 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '保存大模型配置失败');
+  return data as { profile: import('../types/paper').LlmProfile; profiles: import('../types/paper').LlmProfile[] };
+}
+
+export async function activateLlmProfile(id: string): Promise<import('../types/paper').LlmProfile[]> {
+  const res = await apiFetch(`/api/llm/profiles/${encodeURIComponent(id)}/activate`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '切换大模型配置失败');
+  return (data.profiles || []) as import('../types/paper').LlmProfile[];
+}
+
+export async function deleteLlmProfile(id: string): Promise<import('../types/paper').LlmProfile[]> {
+  const res = await apiFetch(`/api/llm/profiles/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '删除大模型配置失败');
+  return (data.profiles || []) as import('../types/paper').LlmProfile[];
+}
+
+export async function testLlmProfileApi(payload: {
+  profileId?: string;
+  protocol?: import('../types/paper').LlmProtocol;
+  baseUrl?: string;
+  apiKey?: string;
+  model?: string;
+}): Promise<import('../types/paper').LlmTestResult> {
+  const res = await apiFetch('/api/llm/test', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = (await res.json().catch(() => ({}))) as import('../types/paper').LlmTestResult;
+  return data;
+}
+
+export class LlmAskError extends Error {
+  code: string;
+  hint: string;
+  constructor(message: string, code = 'LLM_ERROR', hint = '') {
+    super(message);
+    this.code = code;
+    this.hint = hint;
+  }
+}
+
+export async function askPaperLlmApi(payload: {
+  paperId?: string;
+  question: string;
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  profileId?: string;
+  scope?: 'paper_and_related' | 'single_paper' | 'library_wide';
+  extraPaperIds?: string[];
+}): Promise<{
+  answer: string;
+  model: string;
+  profileName: string;
+  latencyMs: number;
+  usedPapers: import('../types/paper').LlmReferencedPaper[];
+}> {
+  let res: Response;
+  try {
+    res = await apiFetch('/api/llm/ask', {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new LlmAskError(
+      '无法连接 PaperPulse 后端服务，请检查本地网络或刷新页面重试',
+      'CLIENT_NETWORK',
+      '浏览器与平台服务器之间的网络连接中断。'
+    );
+  }
+  const data = (await res.json().catch(() => ({}))) as {
+    answer?: string;
+    model?: string;
+    profileName?: string;
+    latencyMs?: number;
+    usedPapers?: import('../types/paper').LlmReferencedPaper[];
+    error?: string;
+    code?: string;
+    hint?: string;
+  };
+  if (!res.ok) {
+    throw new LlmAskError(
+      data.error || `智能问答请求失败（HTTP ${res.status}）`,
+      data.code || 'LLM_ERROR',
+      data.hint || '请检查模型 API 配置或点击测试连通性排查。'
+    );
+  }
+  return {
+    answer: data.answer || '',
+    model: data.model || '',
+    profileName: data.profileName || '',
+    latencyMs: data.latencyMs || 0,
+    usedPapers: data.usedPapers || [],
+  };
+}

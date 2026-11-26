@@ -303,3 +303,53 @@ export interface LibraryInventory {
   totalPapers: number; databaseBytes: number; assetBytes: number; maxStoredPapers: number;
   papers: Array<{ id: string; title: string; journal: string; publishedDate: string; syncedAt: string; bytes: number; assetBytes: number; visits: number; collectors: number }>;
 }
+
+export type LlmProtocol = 'openai' | 'anthropic';
+
+export interface LlmProfile {
+  id: string;
+  name: string;
+  protocol: LlmProtocol;
+  baseUrl: string;
+  apiKeyMasked: string;
+  hasApiKey: boolean;
+  model: string;
+  temperature: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LlmTestResult {
+  ok: boolean;
+  latencyMs: number;
+  model?: string;
+  endpoint?: string;
+  replyPreview?: string;
+  code?: string;
+  error?: string;
+  hint?: string;
+}
+
+export interface LlmReferencedPaper {
+  id: string;
+  title: string;
+  titleZh?: string;
+  year: string;
+  journal: string;
+  isPrimary: boolean;
+  reason: string;
+}
+
+export interface LlmQaMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+  model?: string;
+  profileName?: string;
+  latencyMs?: number;
+  usedPapers?: LlmReferencedPaper[];
+  errorCode?: string;
+  errorHint?: string;
+}

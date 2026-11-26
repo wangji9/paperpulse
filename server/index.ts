@@ -1,5 +1,13 @@
 import { localizePaper } from './localizePaper.js';
 import { addLabPaper, attachLabPaperPdf, attachPaperPdfAndParse, changeLabEntry, createManualLabPaper, listLabEntries } from './labLibrary.js';
+import {
+  activateUserLlmProfile,
+  askPaperQuestion,
+  deleteUserLlmProfile,
+  listUserLlmProfiles,
+  testUserLlmConnection,
+  upsertUserLlmProfile,
+} from './llmQa.js';
 import { startLocalizationQueue } from './localizationQueue.js';
 import { enqueuePdf, getPdfImportJob, listPdfImportJobs, PdfUploadError, startPdfImportQueue } from './pdfImportQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
@@ -221,6 +229,81 @@ app.use('/api/pdf-imports', requireAuth);
 app.use('/api/sync', requireAuth);
 app.use('/api/auto-sync', requireAuth);
 app.use('/api/lab', requireAuth);
+app.use('/api/llm', requireAuth);
+
+/* ---------- CCSwitch-Style User LLM API Profiles & Multi-Paper Q&A ---------- */
+app.get('/api/llm/profiles', (req, res) => {
+  const actor = extractUser(req)!;
+  res.json({ profiles: listUserLlmProfiles(actor.id) });
+});
+
+app.post('/api/llm/profiles', (req, res) => {
+  try {
+    const actor = extractUser(req)!;
+    const out = upsertUserLlmProfile(actor.id, req.body || {});
+    res.status(201).json(out);
+  } catch (err) {
+    res.status((err as { status?: number }).status || 400).json({
+      error: err instanceof Error ? err.message : '保存模型配置失败',
+    });
+  }
+});
+
+app.put('/api/llm/profiles/:id', (req, res) => {
+  try {
+    const actor = extractUser(req)!;
+    const out = upsertUserLlmProfile(actor.id, { ...(req.body || {}), id: req.params.id });
+    res.json(out);
+  } catch (err) {
+    res.status((err as { status?: number }).status || 400).json({
+      error: err instanceof Error ? err.message : '更新模型配置失败',
+    });
+  }
+});
+
+app.post('/api/llm/profiles/:id/activate', (req, res) => {
+  try {
+    const actor = extractUser(req)!;
+    res.json({ profiles: activateUserLlmProfile(actor.id, req.params.id) });
+  } catch (err) {
+    res.status((err as { status?: number }).status || 400).json({
+      error: err instanceof Error ? err.message : '切换模型配置失败',
+    });
+  }
+});
+
+app.delete('/api/llm/profiles/:id', (req, res) => {
+  try {
+    const actor = extractUser(req)!;
+    res.json({ profiles: deleteUserLlmProfile(actor.id, req.params.id) });
+  } catch (err) {
+    res.status((err as { status?: number }).status || 400).json({
+      error: err instanceof Error ? err.message : '删除模型配置失败',
+    });
+  }
+});
+
+app.post('/api/llm/test', async (req, res) => {
+  const actor = extractUser(req)!;
+  const result = await testUserLlmConnection(actor.id, req.body || {});
+  res.status(result.ok ? 200 : 400).json(result);
+});
+
+app.post('/api/llm/ask', async (req, res) => {
+  try {
+    const actor = extractUser(req)!;
+    const out = await askPaperQuestion(actor, req.body || {});
+    res.json(out);
+  } catch (err) {
+    const e = err as { status?: number; code?: string; error?: string; message?: string; hint?: string };
+    const status = e.status || (e.code === 'AUTH_ERROR' ? 401 : e.code === 'RATE_LIMIT' ? 429 : 502);
+    res.status(status).json({
+      error: e.error || e.message || '智能问答请求失败',
+      code: e.code || 'LLM_ERROR',
+      hint: e.hint || '请检查模型 API 配置与网络连通性后重试。',
+    });
+  }
+});
 app.get('/api/lab', (req,res)=>res.json({entries:listLabEntries(extractUser(req)!)}));
 app.post('/api/lab', (req,res)=>{
   try {

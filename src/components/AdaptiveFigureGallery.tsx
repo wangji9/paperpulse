@@ -19,14 +19,18 @@ interface LayoutRow {
   tiles: LayoutTile[];
 }
 
-const GAP = 8;
+const GAP = 10;
+
+function formatCaptionText(fig: OriginalPaperFigure): string {
+  const raw = (fig.captionZh || fig.analysisZh || fig.captionOriginal || '').trim();
+  if (!raw) return '';
+  return raw
+    .replace(/^(?:Figure|Fig\.?|FIG\.?|图)\s*[\dIVX.]+\s*(?:原文图注译文|原文图注)?\s*[:：.\-—]?\s*/i, '')
+    .trim();
+}
 
 /**
- * Aspect-Ratio-Aware Justified Row Packer (Zero Blank Margins!)
- * - Ultra-wide figures (aspect >= 2.25) occupy their own full-width row at exact natural height.
- * - Normal / square / portrait figures pack tightly into justified rows where every tile
- *   shares the exact row height and has width = rowHeight * (naturalWidth / naturalHeight),
- *   so every image fills 100% of its frame with ZERO blank side padding and ZERO cropping.
+ * Aspect-Ratio-Aware Justified Row Packer (Zero Blank Margins + Clean Paired Captions!)
  */
 function computeJustifiedRows(
   figures: OriginalPaperFigure[],
@@ -37,8 +41,8 @@ function computeJustifiedRows(
 
   const isNarrow = containerW < 560;
   const targetRowH = isNarrow ? 175 : containerW > 1050 ? 255 : 225;
-  const minRowH = isNarrow ? 110 : 145;
-  const maxRowH = isNarrow ? 280 : 350;
+  const minRowH = isNarrow ? 115 : 150;
+  const maxRowH = isNarrow ? 290 : 360;
   const maxPerRow = isNarrow ? 2 : 4;
 
   const getRatio = (f: OriginalPaperFigure): number => {
@@ -50,7 +54,6 @@ function computeJustifiedRows(
     return 1.45;
   };
 
-  // Single figure: display cleanly at its exact natural aspect ratio, full width up to maxH
   if (figures.length === 1) {
     const f = figures[0];
     const r = getRatio(f);
@@ -70,8 +73,6 @@ function computeJustifiedRows(
     const exactH = availW / Math.max(curSum, 0.25);
 
     if (isLast && exactH > maxRowH) {
-      // Do NOT stretch a lone leftover portrait/square figure into a giant box or pad it with empty wings:
-      // render at crisp natural height with exact aspect-matched width!
       const h = Math.round(Math.min(maxRowH, Math.max(targetRowH, minRowH)));
       rows.push({
         tiles: cur.map((it) => ({
@@ -85,7 +86,6 @@ function computeJustifiedRows(
       const h = Math.round(Math.max(minRowH, Math.min(maxRowH, exactH)));
       const rawWidths = cur.map((it) => h * it.r);
       const rawTotal = rawWidths.reduce((s, v) => s + v, 0);
-      // Scale slightly to fill containerW flush on justified rows (avoid sub-pixel right gap)
       const scale = exactH <= maxRowH && rawTotal > 0 ? availW / rawTotal : 1;
       const finalH = Math.round(h * scale);
       let usedW = 0;
@@ -93,8 +93,8 @@ function computeJustifiedRows(
         const isEnd = idx === cur.length - 1;
         const w =
           scale !== 1 && isEnd
-            ? Math.max(60, Math.round(availW - usedW))
-            : Math.max(60, Math.round(rawWidths[idx] * scale));
+            ? Math.max(70, Math.round(availW - usedW))
+            : Math.max(70, Math.round(rawWidths[idx] * scale));
         usedW += w;
         return { fig: it.fig, index: it.index, w, h: finalH };
       });
@@ -108,10 +108,9 @@ function computeJustifiedRows(
     const fig = figures[i];
     const r = getRatio(fig);
 
-    // Ultra-wide panoramic diagram gets its own full-width row
     if (r >= 2.25) {
       flushRow(false);
-      const h = Math.round(Math.max(130, Math.min(390, containerW / r)));
+      const h = Math.round(Math.max(135, Math.min(390, containerW / r)));
       rows.push({ tiles: [{ fig, index: i, w: Math.round(containerW), h }] });
       continue;
     }
@@ -120,7 +119,6 @@ function computeJustifiedRows(
     curSum += r;
     const estWidth = curSum * targetRowH + GAP * (cur.length - 1);
 
-    // Avoid leaving a single awkward orphan on the final row when 2+2 is cleaner than 3+1
     const remaining = figures.length - 1 - i;
     if (cur.length === 2 && remaining === 2 && !isNarrow && estWidth >= containerW * 0.72) {
       flushRow(false);
@@ -159,7 +157,6 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
     return () => ro.disconnect();
   }, []);
 
-  // Keyboard navigation & zoom shortcuts in lightbox
   useEffect(() => {
     if (lightboxIdx === null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -183,7 +180,6 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxIdx, figures.length]);
 
-  // Native non-passive wheel zoom in lightbox
   useEffect(() => {
     if (lightboxIdx === null) return;
     const el = viewportRef.current;
@@ -342,18 +338,20 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                   transformOrigin: 'center center',
                 }}
-                className="max-h-[74vh] max-w-[90vw] rounded-lg bg-white object-contain shadow-2xl transition-transform duration-75"
+                className="max-h-[72vh] max-w-[90vw] rounded-lg bg-white object-contain shadow-2xl transition-transform duration-75"
               />
             </div>
 
-            {/* Caption Footer */}
+            {/* Paired Full Caption Footer */}
             {(activeFig.captionZh || activeFig.analysisZh || activeFig.captionOriginal) && (
-              <div className="border-t border-slate-800 bg-slate-900/95 px-6 py-3">
-                <p className="leading-relaxed text-slate-200">
-                  {activeFig.captionZh || activeFig.analysisZh || activeFig.captionOriginal}
+              <div className="border-t border-slate-800 bg-slate-900/95 px-6 py-3.5">
+                <p className="leading-relaxed text-slate-100">
+                  <span className="mr-2 font-mono font-bold text-sky-400">{activeFig.label}</span>
+                  {formatCaptionText(activeFig)}
                 </p>
                 {activeFig.captionOriginal &&
-                  activeFig.captionOriginal !== (activeFig.captionZh || activeFig.analysisZh) && (
+                  formatCaptionText(activeFig) !==
+                    activeFig.captionOriginal.replace(/^(?:Figure|Fig\.?|FIG\.?|图)\s*[\dIVX.]+\s*[:：.\-—]?\s*/i, '').trim() && (
                     <p className="mt-1 leading-relaxed text-slate-400">{activeFig.captionOriginal}</p>
                   )}
               </div>
@@ -365,37 +363,61 @@ export const AdaptiveFigureGallery: React.FC<AdaptiveFigureGalleryProps> = ({ fi
 
   return (
     <>
-      <div ref={containerRef} className="mt-3 w-full space-y-2">
+      <div ref={containerRef} className="mt-3 w-full space-y-2.5">
         {rows.map((row, rowIdx) => (
           <div key={rowIdx} className="flex items-stretch" style={{ gap: `${GAP}px` }}>
-            {row.tiles.map(({ fig, index, w, h }) => (
-              <button
-                key={fig.id}
-                type="button"
-                onClick={() => openLightbox(index)}
-                title={`${fig.label}（点击放大查看原图与图注）`}
-                style={{ width: `${w}px`, height: `${h}px` }}
-                className={`group relative shrink-0 overflow-hidden rounded-xl border bg-white transition-all hover:shadow-md ${
-                  darkMode
-                    ? 'border-slate-700 hover:border-sky-400'
-                    : 'border-slate-200/90 hover:border-[#0072BD]'
-                }`}
-              >
-                <img
-                  src={fig.url}
-                  alt={fig.label}
-                  loading="lazy"
-                  onLoad={(e) => handleImgLoad(fig.id, e)}
-                  className="block h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
-                />
-                <span className="pointer-events-none absolute top-1.5 left-1.5 rounded-md bg-slate-900/75 px-2 py-0.5 font-mono text-xs font-semibold text-white backdrop-blur-xs">
-                  {fig.label}
-                </span>
-                <span className="pointer-events-none absolute top-1.5 right-1.5 rounded-md bg-slate-900/65 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </span>
-              </button>
-            ))}
+            {row.tiles.map(({ fig, index, w, h }) => {
+              const captionText = formatCaptionText(fig);
+              return (
+                <figure
+                  key={fig.id}
+                  style={{ width: `${w}px` }}
+                  className={`group flex shrink-0 flex-col overflow-hidden rounded-xl border transition-all hover:shadow-md ${
+                    darkMode
+                      ? 'border-slate-700 bg-slate-900 hover:border-sky-400'
+                      : 'border-slate-200/90 bg-white hover:border-[#0072BD]'
+                  }`}
+                >
+                  {/* Pure Unobstructed Image Box — Exact Aspect-Ratio Match, Zero Side Whitespace */}
+                  <button
+                    type="button"
+                    onClick={() => openLightbox(index)}
+                    title={`${fig.label}${captionText ? `：${captionText}` : ''}（点击放大查看）`}
+                    style={{ height: `${h}px` }}
+                    className="relative block w-full overflow-hidden bg-white"
+                  >
+                    <img
+                      src={fig.url}
+                      alt={fig.label}
+                      loading="lazy"
+                      onLoad={(e) => handleImgLoad(fig.id, e)}
+                      className="block h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.015]"
+                    />
+                    <span className="pointer-events-none absolute top-1.5 right-1.5 rounded-md bg-slate-900/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    </span>
+                  </button>
+
+                  {/* Paired Figure Caption Bar Below Image (Never Covers Diagram!) */}
+                  <figcaption
+                    onClick={() => openLightbox(index)}
+                    title={captionText ? `${fig.label}: ${captionText}` : fig.label}
+                    className={`flex flex-1 cursor-pointer items-start gap-1.5 border-t px-2.5 py-2 text-left leading-snug ${
+                      darkMode
+                        ? 'border-slate-800 bg-slate-900/90 text-slate-300'
+                        : 'border-slate-100 bg-slate-50/90 text-slate-700'
+                    }`}
+                  >
+                    <span className="shrink-0 rounded bg-[#0072BD] px-1.5 py-0.5 font-mono font-bold text-white">
+                      {fig.label}
+                    </span>
+                    <span className="line-clamp-2 min-w-0 flex-1">
+                      {captionText || '点击查看原图'}
+                    </span>
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
         ))}
       </div>

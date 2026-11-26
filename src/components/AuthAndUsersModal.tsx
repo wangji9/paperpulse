@@ -28,6 +28,7 @@ import {
   updateUserAccount,
 } from '../lib/api';
 import { ReadingDashboard } from './ReadingDashboard';
+import { LlmSettingsPanel } from './LlmSettingsPanel';
 import { formatDurationZh } from './SocialEngagement';
 
 /**
@@ -859,6 +860,7 @@ export const UserManagementPanel: React.FC<UserManagementPanelProps> = ({
           </div>
         </div>}
       </div>
+      {currentUser && <LlmSettingsPanel darkMode={darkMode} />}
       {currentUser && <ReadingDashboard key={currentUser.id} currentUser={currentUser} users={users} onOpenPaper={onOpenPaper} />}
     </div>
   );

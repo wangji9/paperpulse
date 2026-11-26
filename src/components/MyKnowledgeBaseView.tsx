@@ -31,6 +31,7 @@ interface MyKnowledgeBaseViewProps {
   currentUser: UserProfile;
   darkMode: boolean;
   onOpenDetail: (paper: AcademicPaper) => void;
+  onAskAi?: (paper: AcademicPaper) => void;
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
   onReparse: (id: string) => Promise<void>;
@@ -56,6 +57,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
   currentUser,
   darkMode,
   onOpenDetail,
+  onAskAi,
   onEdit,
   onDelete,
   onReparse,
@@ -633,6 +635,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
               currentUser={currentUser}
               darkMode={darkMode}
               onOpenDetail={onOpenDetail}
+              onAskAi={onAskAi}
               onEdit={onEdit}
               onDelete={onDelete}
               onReparse={onReparse}

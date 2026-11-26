@@ -44,6 +44,7 @@ interface PaperFeedCardProps {
   currentUser: UserProfile | null;
   darkMode: boolean;
   onOpenDetail: (paper: AcademicPaper) => void;
+  onAskAi?: (paper: AcademicPaper) => void;
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
   onReparse: (id: string) => Promise<void>;
@@ -70,6 +71,7 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
   currentUser,
   darkMode,
   onOpenDetail,
+  onAskAi,
   onEdit,
   onDelete,
   onReparse,
@@ -415,6 +417,17 @@ export const PaperFeedCard: React.FC<PaperFeedCardProps> = ({
             <BookOpenCheck className="h-4 w-4" />
             精读全文与原文图表
           </button>
+
+          {onAskAi && (
+            <button
+              type="button"
+              onClick={() => onAskAi(paper)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3.5 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-300"
+            >
+              <Sparkles className="h-4 w-4" />
+              智能问答
+            </button>
+          )}
 
           {resolvePaperOriginalUrl(paper) && (
             <a

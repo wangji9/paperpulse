@@ -44,6 +44,7 @@ interface DeepAnatomyModalProps {
   currentUser: UserProfile | null;
   darkMode: boolean;
   onClose: () => void;
+  onAskAi?: (paper: AcademicPaper) => void;
   onEdit: (paper: AcademicPaper) => void;
   onDelete: (id: string) => void;
   onReparse: (id: string) => Promise<void>;
@@ -89,6 +90,7 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   currentUser,
   darkMode,
   onClose,
+  onAskAi,
   onEdit,
   onDelete,
   onReparse,
@@ -266,6 +268,16 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
                 className="hidden"
                 onChange={(e) => void handleModalPdfUpload(e)}
               />
+              {onAskAi && (
+                <button
+                  type="button"
+                  onClick={() => onAskAi(paper)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-sm font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-300"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  智能问答
+                </button>
+              )}
               {paper.localPdfUrl && (
                 <button
                   type="button"
