@@ -40,10 +40,13 @@ async function main() {
   const paddleReady = await waitForPaddleReady();
   console.log(`Baidu PaddleOCR parser ready: ${paddleReady}`);
 
+  const onlyId = (process.env.ONLY_PAPER_ID || '').trim();
   const db = new DatabaseSync(path.join(DATA_DIR, 'paperpulse.db'));
-  const rows = db
-    .prepare('SELECT paper_id, metadata FROM lab_papers ORDER BY publication_year DESC')
-    .all() as Array<{ paper_id: string; metadata: string }>;
+  const rows = (
+    onlyId
+      ? db.prepare('SELECT paper_id, metadata FROM lab_papers WHERE paper_id = ?').all(onlyId)
+      : db.prepare('SELECT paper_id, metadata FROM lab_papers ORDER BY publication_year DESC').all()
+  ) as Array<{ paper_id: string; metadata: string }>;
 
   console.log(`Re-parsing ${rows.length} lab papers (ALL figures, ALL tables, clean abstracts & sections)...`);
   let updatedCount = 0;

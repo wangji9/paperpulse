@@ -356,12 +356,11 @@ def parse_pdf_with_baidu(pdf_path: str, out_dir: str | None = None, url_prefix: 
         if pno < 2:
             raw_full_text_p12 += "\n" + page_native_text
 
-        # Once we pass References / Author Biographies (after page 2), stop scanning entirely so
-        # ZERO author biography portraits or reference clutter are ever extracted!
+        # Once we pass References / Author Biographies (only in the second half of the paper,
+        # so a "References" column header in Table 1 on page 3 never triggers early stop!), stop scanning!
         if entered_references:
             break
-        if pno >= 2 and REFERENCES_START_RE.search(page_native_text):
-            # Still process this page only up to the References heading y-coordinate, then stop on next page
+        if pno >= max(3, int(total_pages * 0.55)) and REFERENCES_START_RE.search(page_native_text):
             entered_references = True
 
         # Find y-coordinate of References / Biographies heading on this page (if present)
