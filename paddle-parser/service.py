@@ -37,7 +37,12 @@ def get_layout_model() -> LayoutDetection:
             print(f"[paddle-parser] Loading Baidu {LAYOUT_MODEL_NAME} ...", flush=True)
             t0 = time.time()
             try:
-                _layout_model = LayoutDetection(model_name=LAYOUT_MODEL_NAME)
+                _layout_model = LayoutDetection(
+                    model_name=LAYOUT_MODEL_NAME,
+                    device="cpu",
+                    enable_mkldnn=False,
+                    cpu_threads=int(os.environ.get("OMP_NUM_THREADS", "16")),
+                )
                 _ready = True
                 _load_error = ""
                 print(f"[paddle-parser] Loaded {LAYOUT_MODEL_NAME} in {time.time() - t0:.1f}s", flush=True)
@@ -56,7 +61,14 @@ def get_ocr_model():
         if _ocr_model is None:
             from paddleocr import PaddleOCR
             print("[paddle-parser] Lazy-loading Baidu PaddleOCR for scanned PDF fallback...", flush=True)
-            _ocr_model = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False)
+            _ocr_model = PaddleOCR(
+                device="cpu",
+                enable_mkldnn=False,
+                cpu_threads=int(os.environ.get("OMP_NUM_THREADS", "16")),
+                use_doc_orientation_classify=False,
+                use_doc_unwarping=False,
+                use_textline_orientation=False,
+            )
     return _ocr_model
 
 
