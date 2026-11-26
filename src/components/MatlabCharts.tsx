@@ -1,6 +1,7 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { forceCenter, forceCollide, forceManyBody, forceSimulation, forceX, forceY, type SimulationNodeDatum } from 'd3-force';
-import { Download, Sparkles } from 'lucide-react';
+import { Download, Maximize2, Minimize2, RotateCcw, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
 import type { AcademicPaper, ResearchTopic } from '../types/paper';
 import { TOPIC_META } from '../lib/constants';
 import type { LabAnalysisResult, PotentialDirectionInsight } from '../lib/labAnalysis';
@@ -97,47 +98,258 @@ const MatlabFigureShell: React.FC<{
   svgRef: React.RefObject<SVGSVGElement | null>;
   extraControls?: React.ReactNode;
   children: React.ReactNode;
-}> = ({ figNum, title, subtitle, filename, darkMode, svgRef, extraControls, children }) => (
-  <section
-    className={`rounded-2xl border p-4 sm:p-5 transition-shadow hover:shadow-md ${
-      darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-xs'
-    }`}
-  >
-    <div className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 pb-2.5 dark:border-slate-800">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded bg-[#0072BD] px-2 py-0.5 font-mono text-xs font-semibold text-white">
-            {figNum}
-          </span>
-          <h3 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
-            {title}
-          </h3>
+}> = ({ figNum, title, subtitle, filename, darkMode, svgRef, extraControls, children }) => {
+  const [zoomModalOpen, setZoomModalOpen] = useState(false);
+  const [modalZoom, setModalZoom] = useState(1.1);
+  const [modalPan, setModalPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const panStartRef = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+
+  useEffect(() => {
+    if (!zoomModalOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoomModalOpen(false);
+      else if (e.key === '+' || e.key === '=') setModalZoom((z) => Math.min(3.6, +(z * 1.15).toFixed(2)));
+      else if (e.key === '-') setModalZoom((z) => Math.max(0.5, +(z * 0.87).toFixed(2)));
+      else if (e.key === '0') {
+        setModalZoom(1);
+        setModalPan({ x: 0, y: 0 });
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [zoomModalOpen]);
+
+  useEffect(() => {
+    if (!zoomModalOpen) return;
+    const el = viewportRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.12 : 0.89;
+      setModalZoom((z) => Math.max(0.5, Math.min(3.6, +(z * factor).toFixed(2))));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [zoomModalOpen]);
+
+  const openZoomModal = () => {
+    setModalZoom(1.08);
+    setModalPan({ x: 0, y: 0 });
+    setZoomModalOpen(true);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement)?.closest('button')) return;
+    panStartRef.current = { x: e.clientX, y: e.clientY, px: modalPan.x, py: modalPan.y };
+    setIsPanning(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!panStartRef.current) return;
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    setModalPan({ x: panStartRef.current.px + dx, y: panStartRef.current.py + dy });
+  };
+
+  const handlePointerUp = () => {
+    panStartRef.current = null;
+    setIsPanning(false);
+  };
+
+  const modalPortal =
+    zoomModalOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className={`fixed inset-0 z-[95] flex flex-col backdrop-blur-sm ${
+              darkMode ? 'bg-slate-950/96 text-slate-100' : 'bg-white/98 text-slate-900'
+            }`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${figNum} ${title} 放大查看`}
+          >
+            {/* Fullscreen Lightbox Top Toolbar */}
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3 ${
+                darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-50/90'
+              }`}
+            >
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="rounded bg-[#0072BD] px-2.5 py-0.5 font-mono text-xs font-semibold text-white">
+                  {figNum}
+                </span>
+                <h3 className="text-base font-bold tracking-tight">{title}</h3>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {extraControls}
+                <div
+                  className={`inline-flex items-center rounded-xl border ${
+                    darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setModalZoom((z) => Math.max(0.5, +(z * 0.85).toFixed(2)))}
+                    title="缩小 (-)"
+                    className="px-2.5 py-1.5 text-slate-600 hover:text-[#0072BD] dark:text-slate-300"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-[54px] text-center font-mono text-xs font-semibold">
+                    {Math.round(modalZoom * 100)}%
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setModalZoom((z) => Math.min(3.6, +(z * 1.18).toFixed(2)))}
+                    title="放大 (+)"
+                    className="px-2.5 py-1.5 text-slate-600 hover:text-[#0072BD] dark:text-slate-300"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalZoom(1);
+                    setModalPan({ x: 0, y: 0 });
+                  }}
+                  title="重置缩放与位置 (0)"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <RotateCcw className="h-4 w-4" /> 重置
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => downloadSvgElement(svgRef.current, filename, false)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <Download className="h-4 w-4" /> SVG
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadSvgElement(svgRef.current, filename, true)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  PNG
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setZoomModalOpen(false)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#0072BD] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#005a96]"
+                >
+                  <Minimize2 className="h-4 w-4" /> 退出放大
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive Zoom & Pan Viewport */}
+            <div
+              ref={viewportRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              className={`relative flex flex-1 items-center justify-center overflow-hidden p-6 select-none ${
+                isPanning ? 'cursor-grabbing' : 'cursor-grab'
+              }`}
+            >
+              <div
+                style={{
+                  transform: `translate(${modalPan.x}px, ${modalPan.y}px) scale(${modalZoom})`,
+                  transformOrigin: 'center center',
+                  width: 'min(92vw, 1320px)',
+                }}
+                className="transition-transform duration-75 [&_svg]:mx-auto [&_svg]:block [&_svg]:max-h-[78vh] [&_svg]:max-w-none [&_svg]:w-full"
+              >
+                {children}
+              </div>
+
+              <div
+                className={`pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border px-4 py-1.5 text-xs font-medium shadow-xs ${
+                  darkMode
+                    ? 'border-slate-700 bg-slate-900/90 text-slate-300'
+                    : 'border-slate-200 bg-white/90 text-slate-600'
+                }`}
+              >
+                滚轮自由缩放 · 按住拖拽平移 · 按 ESC 退出全屏
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <section
+        className={`rounded-2xl border p-4 sm:p-5 transition-shadow hover:shadow-md ${
+          darkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200/90 bg-white shadow-xs'
+        }`}
+      >
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 pb-2.5 dark:border-slate-800">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded bg-[#0072BD] px-2 py-0.5 font-mono text-xs font-semibold text-white">
+                {figNum}
+              </span>
+              <h3 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
+                {title}
+              </h3>
+            </div>
+            {subtitle && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {extraControls}
+            <button
+              type="button"
+              onClick={openZoomModal}
+              title="全屏放大并支持滚轮缩放与拖拽查看"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#0072BD]/40 bg-[#0072BD]/8 px-2.5 py-1 text-xs font-semibold text-[#0072BD] hover:bg-[#0072BD] hover:text-white dark:border-sky-500/40 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500 dark:hover:text-white"
+            >
+              <Maximize2 className="h-3.5 w-3.5" /> 放大
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadSvgElement(svgRef.current, filename, false)}
+              title="导出高清矢量 SVG（适合论文插图）"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
+            >
+              <Download className="h-3.5 w-3.5" /> SVG
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadSvgElement(svgRef.current, filename, true)}
+              title="导出 2x 高清 PNG"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
+            >
+              PNG
+            </button>
+          </div>
         </div>
-        {subtitle && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {extraControls}
-        <button
-          type="button"
-          onClick={() => downloadSvgElement(svgRef.current, filename, false)}
-          title="导出高清矢量 SVG（适合论文插图）"
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
-        >
-          <Download className="h-3 w-3" /> SVG
-        </button>
-        <button
-          type="button"
-          onClick={() => downloadSvgElement(svgRef.current, filename, true)}
-          title="导出 2x 高清 PNG"
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
-        >
-          PNG
-        </button>
-      </div>
-    </div>
-    {children}
-  </section>
-);
+        {zoomModalOpen ? (
+          <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-6 text-center dark:border-slate-700 dark:bg-slate-800/40">
+            <p className="text-slate-600 dark:text-slate-300">图表正在全屏放大视图中展示</p>
+            <button
+              type="button"
+              onClick={() => setZoomModalOpen(false)}
+              className="rounded-lg bg-[#0072BD] px-3.5 py-1.5 font-semibold text-white hover:bg-[#005a96]"
+            >
+              返回原位
+            </button>
+          </div>
+        ) : (
+          children
+        )}
+      </section>
+      {modalPortal}
+    </>
+  );
+};
 
 /* ============================================================================
  * Fig. 1: MATLAB Dual-Axis (yyaxis) Publication Timeline & Cumulative Growth
@@ -1627,6 +1839,7 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
   onSelectAuthor: (authorName: string) => void;
 }> = ({ analysis, darkMode, onSelectAuthor }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<{ r: number; c: number } | null>(null);
   const top = analysis.canonicalAuthors.slice(0, 12);
 
   let maxPair = 1;
@@ -1642,12 +1855,22 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
     }
   }
 
-  const cell = 28;
-  const pad = { top: 68, right: 68, bottom: 20, left: 74 };
+  const cell = 38;
+  const pad = { top: 86, right: 78, bottom: 26, left: 94 };
   const gridSize = top.length * cell;
   const W = pad.left + gridSize + pad.right;
   const H = pad.top + gridSize + pad.bottom;
   const axisInk = darkMode ? '#cbd5e1' : '#1e293b';
+
+  const hoveredInfo =
+    hoveredCell && top[hoveredCell.r] && top[hoveredCell.c]
+      ? {
+          row: top[hoveredCell.r],
+          col: top[hoveredCell.c],
+          isDiag: hoveredCell.r === hoveredCell.c,
+          w: weightOf(top[hoveredCell.r].info.id, top[hoveredCell.c].info.id),
+        }
+      : null;
 
   return (
     <MatlabFigureShell
@@ -1657,7 +1880,14 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
       darkMode={darkMode}
       svgRef={svgRef}
     >
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full max-h-[420px] select-none" role="img" aria-label="作者合作紧密度热力矩阵">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${W} ${H}`}
+        className="mx-auto block w-full max-w-[780px] select-none"
+        role="img"
+        aria-label="作者合作紧密度热力矩阵"
+        onMouseLeave={() => setHoveredCell(null)}
+      >
         <defs>
           <linearGradient id="matlab-parula-f9" x1="0" y1="1" x2="0" y2="0">
             <stop offset="0%" stopColor={parulaColor(0.05)} />
@@ -1667,33 +1897,39 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
         </defs>
         <rect x={0} y={0} width={W} height={H} fill={darkMode ? '#0f172a' : '#ffffff'} />
 
-        {top.map((a, i) => (
-          <g key={`lbl-${a.info.id}`}>
-            <text
-              x={pad.left - 8}
-              y={pad.top + i * cell + cell / 2 + 3.5}
-              textAnchor="end"
-              fontSize="10"
-              fontWeight="600"
-              fill={axisInk}
-              className="cursor-pointer"
-              onClick={() => onSelectAuthor(a.info.shortName)}
-            >
-              {a.info.shortName}
-            </text>
-            <text
-              x={pad.left + i * cell + cell / 2}
-              y={pad.top - 8}
-              textAnchor="start"
-              fontSize="10"
-              fontWeight="600"
-              fill={axisInk}
-              transform={`rotate(-42 ${pad.left + i * cell + cell / 2} ${pad.top - 8})`}
-            >
-              {a.info.shortName}
-            </text>
-          </g>
-        ))}
+        {top.map((a, i) => {
+          const isRowActive = hoveredCell?.r === i;
+          const isColActive = hoveredCell?.c === i;
+          return (
+            <g key={`lbl-${a.info.id}`}>
+              <text
+                x={pad.left - 10}
+                y={pad.top + i * cell + cell / 2 + 4.5}
+                textAnchor="end"
+                fontSize="13"
+                fontWeight={isRowActive ? '800' : '600'}
+                fill={isRowActive ? MATLAB_COLORS[0] : axisInk}
+                className="cursor-pointer"
+                onClick={() => onSelectAuthor(a.info.shortName)}
+              >
+                {a.info.shortName}
+              </text>
+              <text
+                x={pad.left + i * cell + cell / 2}
+                y={pad.top - 10}
+                textAnchor="start"
+                fontSize="13"
+                fontWeight={isColActive ? '800' : '600'}
+                fill={isColActive ? MATLAB_COLORS[0] : axisInk}
+                className="cursor-pointer"
+                onClick={() => onSelectAuthor(a.info.shortName)}
+                transform={`rotate(-42 ${pad.left + i * cell + cell / 2} ${pad.top - 10})`}
+              >
+                {a.info.shortName}
+              </text>
+            </g>
+          );
+        })}
 
         {top.map((rowA, r) =>
           top.map((colA, c) => {
@@ -1708,17 +1944,33 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
                 ? parulaColor(norm)
                 : darkMode ? '#0b1220' : '#f8fafc';
             const txtFill = isDiag ? axisInk : norm > 0.62 ? '#0f172a' : '#ffffff';
+            const isFocus = hoveredCell?.r === r && hoveredCell?.c === c;
+            const isCrosshair = hoveredCell && (hoveredCell.r === r || hoveredCell.c === c) && !isFocus;
 
             return (
-              <g key={`${r}-${c}`}>
-                <rect x={x} y={y} width={cell} height={cell} fill={fill} stroke={darkMode ? '#0f172a' : '#ffffff'} strokeWidth={1.2} />
+              <g
+                key={`${r}-${c}`}
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredCell({ r, c })}
+                onClick={() => onSelectAuthor(rowA.info.shortName)}
+              >
+                <rect
+                  x={x}
+                  y={y}
+                  width={cell}
+                  height={cell}
+                  fill={fill}
+                  fillOpacity={hoveredCell && !isFocus && !isCrosshair ? 0.72 : 1}
+                  stroke={isFocus ? '#D95319' : darkMode ? '#0f172a' : '#ffffff'}
+                  strokeWidth={isFocus ? 2.4 : 1.4}
+                />
                 {(isDiag || w > 0) && (
                   <text
                     x={x + cell / 2}
-                    y={y + cell / 2 + 3.5}
+                    y={y + cell / 2 + 4.5}
                     textAnchor="middle"
-                    fontSize="9.5"
-                    fontWeight={isDiag ? '700' : '600'}
+                    fontSize="12.5"
+                    fontWeight={isDiag || isFocus ? '800' : '600'}
                     fontFamily="ui-monospace, monospace"
                     fill={txtFill}
                   >
@@ -1735,15 +1987,29 @@ export const MatlabCoauthorAffinityHeatmap: React.FC<{
           })
         )}
 
-        <rect x={pad.left} y={pad.top} width={gridSize} height={gridSize} fill="none" stroke={axisInk} strokeWidth={1.2} />
+        <rect x={pad.left} y={pad.top} width={gridSize} height={gridSize} fill="none" stroke={axisInk} strokeWidth={1.5} />
 
-        <g transform={`translate(${pad.left + gridSize + 14}, ${pad.top})`}>
-          <rect width={12} height={gridSize} fill="url(#matlab-parula-f9)" stroke={axisInk} strokeWidth={0.9} />
-          <text x={16} y={9} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{maxPair}</text>
-          <text x={16} y={gridSize / 2 + 3} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{Math.round(maxPair / 2)}</text>
-          <text x={16} y={gridSize} fontSize="9.5" fontFamily="ui-monospace, monospace" fill={axisInk}>0</text>
+        <g transform={`translate(${pad.left + gridSize + 18}, ${pad.top})`}>
+          <rect width={16} height={gridSize} fill="url(#matlab-parula-f9)" stroke={axisInk} strokeWidth={1.1} />
+          <text x={22} y={11} fontSize="11.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{maxPair}</text>
+          <text x={22} y={gridSize / 2 + 4} fontSize="11.5" fontFamily="ui-monospace, monospace" fill={axisInk}>{Math.round(maxPair / 2)}</text>
+          <text x={22} y={gridSize} fontSize="11.5" fontFamily="ui-monospace, monospace" fill={axisInk}>0</text>
         </g>
       </svg>
+      {hoveredInfo && (
+        <div
+          className={`mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3.5 py-2 text-xs font-medium ${
+            darkMode ? 'border-slate-700 bg-slate-800/80 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'
+          }`}
+        >
+          <span>
+            {hoveredInfo.isDiag
+              ? `${hoveredInfo.row.info.displayName} · 个人收录总计 ${hoveredInfo.w} 篇`
+              : `${hoveredInfo.row.info.shortName} × ${hoveredInfo.col.info.shortName} · 共同署名 ${hoveredInfo.w} 篇`}
+          </span>
+          <span className="text-slate-500 dark:text-slate-400">点击单元格可快速筛选该作者文献</span>
+        </div>
+      )}
     </MatlabFigureShell>
   );
 };

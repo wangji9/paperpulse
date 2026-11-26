@@ -33,7 +33,7 @@ export const LabTopicGraph: React.FC<{
 
     if (mode === 'heterogeneous') {
       title = '课题组全景知识图谱';
-      subtitle = '研究方向 — 成果论文 — 核心热词动态力导向关联';
+      subtitle = '';
       legend = [
         { group: 'topic', label: '研究方向枢纽', color: MATLAB_COLORS[3], shape: 'hex' },
         { group: 'paper_new', label: '2026-2027 前沿成果', color: MATLAB_COLORS[1], shape: 'circle' },
@@ -112,7 +112,7 @@ export const LabTopicGraph: React.FC<{
       });
     } else if (mode === 'coauthor') {
       title = '作者协作力导向网络';
-      subtitle = '共同署名合作强度与核心学术枢纽';
+      subtitle = '';
       legend = [
         { group: 'pi', label: '课题组核心导师 / 通讯枢纽', color: MATLAB_COLORS[1], shape: 'hex' },
         { group: 'lead', label: '主力一作研究者', color: MATLAB_COLORS[0], shape: 'circle' },
@@ -152,7 +152,7 @@ export const LabTopicGraph: React.FC<{
       });
     } else if (mode === 'social_clusters') {
       title = '作者社交属性与研发子群图谱';
-      subtitle = '按主攻工业场景聚类，展示枢纽导师、跨方向桥梁与子团队分工关联';
+      subtitle = '';
       const domColorMap = new Map<string, string>(
         analysis.domainAxes.map((ax, i) => [ax.id, MATLAB_COLORS[i % MATLAB_COLORS.length]])
       );
@@ -210,7 +210,7 @@ export const LabTopicGraph: React.FC<{
       });
     } else if (mode === 'keywords') {
       title = '热词共现与演进图谱';
-      subtitle = '节点大小对应频次，Parula色带映射活跃年份（2023→2027）';
+      subtitle = '';
       legend = [
         { group: 'y23', label: '2023-2024 早期基石概念', color: parulaColor(0.12), shape: 'circle' },
         { group: 'y25', label: '2025 融合演进概念', color: parulaColor(0.52), shape: 'circle' },
@@ -248,8 +248,8 @@ export const LabTopicGraph: React.FC<{
         });
       });
     } else {
-      title = '研究脉络演进与潜在前沿方向拓扑图（2023 → 2027 → 未来潜在空白）';
-      subtitle = '左侧为课题组核心技术基石，中间为已落地工业场景，右侧脉冲节点为基于空白矩阵挖掘的高潜力交叉方向';
+      title = '研究脉络与潜在前沿方向图谱';
+      subtitle = '';
       legend = [
         { group: 'tech', label: '核心技术方法轴', color: MATLAB_COLORS[0], shape: 'hex' },
         { group: 'domain', label: '工业应用场景轴', color: MATLAB_COLORS[4], shape: 'circle' },
@@ -365,7 +365,7 @@ export const LabTopicGraph: React.FC<{
       links={graphData.links}
       legend={graphData.legend}
       darkMode={darkMode}
-      height={540}
+      height={660}
       exportFilename={`paperpulse-lab-graph-${mode}`}
       topControls={
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
