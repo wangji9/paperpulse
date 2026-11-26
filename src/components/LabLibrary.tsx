@@ -842,7 +842,7 @@ export function LabLibrary({
   };
 
   return (
-    <div className="lab-space mx-auto max-w-[1800px] space-y-5 text-base text-slate-800 dark:text-slate-100">
+    <div className="lab-space w-full space-y-5 text-base text-slate-800 dark:text-slate-100">
       <input
         ref={pdfInputRef}
         type="file"
