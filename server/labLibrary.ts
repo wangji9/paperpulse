@@ -11,6 +11,7 @@ import { localizeStoredPaper } from './localizationQueue.js';
 import { extractUploadedPdf } from './uploadedPdf.js';
 import { extractOriginalPaperMedia } from './paperMediaExtractor.js';
 import { localizePaper } from './localizePaper.js';
+import { looksCorruptedAbstract, sanitizeCleanAbstract } from './paddleParser.js';
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || 'data');
 const PAPER_ASSETS_DIR = path.join(DATA_DIR, 'paper-assets');
@@ -112,15 +113,13 @@ export async function attachPaperPdfAndParse(
 
   try {
     const evidence = await extractUploadedPdf(target);
-    const extractedAbstract = (evidence.sections.abstract || '')
-      .replace(/-\n(?=[a-z])/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 7000);
+    const extractedAbstract = sanitizeCleanAbstract(evidence.sections.abstract || '');
+    const existingClean = sanitizeCleanAbstract(existing.abstractOriginal || '');
     const abstractOriginal =
-      extractedAbstract.length > (existing.abstractOriginal || '').trim().length
+      extractedAbstract && (looksCorruptedAbstract(existing.abstractOriginal) || extractedAbstract.length >= 80)
         ? extractedAbstract
-        : existing.abstractOriginal || extractedAbstract;
+        : existingClean || extractedAbstract;
+    const abstractChanged = abstractOriginal !== (existing.abstractOriginal || '').trim() || looksCorruptedAbstract(existing.abstractZh);
 
     const bodySections = Object.entries(evidence.sections)
       .filter(([k]) => !/reference|acknowledg|appendix/.test(k))
@@ -137,11 +136,14 @@ export async function attachPaperPdfAndParse(
       {
         ...nextPaper,
         abstractOriginal,
-        digestSummary: existing.digestSummary || abstractOriginal.slice(0, 1200),
+        ...(abstractChanged ? { abstractZh: undefined } : {}),
+        digestSummary: abstractOriginal ? abstractOriginal.slice(0, 1200) : existing.digestSummary,
         keywords:
-          existing.keywords && existing.keywords.length >= 3
-            ? existing.keywords
-            : extractKeywords(existing.title, abstractOriginal || context, evidence.keywords),
+          evidence.keywords && evidence.keywords.length >= 2
+            ? evidence.keywords
+            : existing.keywords && existing.keywords.length >= 3
+              ? existing.keywords
+              : extractKeywords(existing.title, abstractOriginal || context, evidence.keywords),
         topics: existing.topics?.length ? existing.topics : detectTopics(context, false),
         domain: existing.domain || detectDomain(context, existing.journal),
       },

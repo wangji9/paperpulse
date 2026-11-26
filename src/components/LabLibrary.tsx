@@ -308,6 +308,31 @@ const LabWeiboCard: React.FC<{
           <AdaptiveFigureGallery figures={paper.anatomy.paperFigures!} darkMode={darkMode} />
         )}
 
+        {/* All Original Tables — Compact Collapsible Gallery (Every Table Recorded!) */}
+        {(paper.anatomy?.paperTables?.length || 0) > 0 && (
+          <details className="mt-2.5 rounded-xl border border-slate-200/80 bg-slate-50/60 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-800/35">
+            <summary className="cursor-pointer font-semibold text-slate-700 hover:text-[#0072BD] dark:text-slate-200">
+              原文全部表格（共 {paper.anatomy.paperTables!.length} 张 · 点击展开查看与放大）
+            </summary>
+            <div className="pt-2">
+              <AdaptiveFigureGallery
+                figures={paper.anatomy.paperTables!
+                  .filter((t) => Boolean(t.imageUrl))
+                  .map((t) => ({
+                    id: t.id,
+                    label: t.label,
+                    url: t.imageUrl!,
+                    captionOriginal: t.captionOriginal,
+                    captionZh: t.captionZh,
+                    analysisZh: t.analysisZh,
+                    category: 'experiment' as const,
+                  }))}
+                darkMode={darkMode}
+              />
+            </div>
+          </details>
+        )}
+
         {/* Quick Resource Bar (Deep Read / PDF / DOI) */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <button

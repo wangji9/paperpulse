@@ -7,6 +7,7 @@ import { load } from 'cheerio';
 import { sanitizePaperTableHtml } from './tableSafety.js';
 export { sanitizePaperTableHtml } from './tableSafety.js';
 import { translateToZh } from './liveFetcher.js';
+import { parsePdfWithBaiduService } from './paddleParser.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -427,6 +428,43 @@ async function extractFromPdfUrl(
   expContextZh: string,
   uploaded=false
 ): Promise<{ figures: OriginalPaperFigure[]; tables: OriginalPaperTable[] }> {
+  // 1. Prefer Baidu PaddleOCR (PP-DocLayout_plus-L) neural layout detection for ALL figures & tables
+  if (!/^https?:\/\//i.test(pdfUrl) && fs.existsSync(pdfUrl)) {
+    const baidu = await parsePdfWithBaiduService(pdfUrl, paperDir, urlPrefix);
+    if (baidu && (baidu.figures.length > 0 || baidu.tables.length > 0)) {
+      const figures: OriginalPaperFigure[] = [];
+      for (const f of baidu.figures) {
+        figures.push({
+          id: f.id,
+          label: f.label,
+          url: f.url,
+          captionOriginal: f.captionOriginal,
+          category: f.category,
+          width: f.width,
+          height: f.height,
+          analysisZh: await buildCaptionAnalysisZh(
+            f.label,
+            f.captionOriginal,
+            f.category,
+            f.category === 'method' ? methodContextZh : expContextZh
+          ),
+        });
+      }
+      const tables: OriginalPaperTable[] = [];
+      for (const t of baidu.tables) {
+        tables.push({
+          id: t.id,
+          label: t.label,
+          imageUrl: t.imageUrl,
+          captionOriginal: t.captionOriginal,
+          analysisZh: await buildCaptionAnalysisZh(t.label, t.captionOriginal, 'table', expContextZh),
+        });
+      }
+      return { figures, tables };
+    }
+  }
+
+  // 2. Fallback when Baidu parser service is unavailable (e.g. offline local unit tests)
   try {
     const scriptPath = path.resolve(process.cwd(), 'server', 'extract_pdf_figures.py');
     const { stdout } = await execFileAsync('python', [scriptPath, pdfUrl, paperDir, urlPrefix, ...(uploaded ? ['32', '12'] : ['24', '8'])], {

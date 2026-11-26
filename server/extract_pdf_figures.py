@@ -74,7 +74,6 @@ def save_trimmed_pixmap(
         img.save(out_file, format="PNG", optimize=True)
         return img.width, img.height
 
-    # Pure-Python fallback (no Pillow required)
     buf = bytearray(pix.samples)
     stride = pix.stride
     n = pix.n
@@ -132,12 +131,23 @@ SECTION_HEADING_RE = re.compile(
 )
 
 
+def is_inside_any_rect(r: fitz.Rect, boxes: list[fitz.Rect]) -> bool:
+    for b in boxes:
+        if b.width >= 30 and b.height >= 20:
+            inter = r & b
+            if not inter.is_empty and ((inter.width * inter.height) / max(r.width * r.height, 1.0)) > 0.45:
+                return True
+    return False
+
+
 def is_prose_or_header_block(
     rect: fitz.Rect,
     txt: str,
     page_rect: fitz.Rect,
     fig_re: re.Pattern,
     tbl_re: re.Pattern,
+    img_rects: list[fitz.Rect],
+    box_draw_rects: list[fitz.Rect],
 ) -> bool:
     """Identify body-text paragraphs, section headings, captions, and running headers/footers."""
     s = txt.strip()
@@ -146,50 +156,89 @@ def is_prose_or_header_block(
     pw = page_rect.width
     ph = page_rect.height
 
-    # Running page headers and footers (e.g. "J. Lv et al.  Robotics and Computer-Integrated Manufacturing 80 (2023) 102489")
-    if rect.y1 <= ph * 0.085 or rect.y0 >= ph * 0.935:
+    # Running page headers and footers
+    if rect.y1 <= ph * 0.075 or rect.y0 >= ph * 0.938:
         return True
 
     # Captions
     if fig_re.match(s) or tbl_re.match(s):
         return True
 
+    # Text sitting inside an embedded raster image or vector diagram box is a diagram label, NOT body prose!
+    if is_inside_any_rect(rect, img_rects) or is_inside_any_rect(rect, box_draw_rects):
+        return False
+
     lines = [ln.strip() for ln in s.splitlines() if ln.strip()]
     # Numbered section heading in body text (e.g. "5.2.3. Self-optimization", "(2) Virtual phase")
-    if len(lines) <= 2 and SECTION_HEADING_RE.match(s) and len(s) >= 8:
+    if len(lines) <= 2 and SECTION_HEADING_RE.match(s) and 8 <= len(s) <= 95 and rect.width >= pw * 0.14:
         return True
 
-    # Body paragraph: either multi-line prose or long sentence spanning column/page width
-    if len(s) >= 110 and len(lines) >= 3 and rect.width >= pw * 0.25:
+    # Genuine body paragraph: multi-line prose spanning a column or page width
+    if len(s) >= 145 and len(lines) >= 3 and rect.width >= pw * 0.30:
         return True
-    if len(s) >= 170 and rect.width >= pw * 0.28:
+    if len(s) >= 220 and rect.width >= pw * 0.30:
         return True
-    # Dense 2+ line prose sentence (contains lowercase words & punctuation, not short diagram labels)
-    if len(lines) >= 2 and len(s) >= 75 and rect.width >= pw * 0.30 and re.search(r"[.。,，;；]\s", s):
+    if len(lines) >= 3 and len(s) >= 100 and rect.width >= pw * 0.34 and re.search(r"[.。,，;；]", s):
         return True
 
     return False
 
 
-def column_bounds(cap_rect: fitz.Rect, page_rect: fitz.Rect, is_two_col: bool) -> tuple[float, float, bool]:
-    """Return (col_x0, col_x1, is_full_width)."""
+def resolve_figure_span(
+    cap_rect: fitz.Rect,
+    page_rect: fitz.Rect,
+    is_two_col: bool,
+    img_rects: list[fitz.Rect],
+    draw_rects: list[fitz.Rect],
+) -> tuple[float, float, bool]:
+    """
+    Determine horizontal search bounds (col_x0, col_x1, is_full_width) for a figure caption.
+    Even when a caption is short on a two-column page, detect if a real graphic (image or tall
+    vector diagram, NOT a thin horizontal line) directly above it crosses the page midline!
+    """
     pw = page_rect.width
     mid = pw / 2.0
+    full_x0, full_x1 = max(12.0, page_rect.x0 + 12.0), min(pw - 12.0, page_rect.x1 - 12.0)
+
     if not is_two_col:
-        return max(12.0, page_rect.x0 + 12.0), min(pw - 12.0, page_rect.x1 - 12.0), True
-    if cap_rect.width > pw * 0.48 or (cap_rect.x0 < mid - 30 and cap_rect.x1 > mid + 30):
-        return max(12.0, page_rect.x0 + 12.0), min(pw - 12.0, page_rect.x1 - 12.0), True
-    elif cap_rect.x1 <= mid + 24:
-        return max(12.0, page_rect.x0 + 12.0), mid + 4.0, False
-    else:
-        return mid - 4.0, min(pw - 12.0, page_rect.x1 - 12.0), False
+        return full_x0, full_x1, True
+
+    # Wide or centered caption -> full-width figure
+    if cap_rect.width > pw * 0.46 or (cap_rect.x0 < mid - 28 and cap_rect.x1 > mid + 28):
+        return full_x0, full_x1, True
+
+    # Short caption on two-column page: check whether a real graphic directly above crosses midline!
+    for r in img_rects:
+        if r.y1 <= cap_rect.y0 + 14 and r.y1 >= max(page_rect.height * 0.08, cap_rect.y0 - 160):
+            if r.x0 < mid - 22 and r.x1 > mid + 22 and r.height >= 28:
+                return full_x0, full_x1, True
+    for r in draw_rects:
+        if r.height >= 28 and r.y1 <= cap_rect.y0 + 14 and r.y1 >= max(page_rect.height * 0.08, cap_rect.y0 - 160):
+            if r.x0 < mid - 22 and r.x1 > mid + 22:
+                return full_x0, full_x1, True
+
+    # Also check if multiple vector sub-elements directly above span BOTH left & right halves of the page
+    near_left = any(
+        r.height >= 14 and r.x1 < mid - 6 and r.y1 <= cap_rect.y0 + 12 and r.y1 >= cap_rect.y0 - 140
+        for r in img_rects + draw_rects
+    )
+    near_right = any(
+        r.height >= 14 and r.x0 > mid + 6 and r.y1 <= cap_rect.y0 + 12 and r.y1 >= cap_rect.y0 - 140
+        for r in img_rects + draw_rects
+    )
+    if near_left and near_right and cap_rect.x0 < mid - 40:
+        # Only treat as full-width if there isn't a body text column directly above the OTHER half
+        return full_x0, full_x1, True
+
+    if cap_rect.x1 <= mid + 24:
+        return full_x0, mid + 6.0, False
+    return mid - 6.0, full_x1, False
 
 
-def cluster_contiguous_above(rects: list[fitz.Rect], anchor_y: float, max_gap: float = 44.0) -> list[fitz.Rect]:
+def cluster_contiguous_above(rects: list[fitz.Rect], anchor_y: float, max_gap: float = 48.0) -> list[fitz.Rect]:
     """
     Starting from visual elements closest to anchor_y (caption top), grow the visual
-    cluster upward while vertical gaps between consecutive rects stay <= max_gap.
-    Prevents jumping across body text or empty space to grab a separate Table/Header above!
+    cluster upward while vertical gaps stay <= max_gap.
     """
     if not rects:
         return []
@@ -197,8 +246,7 @@ def cluster_contiguous_above(rects: list[fitz.Rect], anchor_y: float, max_gap: f
     cluster: list[fitz.Rect] = []
     cur_top = anchor_y
 
-    # First pick elements near the anchor (within reasonable distance above caption)
-    seed_gap = max_gap * 2.0
+    seed_gap = max_gap * 2.2
     for r in ordered:
         if not cluster:
             if anchor_y - r.y1 <= seed_gap:
@@ -210,11 +258,9 @@ def cluster_contiguous_above(rects: list[fitz.Rect], anchor_y: float, max_gap: f
             if cur_top - r.y1 <= max_gap:
                 cluster.append(r)
                 cur_top = min(cur_top, r.y0)
-            else:
-                # Could still overlap vertically with an already included tall rect
-                if any(r.y1 >= c.y0 - max_gap and r.y0 <= c.y1 + max_gap for c in cluster):
-                    cluster.append(r)
-                    cur_top = min(cur_top, r.y0)
+            elif any(r.y1 >= c.y0 - max_gap and r.y0 <= c.y1 + max_gap for c in cluster):
+                cluster.append(r)
+                cur_top = min(cur_top, r.y0)
     return cluster if cluster else ordered[:1]
 
 
@@ -237,27 +283,12 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
             break
         page = doc[pno]
         prect = page.rect
-        header_y = prect.height * 0.082
-        footer_y = prect.height * 0.935
+        header_y = prect.height * 0.075
+        footer_y = prect.height * 0.938
 
-        blocks = page.get_text("blocks")  # (x0, y0, x1, y1, text, block_no, block_type)
+        blocks = page.get_text("blocks")
         text_blocks = [b for b in blocks if b[6] == 0 and b[4].strip()]
         text_blocks.sort(key=lambda b: (b[1], b[0]))
-
-        # Classify body-prose / header / caption blocks once per page
-        prose_blocks: list[tuple[fitz.Rect, str]] = []
-        for tb in text_blocks:
-            r = fitz.Rect(tb[:4])
-            t = tb[4].strip()
-            if is_prose_or_header_block(r, t, prect, fig_re, tbl_re):
-                prose_blocks.append((r, t))
-
-        # Detect whether this page is two-column vs single-column
-        mid_x = prect.width / 2.0
-        left_prose = sum(1 for (r, _) in prose_blocks if r.y0 > header_y and r.y1 < footer_y and r.x1 <= mid_x + 18 and r.width >= prect.width * 0.24)
-        right_prose = sum(1 for (r, _) in prose_blocks if r.y0 > header_y and r.y1 < footer_y and r.x0 >= mid_x - 18 and r.width >= prect.width * 0.24)
-        wide_prose = sum(1 for (r, _) in prose_blocks if r.y0 > header_y and r.y1 < footer_y and r.width >= prect.width * 0.62 and not fig_re.match(_ ) and not tbl_re.match(_))
-        is_two_col = (left_prose >= 1 and right_prose >= 1) and (wide_prose == 0)
 
         # Raw images (excluding tiny icons & header/footer logos)
         img_rects = [
@@ -266,12 +297,13 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
             if info.get("bbox")
             and fitz.Rect(info["bbox"]).y1 > header_y
             and fitz.Rect(info["bbox"]).y0 < footer_y
-            and (fitz.Rect(info["bbox"]).width >= 18 or fitz.Rect(info["bbox"]).height >= 18)
+            and (fitz.Rect(info["bbox"]).width >= 16 or fitz.Rect(info["bbox"]).height >= 16)
         ]
 
         # Vector drawings (excluding full-page frames and running header/footer separator rules!)
-        draw_rects = []
-        horiz_lines = []
+        draw_rects: list[fitz.Rect] = []
+        box_draw_rects: list[fitz.Rect] = []
+        horiz_lines: list[fitz.Rect] = []
         for d in page.get_drawings():
             r = d.get("rect")
             if not r:
@@ -280,13 +312,40 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
                 horiz_lines.append(r)
             if r.y1 <= header_y + 4 or r.y0 >= footer_y - 4:
                 continue
-            # Reject standalone full-page decorative header/footer rules near top/bottom
-            if r.height <= 4 and r.width > prect.width * 0.62 and (r.y1 < prect.height * 0.13 or r.y0 > prect.height * 0.88):
+            if r.height <= 4 and r.width > prect.width * 0.58 and (r.y1 < prect.height * 0.13 or r.y0 > prect.height * 0.88):
                 continue
             if r.width > prect.width * 0.96 and r.height > prect.height * 0.92:
                 continue
             if r.width > 8 or r.height > 8:
                 draw_rects.append(r)
+                if r.width >= 30 and r.height >= 20:
+                    box_draw_rects.append(r)
+
+        # Classify body-prose / header / caption blocks (excluding diagram interior labels!)
+        prose_blocks: list[tuple[fitz.Rect, str]] = []
+        for tb in text_blocks:
+            r = fitz.Rect(tb[:4])
+            t = tb[4].strip()
+            if is_prose_or_header_block(r, t, prect, fig_re, tbl_re, img_rects, box_draw_rects):
+                prose_blocks.append((r, t))
+
+        mid_x = prect.width / 2.0
+        left_prose = sum(
+            1 for (r, t) in prose_blocks
+            if r.y0 > header_y and r.y1 < footer_y and r.x1 <= mid_x + 18 and r.width >= prect.width * 0.24
+            and not fig_re.match(t) and not tbl_re.match(t)
+        )
+        right_prose = sum(
+            1 for (r, t) in prose_blocks
+            if r.y0 > header_y and r.y1 < footer_y and r.x0 >= mid_x - 18 and r.width >= prect.width * 0.24
+            and not fig_re.match(t) and not tbl_re.match(t)
+        )
+        wide_prose = sum(
+            1 for (r, t) in prose_blocks
+            if r.y0 > header_y and r.y1 < footer_y and r.width >= prect.width * 0.62
+            and not fig_re.match(t) and not tbl_re.match(t)
+        )
+        is_two_col = (left_prose >= 1 and right_prose >= 1) and (wide_prose == 0)
 
         for b in text_blocks:
             txt = b[4].strip()
@@ -296,96 +355,92 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
             m_fig = fig_re.match(txt)
             if m_fig and len(figures) < max_figures and len(txt) > 7:
                 num = m_fig.group(1)
-                if len(txt) > 540 and brect.height > 95:
+                if len(txt) > 560 and brect.height > 100:
                     continue
                 if num in seen_fig_nums:
                     continue
 
-                col_x0, col_x1, is_full_w = column_bounds(brect, prect, is_two_col)
+                col_x0, col_x1, is_full_w = resolve_figure_span(brect, prect, is_two_col, img_rects, draw_rects)
 
-                # Compute strict upper ceiling from ANY prose/heading/caption block above in the target horizontal span
-                top_ceiling = max(header_y + 4.0, brect.y0 - prect.height * 0.84)
+                # Strict upper ceiling from ANY prose/heading/caption block above in our span
+                top_ceiling = max(header_y + 4.0, brect.y0 - prect.height * 0.85)
                 for (r2, _t2) in prose_blocks:
                     if r2 == brect:
                         continue
                     if r2.y1 <= brect.y0 - 6 and r2.y1 > top_ceiling:
-                        # Any prose overlapping our column (even 1 column of a 2-column page above a full-width figure!)
                         overlap_x = min(r2.x1, col_x1) - max(r2.x0, col_x0)
-                        if overlap_x > 25:
+                        if overlap_x > 28:
+                            # If full-width mode was guessed only from near_left+near_right while prose occupies one side,
+                            # check whether this prose actually sits beside a single-column figure!
+                            if is_full_w and r2.y1 > brect.y0 - 90 and r2.width < prect.width * 0.48:
+                                # Re-narrow to caption's own column if opposite column has prose right next to caption!
+                                if brect.x1 <= mid_x + 24 and r2.x0 >= mid_x - 16:
+                                    col_x1 = mid_x + 6.0
+                                    is_full_w = False
+                                    continue
+                                if brect.x0 >= mid_x - 24 and r2.x1 <= mid_x + 16:
+                                    col_x0 = mid_x - 6.0
+                                    is_full_w = False
+                                    continue
                             top_ceiling = max(top_ceiling, r2.y1 + 3.0)
 
-                # Gather visual elements strictly above caption & below top_ceiling & inside column span
+                # Gather visual elements above caption & below top_ceiling & inside column span
                 cand_rects: list[fitz.Rect] = []
                 for r in img_rects + draw_rects:
-                    if r.y1 <= brect.y0 + 8 and r.y0 >= top_ceiling - 8:
-                        # Single-column figure MUST NOT absorb page-wide rules or opposite-column graphics!
+                    if r.y1 <= brect.y0 + 10 and r.y0 >= top_ceiling - 10:
+                        # Skip thin horizontal page-wide rules that could drag x0/x1 across columns
+                        if r.height <= 4 and r.width > (col_x1 - col_x0) * 0.85 and not is_full_w:
+                            continue
                         if not is_full_w:
-                            if r.x0 < col_x0 - 16 or r.x1 > col_x1 + 16:
+                            if r.x0 < col_x0 - 20 or r.x1 > col_x1 + 20:
                                 continue
                         else:
-                            if r.x1 <= col_x0 + 10 or r.x0 >= col_x1 - 10:
+                            if r.x1 <= col_x0 + 8 or r.x0 >= col_x1 - 8:
                                 continue
                         cand_rects.append(r)
 
-                # Fallback: if caption sits above the figure (some Chinese journals), search directly below caption
-                below_mode = False
-                if not cand_rects:
-                    below_mode = True
-                    bot_floor = min(footer_y - 4.0, brect.y1 + prect.height * 0.68)
-                    for (r2, _t2) in prose_blocks:
-                        if r2 == brect:
-                            continue
-                        if r2.y0 >= brect.y1 + 6 and r2.y0 < bot_floor:
-                            if min(r2.x1, col_x1) - max(r2.x0, col_x0) > 25:
-                                bot_floor = min(bot_floor, r2.y0 - 3.0)
-                    for r in img_rects + draw_rects:
-                        if r.y0 >= brect.y1 - 6 and r.y1 <= bot_floor + 6:
-                            if not is_full_w and (r.x0 < col_x0 - 16 or r.x1 > col_x1 + 16):
-                                continue
-                            cand_rects.append(r)
-
                 if cand_rects:
-                    if not below_mode:
-                        cand_rects = cluster_contiguous_above(cand_rects, brect.y0, max_gap=44.0)
+                    cand_rects = cluster_contiguous_above(cand_rects, brect.y0, max_gap=48.0)
+
+                    # Filter out stray thin full-page rules if non-thin graphics exist
+                    non_thin = [r for r in cand_rects if r.height > 5 or r.width < prect.width * 0.65]
+                    if non_thin:
+                        cand_rects = non_thin
 
                     union_r = fitz.Rect(cand_rects[0])
                     for r in cand_rects[1:]:
                         union_r |= r
 
-                    # Include ONLY short diagram text labels (NOT prose/headers!) overlapping or immediately inside union_r
+                    # Include short diagram text labels (NOT prose/headers!) inside/adjacent to union_r
                     prose_set = {tuple(pr) for (pr, _) in prose_blocks}
                     padded_visual = fitz.Rect(union_r.x0 - 12, union_r.y0 - 12, union_r.x1 + 12, union_r.y1 + 8)
                     for tb2 in text_blocks:
                         r2 = fitz.Rect(tb2[:4])
                         if r2 == brect or tuple(r2) in prose_set:
                             continue
-                        if not below_mode and (r2.y1 > brect.y0 - 2 or r2.y0 < top_ceiling):
+                        if r2.y1 > brect.y0 - 2 or r2.y0 < top_ceiling:
                             continue
-                        if below_mode and r2.y0 < brect.y1 + 2:
-                            continue
-                        if r2.intersects(padded_visual) and len(tb2[4].strip()) < 110:
-                            if not is_full_w and (r2.x0 < col_x0 - 10 or r2.x1 > col_x1 + 10):
+                        if r2.intersects(padded_visual) and len(tb2[4].strip()) < 130:
+                            if not is_full_w and (r2.x0 < col_x0 - 12 or r2.x1 > col_x1 + 12):
                                 continue
                             union_r |= r2
 
-                    # Build tight crop strictly around visual elements
                     crop = fitz.Rect(
                         max(10.0, union_r.x0 - 5.0),
                         max(header_y + 2.0, union_r.y0 - 5.0),
                         min(prect.width - 10.0, union_r.x1 + 5.0),
-                        min(brect.y0 - 2.0 if not below_mode else footer_y - 2.0, union_r.y1 + 5.0),
+                        min(brect.y0 - 2.0, union_r.y1 + 5.0),
                     )
 
-                    # Trim crop horizontally away from any adjacent-column prose blocks & collect residual masks
+                    # Trim crop away from any adjacent-column prose blocks & collect residual white masks
                     mask_rects_pdf: list[fitz.Rect] = []
                     for (pr, _) in prose_blocks:
                         if pr == brect or not pr.intersects(crop):
                             continue
-                        # Check if prose block is purely in left column while visual core is on right (or vice versa)
                         inter = pr & crop
-                        if pr.x1 <= prect.width * 0.52 and crop.x1 > prect.width * 0.55 and inter.width < crop.width * 0.55:
+                        if pr.x1 <= prect.width * 0.52 and crop.x1 > prect.width * 0.55 and inter.width < crop.width * 0.52:
                             crop.x0 = max(crop.x0, pr.x1 + 3.0)
-                        elif pr.x0 >= prect.width * 0.48 and crop.x0 < prect.width * 0.45 and inter.width < crop.width * 0.55:
+                        elif pr.x0 >= prect.width * 0.48 and crop.x0 < prect.width * 0.45 and inter.width < crop.width * 0.52:
                             crop.x1 = min(crop.x1, pr.x0 - 3.0)
                         elif pr.y1 <= crop.y0 + crop.height * 0.35:
                             crop.y0 = max(crop.y0, pr.y1 + 2.0)
@@ -440,7 +495,7 @@ def extract_from_pdf(pdf_path: str, out_dir: str, url_prefix: str):
                 num = m_tbl.group(1)
                 if num in seen_tbl_nums:
                     continue
-                col_x0, col_x1, _ = column_bounds(brect, prect, is_two_col)
+                col_x0, col_x1, _ = resolve_figure_span(brect, prect, is_two_col, [], [])
                 below_lines = [
                     hl for hl in horiz_lines
                     if hl.y0 >= brect.y1 - 6 and hl.y1 <= min(footer_y, brect.y1 + 420)

@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { applySourceText } from './sourceText.js';
 import { extractKeywords } from './keywords.js';
+import { parsePdfWithBaiduService, sanitizeCleanAbstract } from './paddleParser.js';
 import { ALL_JOURNAL_SOURCES, buildStructuredAnatomy, detectDataset, detectDomain, detectTopics, resolveJournalShort } from './liveFetcher.js';
 import type { RawExternalPaper } from './liveFetcher.js';
 import type { AcademicPaper } from '../src/types/paper.js';
@@ -20,10 +21,28 @@ function sameTitle(a:string,b:string):boolean {
   return x.size>=4 && [...x].filter(w=>y.has(w)).length/Math.max(x.size,y.size)>=.85;
 }
 export async function extractUploadedPdf(file:string):Promise<PdfEvidence> {
+  // 1. Prefer Baidu PaddleOCR (PP-DocLayout_plus-L) neural layout service when configured
+  const baidu = await parsePdfWithBaiduService(file);
+  if (baidu && (baidu.text.trim().length >= 80 || (baidu.sections.abstract || '').trim().length >= 40)) {
+    const cleanAbs = sanitizeCleanAbstract(baidu.sections.abstract || '');
+    return {
+      text: baidu.text,
+      sections: { ...baidu.sections, ...(cleanAbs ? { abstract: cleanAbs } : {}) },
+      pages: baidu.pages,
+      keywords: baidu.keywords,
+      warnings: baidu.warnings || [],
+      metadata: baidu.metadata,
+    };
+  }
+
+  // 2. Local Python fallback (used in offline tests without Docker)
   try {
     const {stdout}=await run('python',[path.resolve('server/extract_paper_text.py'),file],{timeout:150000,maxBuffer:3*1024*1024});
     const parsed=JSON.parse(stdout) as PdfEvidence;
     if(parsed.error)throw new Error(/PDF已加密/.test(parsed.error)?'PDF已加密，请先解密后上传':'PDF结构损坏或无法读取，请重新导出后上传');
+    if (parsed.sections?.abstract) {
+      parsed.sections.abstract = sanitizeCleanAbstract(parsed.sections.abstract);
+    }
     return parsed;
   }catch(error) {
     if(error instanceof Error && /^PDF/.test(error.message))throw error;

@@ -9,6 +9,8 @@ services:
     depends_on:
       translator:
         condition: service_healthy
+      paddle-parser:
+        condition: service_started
     ports:
       - "0.0.0.0:${PAPERPULSE_PORT:-13001}:3000"
     environment:
@@ -18,6 +20,7 @@ services:
       - TZ=Asia/Shanghai
       - TRANSLATION_PROVIDER=local
       - LOCAL_TRANSLATION_URL=http://translator:8080/translate
+      - PADDLE_PARSER_URL=http://paddle-parser:8090
       - TRANSLATION_ALLOW_PAID_FALLBACK=0
       - TRANSLATION_ENGINE_VERSION=qwen3-4b-v3
       - DISABLE_AUTO_LOCALIZATION=${DISABLE_AUTO_LOCALIZATION:-0}
@@ -42,6 +45,26 @@ services:
       - TRANSLATION_MODEL=qwen3:4b-instruct-2507-q4_K_M
     expose:
       - "8080"
+
+  paddle-parser:
+    build:
+      context: ./paddle-parser
+    image: paperpulse-paddle-parser:latest
+    container_name: wangji-paperpulse-paddle
+    restart: unless-stopped
+    environment:
+      - PADDLE_LAYOUT_MODEL=PP-DocLayout_plus-L
+      - PADDLE_MAX_PAGES=50
+      - PADDLE_LAYOUT_DPI=150
+      - PADDLE_CROP_DPI=200
+      - OMP_NUM_THREADS=16
+      - MKL_NUM_THREADS=16
+      - FLAGS_use_mkldnn=0
+    volumes:
+      - ./data:/app/data
+      - ./paddle-models:/root/.paddlex
+    expose:
+      - "8090"
 
   translation-llm:
     image: ollama/ollama:latest
