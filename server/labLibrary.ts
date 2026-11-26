@@ -1,9 +1,16 @@
 import { DatabaseSync } from 'node:sqlite';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import type { AcademicPaper, LabEntry, UserProfile } from '../src/types/paper.js';
-import { getPaperById, listPapers } from './db.js';
-import { detectTopics } from './liveFetcher.js';
+import { getPaperById, listPapers, upsertPaper } from './db.js';
+import { buildStructuredAnatomy, detectDomain, detectTopics, resolveJournalShort, type RawExternalPaper } from './liveFetcher.js';
+import { extractKeywords } from './keywords.js';
+import { applySourceText } from './sourceText.js';
+import { localizeStoredPaper } from './localizationQueue.js';
 
+const DATA_DIR = path.resolve(process.env.DATA_DIR || 'data');
+const PAPER_ASSETS_DIR = path.join(DATA_DIR, 'paper-assets');
 const db=new DatabaseSync(path.resolve(process.env.DATA_DIR||'data','paperpulse.db'));
 db.exec(`PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS lab_papers(
  paper_id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, added_at TEXT NOT NULL,
@@ -23,6 +30,64 @@ export function addLabPaper(paperId:string,user:UserProfile,info:{source?:string
   if(!getPaperById(paperId))throw new Error('文献不存在');
   const now=new Date().toISOString();
   db.prepare('INSERT OR IGNORE INTO lab_papers(paper_id,owner_id,added_at,updated_at,source,citation,publication_year) VALUES(?,?,?,?,?,?,?)').run(paperId,user.id,now,now,info.source||'成员主动归档',info.citation||'',info.publicationYear||null);
+}
+export function createManualLabPaper(user:UserProfile,body:Record<string,unknown>):LabEntry[] {
+  const title=String(body.title||'').trim();
+  const journal=String(body.journal||'').trim();
+  const authorsRaw=Array.isArray(body.authors)?body.authors.map(s=>String(s).trim()).filter(Boolean):String(body.authors||'').split(/[;；]/).map(s=>s.trim()).filter(Boolean);
+  if(!title||!journal||!authorsRaw.length)throw Object.assign(new Error('请完整填写论文标题、作者与发表期刊/会议'),{status:400});
+  const titleZh=String(body.titleZh||title).trim();
+  const doi=String(body.doi||'').trim();
+  const abstractOriginal=String(body.abstractOriginal||'').trim();
+  const abstractZh=String(body.abstractZh||'').trim();
+  const keywordsRaw=Array.isArray(body.keywords)?body.keywords.map(s=>String(s).trim()).filter(Boolean):String(body.keywords||'').split(/[;；,，]/).map(s=>s.trim()).filter(Boolean);
+  const yearNum=Number(body.publicationYear)||new Date().getFullYear();
+  if(!Number.isInteger(yearNum)||yearNum<1900||yearNum>2100)throw Object.assign(new Error('发表年份不正确'),{status:400});
+  const notes=String(body.notes||'').slice(0,10000);
+  const keyStr=(doi||title).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+  const id=`lab-${createHash('sha256').update(keyStr).digest('hex').slice(0,24)}`;
+  const existing=getPaperById(id);
+  if(!existing){
+    const raw:RawExternalPaper={
+      title,abstract:abstractOriginal||abstractZh,authors:authorsRaw,affiliations:[],journal,
+      journalShort:resolveJournalShort(journal).short,publishedDate:String(yearNum),doi,
+      url:doi?`https://doi.org/${doi}`:'',citedByCount:0,citations:[],sourceOrigin:'user_created',
+    };
+    const structure=buildStructuredAnatomy(raw,null);
+    const paper:AcademicPaper=applySourceText({
+      id,...raw,titleZh,syncedAt:new Date().toISOString(),
+      topics:detectTopics(`${title} ${abstractOriginal} ${abstractZh} ${keywordsRaw.join(' ')}`,false),
+      domain:detectDomain(`${title} ${abstractOriginal} ${abstractZh}`,journal),
+      journalRank:'',abstractOriginal,abstractZh:abstractZh||undefined,
+      digestSummary:structure.digestSummary,tags:structure.tags,
+      keywords:keywordsRaw.length?keywordsRaw:extractKeywords(title,abstractOriginal||abstractZh),
+      keywordsOriginal:keywordsRaw.length?keywordsRaw:undefined,
+      keywordSource:keywordsRaw.length?'author':'extracted',
+      anatomy:structure.anatomy,readingStatus:'unread',isBookmarked:false,comments:[],
+      parsing:{status:abstractOriginal||abstractZh?'abstract':'metadata',updatedAt:new Date().toISOString(),sections:abstractOriginal||abstractZh?['abstract']:[],warnings:abstractOriginal||abstractZh?[]:['尚未提供摘要，可点击修订或上传原文PDF补全。']},
+    },abstractOriginal||abstractZh);
+    upsertPaper(paper,user.id);
+    if(abstractOriginal&&!abstractZh&&process.env.LOCAL_TRANSLATION_URL)void localizeStoredPaper(paper).catch(()=>{});
+  }
+  addLabPaper(id,user,{source:`成员手动录入 (${user.displayName})`,citation:`${authorsRaw.join(', ')} (${yearNum}). ${title}. ${journal}.`,publicationYear:yearNum});
+  if(notes)changeLabEntry(id,user,{notes});
+  return listLabEntries(user);
+}
+export function attachLabPaperPdf(id:string,user:UserProfile,pdfBuffer:Buffer):LabEntry[] {
+  const row=db.prepare('SELECT * FROM lab_papers WHERE paper_id=?').get(id) as Row|undefined;
+  if(!row)throw Object.assign(new Error('课题组文献不存在'),{status:404});
+  if(user.role!=='admin'&&row.owner_id!==user.id)throw Object.assign(new Error('只能为自己归档的课题组条目补充PDF，或联系管理员'),{status:403});
+  if(pdfBuffer.length<100||!pdfBuffer.subarray(0,5).toString('ascii').startsWith('%PDF-'))throw Object.assign(new Error('请上传有效的 PDF 文件'),{status:400});
+  const paper=getPaperById(id,user.id);
+  if(!paper)throw Object.assign(new Error('底层文献记录不存在'),{status:404});
+  const dir=path.join(PAPER_ASSETS_DIR,id);
+  fs.mkdirSync(dir,{recursive:true});
+  const target=path.join(dir,'source.pdf');
+  fs.writeFileSync(target,pdfBuffer);
+  const localPdfUrl=`/paper-assets/${id}/source.pdf`;
+  upsertPaper({...paper,localPdfUrl},user.id);
+  db.prepare('UPDATE lab_papers SET updated_at=? WHERE paper_id=?').run(new Date().toISOString(),id);
+  return listLabEntries(user);
 }
 export function changeLabEntry(id:string,user:UserProfile,body:Record<string,unknown>,remove=false):void {
   const row=db.prepare('SELECT * FROM lab_papers WHERE paper_id=?').get(id) as Row|undefined;

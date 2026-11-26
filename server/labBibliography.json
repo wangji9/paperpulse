@@ -1,5 +1,3202 @@
 [
   {
+    "number": 0,
+    "title": "Transformation of tacit knowledge in Human-Centric Smart Manufacturing: A systematic review, key technologies, critical challenges, and future directions",
+    "authorsText": "Wang J, Zhuang W, Yao J, Jiang C, Xiao W, Chen C, Wu X, Lv X, Bao J, Li X*",
+    "year": 2027,
+    "citation": "Wang J, Zhuang W, Yao J, et al. Transformation of tacit knowledge in Human-Centric Smart Manufacturing: A systematic review, key technologies, critical challenges, and future directions[J]. Computers in Industry, 2027, 182: 104571.",
+    "venueText": "Computers in Industry, 2027, 182: 104571.",
+    "crossref": {
+      "indexed": {
+        "date-parts": [
+          [
+            2026,
+            11,
+            15
+          ]
+        ],
+        "date-time": "2026-11-15T23:19:42Z",
+        "timestamp": 1794784782481,
+        "version": "4.9.1"
+      },
+      "reference-count": 261,
+      "publisher": "Elsevier BV",
+      "license": [
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "tdm",
+          "delay-in-days": 0,
+          "URL": "https://www.elsevier.com/legal/tdmrep-license"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-017"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-037"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-012"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-029"
+        },
+        {
+          "start": {
+            "date-parts": [
+              [
+                2027,
+                1,
+                1
+              ]
+            ],
+            "date-time": "2027-01-01T00:00:00Z",
+            "timestamp": 1798761600000
+          },
+          "content-version": "stm-asf",
+          "delay-in-days": 0,
+          "URL": "https://doi.org/10.15223/policy-004"
+        }
+      ],
+      "funder": [
+        {
+          "DOI": "10.13039/501100006249",
+          "name": "Donghua University",
+          "doi-asserted-by": "publisher",
+          "id": [
+            {
+              "id": "10.13039/501100006249",
+              "id-type": "DOI",
+              "asserted-by": "publisher"
+            }
+          ]
+        },
+        {
+          "DOI": "10.13039/501100001809",
+          "name": "National Natural Science Foundation of China",
+          "doi-asserted-by": "publisher",
+          "id": [
+            {
+              "id": "10.13039/501100001809",
+              "id-type": "DOI",
+              "asserted-by": "publisher"
+            }
+          ]
+        }
+      ],
+      "content-domain": {
+        "domain": [
+          "elsevier.com",
+          "sciencedirect.com"
+        ],
+        "crossmark-restriction": true
+      },
+      "short-container-title": [
+        "Computers in Industry"
+      ],
+      "published-print": {
+        "date-parts": [
+          [
+            2027,
+            1
+          ]
+        ]
+      },
+      "DOI": "10.1016/j.compind.2026.104571",
+      "type": "journal-article",
+      "created": {
+        "date-parts": [
+          [
+            2026,
+            11,
+            12
+          ]
+        ],
+        "date-time": "2026-11-12T11:48:12Z",
+        "timestamp": 1794484092000
+      },
+      "page": "104571",
+      "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+      "source": "Crossref",
+      "is-referenced-by-count": 0,
+      "special_numbering": "C",
+      "title": [
+        "Transformation of tacit knowledge in Human-Centric Smart Manufacturing: A systematic review, key technologies, critical challenges, and future directions"
+      ],
+      "prefix": "10.1016",
+      "volume": "182",
+      "author": [
+        {
+          "given": "Ji",
+          "family": "Wang",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Weibin",
+          "family": "Zhuang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jie",
+          "family": "Yao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Cong",
+          "family": "Jiang",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Wenjie",
+          "family": "Xiao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Congmao",
+          "family": "Chen",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xing",
+          "family": "Wu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xingchen",
+          "family": "Lv",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jinsong",
+          "family": "Bao",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Xinyu",
+          "family": "Li",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "member": "78",
+      "reference": [
+        {
+          "key": "10.1016/j.compind.2026.104571_b1",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2020.102111",
+          "article-title": "Improving human robot collaboration through force/torque based learning for object manipulation",
+          "volume": "69",
+          "author": "Al-Yacoub",
+          "year": "2021",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b2",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103162",
+          "article-title": "Proactive safety reasoning in human-robot collaboration in disassembly through LLM-augmented STPA and FMEA",
+          "volume": "98",
+          "author": "Alenjareghi",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b3",
+          "doi-asserted-by": "crossref",
+          "first-page": "1845",
+          "DOI": "10.1109/TII.2021.3081417",
+          "article-title": "Early classification of industrial alarm floods based on semisupervised learning",
+          "volume": "18",
+          "author": "Alinezhad",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b4",
+          "doi-asserted-by": "crossref",
+          "first-page": "482",
+          "DOI": "10.1002/joom.1296",
+          "article-title": "Using algorithms to improve knowledge work",
+          "volume": "70",
+          "author": "Amaya",
+          "year": "2024",
+          "journal-title": "J. Oper. Manage."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b5",
+          "doi-asserted-by": "crossref",
+          "first-page": "254",
+          "DOI": "10.1016/j.jmsy.2025.05.019",
+          "article-title": "A novel XR-based real-time machine interaction system for industry 4.0: Usability evaluation in a learning factory",
+          "volume": "82",
+          "author": "Amouzgar",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b6",
+          "doi-asserted-by": "crossref",
+          "first-page": "1760",
+          "DOI": "10.1109/TASE.2025.3646183",
+          "article-title": "Dexterous manipulation through imitation learning: A survey",
+          "volume": "23",
+          "author": "An",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Autom. Sci. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b7",
+          "doi-asserted-by": "crossref",
+          "first-page": "993",
+          "DOI": "10.1007/s10606-024-09491-0",
+          "article-title": "Invisible to machines: Designing AI that supports vision work in radiology",
+          "volume": "33",
+          "author": "Anichini",
+          "year": "2024",
+          "journal-title": "Comput. Support. Coop. Work."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b8",
+          "doi-asserted-by": "crossref",
+          "first-page": "211",
+          "DOI": "10.1007/s12369-025-01224-7",
+          "article-title": "Evaluating the effect of speed and acceleration on human factors during an assembly task in human-robot interaction (HRI)",
+          "volume": "17",
+          "author": "Apraiz",
+          "year": "2025",
+          "journal-title": "Int. J. Soc. Robot."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b9",
+          "doi-asserted-by": "crossref",
+          "first-page": "270",
+          "DOI": "10.1016/j.jmsy.2023.02.012",
+          "article-title": "An ontology-based engineering system to support aircraft manufacturing system design",
+          "volume": "68",
+          "author": "Arista",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b10",
+          "doi-asserted-by": "crossref",
+          "first-page": "125",
+          "DOI": "10.1108/13673270110393176",
+          "article-title": "Understanding context: its emergence, transformation and role in tacit knowledge sharing",
+          "volume": "5",
+          "author": "Augier",
+          "year": "2001",
+          "journal-title": "J. Knowl. Manag."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b11",
+          "article-title": "Human-machine interaction in mechanical systems through sensor enabled wearable augmented reality interfaces",
+          "volume": "39",
+          "author": "Balamurugan",
+          "year": "2025",
+          "journal-title": "Meas.: Sensors"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b12",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2021.107864",
+          "article-title": "A node2vec-based graph embedding approach for unified assembly process information modeling and workstep execution time prediction",
+          "volume": "163",
+          "author": "Bao",
+          "year": "2022",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b13",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2024.102638",
+          "article-title": "Hierarchical construction and application of machining domain knowledge graph based on as-fabricated information model",
+          "volume": "62",
+          "author": "Bao",
+          "year": "2024",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b14",
+          "doi-asserted-by": "crossref",
+          "first-page": "191",
+          "DOI": "10.1080/14778238.2021.1967797",
+          "article-title": "The regime of truth of knowledge management: the role of information systems in the production of tacit knowledge",
+          "volume": "20",
+          "author": "Baronian",
+          "year": "2022",
+          "journal-title": "Knowl. Manag. Res. Pr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b15",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2021.107881",
+          "article-title": "WEM-platform: A real-time platform for full-body ergonomic assessment and feedback in manufacturing and logistics systems",
+          "volume": "164",
+          "author": "Battini",
+          "year": "2022",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b16",
+          "doi-asserted-by": "crossref",
+          "first-page": "816",
+          "DOI": "10.1109/TII.2021.3079521",
+          "article-title": "A custom word embedding model for clustering of maintenance records",
+          "volume": "18",
+          "author": "Bhardwaj",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "23",
+          "key": "10.1016/j.compind.2026.104571_b17",
+          "doi-asserted-by": "crossref",
+          "first-page": "8159",
+          "DOI": "10.1080/00207543.2023.2167013",
+          "article-title": "Confidently extracting hierarchical taxonomy information from unstructured maintenance records of industrial equipment",
+          "volume": "61",
+          "author": "Bhardwaj",
+          "year": "2023",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b18",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104354",
+          "article-title": "Semantic middleware for demand response systems: Enhancing data interoperability in green electricity management for manufacturing",
+          "volume": "172",
+          "author": "Boroukhian",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b19",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2018.10.046",
+          "article-title": "Motion analysis system (MAS) for production and ergonomics assessment in the manufacturing processes",
+          "volume": "139",
+          "author": "Bortolini",
+          "year": "2020",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b20",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2026.104522",
+          "article-title": "Structuring scientific knowledge for smart materials and 4D printing: An ontology enrichment framework using retrieval-augmented multimodal large language models",
+          "volume": "180",
+          "author": "Bougzime",
+          "year": "2026",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b21",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2021.102179",
+          "article-title": "Feasibility of detecting potential emergencies in symbiotic human-robot collaboration with a mobile EEG",
+          "volume": "72",
+          "author": "Buerkle",
+          "year": "2021",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b22",
+          "doi-asserted-by": "crossref",
+          "first-page": "1233",
+          "DOI": "10.1007/s00170-021-08299-2",
+          "article-title": "An adaptive human sensor framework for human–robot collaboration",
+          "volume": "119",
+          "author": "Buerkle",
+          "year": "2022",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "issue": "9–10",
+          "key": "10.1016/j.compind.2026.104571_b23",
+          "doi-asserted-by": "crossref",
+          "first-page": "4649",
+          "DOI": "10.1007/s00170-024-12998-x",
+          "article-title": "Research on knowledge graph-driven equipment fault diagnosis method for intelligent manufacturing",
+          "volume": "130",
+          "author": "Cai",
+          "year": "2024",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b24",
+          "doi-asserted-by": "crossref",
+          "first-page": "461",
+          "DOI": "10.1007/s10339-017-0825-6",
+          "article-title": "Tacit to explicit knowledge conversion",
+          "volume": "18",
+          "author": "Cairó Battistutti",
+          "year": "2017",
+          "journal-title": "Cogn. Process."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b25",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2021.103574",
+          "article-title": "A core reference ontology for steelmaking process knowledge modelling and information management",
+          "volume": "135",
+          "author": "Cao",
+          "year": "2022",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b26",
+          "doi-asserted-by": "crossref",
+          "first-page": "3114",
+          "DOI": "10.1109/TII.2025.3642805",
+          "article-title": "Multiobjective hybrid evolutionary multitasking algorithm for PCB assembly optimization in beam-head placement machines",
+          "volume": "22",
+          "author": "Cao",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b27",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2021.102281",
+          "article-title": "KSPMI: A knowledge-based system for predictive maintenance in industry 4.0",
+          "volume": "74",
+          "author": "Cao",
+          "year": "2022",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b28",
+          "doi-asserted-by": "crossref",
+          "first-page": "424",
+          "DOI": "10.1016/j.ins.2017.08.087",
+          "article-title": "Decision analytics-key to digitalisation",
+          "volume": "460",
+          "author": "Carlsson",
+          "year": "2018",
+          "journal-title": "Inform. Sci."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b29",
+          "doi-asserted-by": "crossref",
+          "first-page": "508",
+          "DOI": "10.1016/j.jmsy.2023.05.022",
+          "article-title": "Dynamic muscle fatigue assessment using s-EMG technology towards human-centric human-robot collaboration",
+          "volume": "68",
+          "author": "Chand",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b30",
+          "doi-asserted-by": "crossref",
+          "first-page": "502",
+          "DOI": "10.1109/LRA.2020.3047772",
+          "article-title": "Sequential motion primitives recognition of robotic arm task via human demonstration using hierarchical BiLSTM classifier",
+          "volume": "6",
+          "author": "Chen",
+          "year": "2021",
+          "journal-title": "IEEE Robot. Autom. Lett."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b31",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103167",
+          "article-title": "Perception-decision-execution coordination mechanism driven dynamic autonomous collaboration method for human-like collaborative robot based on multimodal large language model",
+          "volume": "98",
+          "author": "Chen",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b32",
+          "doi-asserted-by": "crossref",
+          "first-page": "11062",
+          "DOI": "10.1109/TASE.2025.3528051",
+          "article-title": "Human-in-the-loop robot learning for smart manufacturing: A human-centric perspective",
+          "volume": "22",
+          "author": "Chen",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Autom. Sci. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b33",
+          "article-title": "Closing the simulation-to-reality gap for fault diagnosis in unknown environment: A Sim2Real knowledge transfer approach with contrastive learning",
+          "author": "Chen",
+          "year": "2025",
+          "journal-title": "IEEE/ASME Trans. Mechatronics"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b34",
+          "doi-asserted-by": "crossref",
+          "first-page": "609",
+          "DOI": "10.1016/j.jmsy.2023.10.012",
+          "article-title": "Stochastic deep koopman model for quality propagation analysis in multistage manufacturing systems",
+          "volume": "71",
+          "author": "Chen",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b35",
+          "doi-asserted-by": "crossref",
+          "first-page": "203",
+          "DOI": "10.1016/j.jmsy.2026.03.007",
+          "article-title": "Dynamic-static knowledge graph enhanced LLM reasoning for intelligent process planning in steel manufacturing",
+          "volume": "86",
+          "author": "Chen",
+          "year": "2026",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "11",
+          "key": "10.1016/j.compind.2026.104571_b36",
+          "doi-asserted-by": "crossref",
+          "first-page": "8098",
+          "DOI": "10.1109/TII.2022.3158978",
+          "article-title": "Knowledge sharing enabled multirobot collaboration for preventive maintenance in mixed model assembly",
+          "volume": "18",
+          "author": "Chen",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b37",
+          "first-page": "158",
+          "article-title": "Integration of eye-tracking and object detection in a deep learning system for quality inspection analysis",
+          "volume": "11",
+          "author": "Cho",
+          "year": "2024",
+          "journal-title": "J. Comput. Des. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b38",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2024.102859",
+          "article-title": "Ergonomic workplace design based on real-time integration between virtual and augmented realities",
+          "volume": "92",
+          "author": "Chu",
+          "year": "2025",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b39",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2020.103391",
+          "article-title": "An approach and decision support tool for forming industry 4.0 supply chain collaborations",
+          "volume": "125",
+          "author": "Cisneros-Cabrera",
+          "year": "2021",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b40",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2026.104709",
+          "article-title": "Intelligent defect-detection framework integrating a modified yolo algorithm, a domain knowledge graph, and RAG-enabled large language model",
+          "volume": "74",
+          "author": "Dang",
+          "year": "2026",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b41",
+          "doi-asserted-by": "crossref",
+          "first-page": "359",
+          "DOI": "10.1016/j.jmsy.2023.07.013",
+          "article-title": "Deploying OWL ontologies for semantic mediation of mixed-reality interactions for human–robot collaborative assembly",
+          "volume": "70",
+          "author": "David",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b42",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.ijpe.2025.109860",
+          "article-title": "Redefining work in the supply chain: combining digital technologies and knowledge sharing for a smart working environment",
+          "volume": "291",
+          "author": "de Araujo",
+          "year": "2026",
+          "journal-title": "Int. J. Prod. Econ."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b43",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2023.101921",
+          "article-title": "Research on the construction of event logic knowledge graph of supply chain management",
+          "volume": "56",
+          "author": "Deng",
+          "year": "2023",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b44",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104398",
+          "article-title": "A review of digital twins in smart industries: Concepts, milestones, trends, applications, opportunities and challenges",
+          "volume": "174",
+          "author": "Ding",
+          "year": "2026",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b45",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2023.102183",
+          "article-title": "Knowledge graph modeling method for product manufacturing process based on human-cyber-physical fusion",
+          "volume": "58",
+          "author": "Ding",
+          "year": "2023",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b46",
+          "doi-asserted-by": "crossref",
+          "first-page": "3121",
+          "DOI": "10.1109/TASE.2025.3628670",
+          "article-title": "Interactive semantics-enhanced vision-language model-driven hypergraph reasoning for robotic decision-making in proactive human–robot collaboration",
+          "volume": "23",
+          "author": "Ding",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Autom. Sci. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b47",
+          "doi-asserted-by": "crossref",
+          "first-page": "675",
+          "DOI": "10.1016/j.jmsy.2025.10.012",
+          "article-title": "Towards a next-generation LLM empowered low-code programming industrial robotic system for human-centric smart manufacturing",
+          "volume": "83",
+          "author": "Dong",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "12",
+          "key": "10.1016/j.compind.2026.104571_b48",
+          "doi-asserted-by": "crossref",
+          "first-page": "9596",
+          "DOI": "10.1109/TII.2025.3598519",
+          "article-title": "Multivariate time series classification via heterogeneous graph representation",
+          "volume": "21",
+          "author": "Du",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b49",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2023.109686",
+          "article-title": "A decision support system for sequencing production in the manufacturing industry",
+          "volume": "185",
+          "author": "Dupuis",
+          "year": "2023",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b50",
+          "doi-asserted-by": "crossref",
+          "first-page": "5870",
+          "DOI": "10.1109/TII.2022.3193119",
+          "article-title": "QualSec: An automated quality-driven approach for security risk identification in cyber-physical production systems",
+          "volume": "19",
+          "author": "Eckhart",
+          "year": "2023",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b51",
+          "doi-asserted-by": "crossref",
+          "first-page": "1503",
+          "DOI": "10.1007/s10845-021-01743-w",
+          "article-title": "An improved approach of task-parameterized learning from demonstrations for cobots in dynamic manufacturing",
+          "volume": "33",
+          "author": "El Zaatari",
+          "year": "2022",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b52",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2020.102109",
+          "article-title": "iTP-LfD: Improved task parametrised learning from demonstration for adaptive path generation of cobot",
+          "volume": "69",
+          "author": "El Zaatari",
+          "year": "2021",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b53",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.ssci.2024.106693",
+          "article-title": "From knowledge to action: Assessing the effectiveness of immersive virtual reality training on safety behaviors in confined spaces using the kirkpatrick model",
+          "volume": "181",
+          "author": "Evangelista",
+          "year": "2025",
+          "journal-title": "Saf. Sci."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b54",
+          "doi-asserted-by": "crossref",
+          "first-page": "1141",
+          "DOI": "10.1007/s10845-023-02294-y",
+          "article-title": "Embodied intelligence in manufacturing: leveraging large language models for autonomous industrial robotics",
+          "volume": "36",
+          "author": "Fan",
+          "year": "2025",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b55",
+          "doi-asserted-by": "crossref",
+          "first-page": "1009",
+          "DOI": "10.1016/j.jmsy.2024.05.003",
+          "article-title": "A vision-language-guided robotic action planning approach for ambiguity mitigation in human–robot collaborative manufacturing",
+          "volume": "74",
+          "author": "Fan",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "11",
+          "key": "10.1016/j.compind.2026.104571_b56",
+          "doi-asserted-by": "crossref",
+          "first-page": "5431",
+          "DOI": "10.1007/s00170-024-14468-w",
+          "article-title": "A robotic manipulation framework for industrial human–robot collaboration based on continual knowledge graph embedding",
+          "volume": "134",
+          "author": "Feng",
+          "year": "2024",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b57",
+          "article-title": "Gen-JEMA: enhanced explainability using generative joint embedding multimodal alignment for monitoring directed energy deposition",
+          "author": "Ferreira",
+          "year": "2025",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b58",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.ress.2020.106799",
+          "article-title": "Assumptions in quantitative risk assessments: When explicit and when tacit?",
+          "volume": "197",
+          "author": "Flage",
+          "year": "2020",
+          "journal-title": "Reliab. Eng. Syst. Saf."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b59",
+          "doi-asserted-by": "crossref",
+          "first-page": "6",
+          "DOI": "10.1108/13673270610650067",
+          "article-title": "Tacit knowledge transfer and the knowledge disconnect",
+          "volume": "10",
+          "author": "Foos",
+          "year": "2006",
+          "journal-title": "J. Knowl. Manag."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b60",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2026.132027",
+          "article-title": "Knowledge graph enhanced large language model framework for causal chain reasoning in industrial fault diagnosis",
+          "volume": "318",
+          "author": "Gao",
+          "year": "2026",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b61",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2024.104210",
+          "article-title": "Improving device access efficiency using a device protocol matching model",
+          "volume": "164",
+          "author": "Gao",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b62",
+          "doi-asserted-by": "crossref",
+          "first-page": "7169",
+          "DOI": "10.1109/TII.2022.3222772",
+          "article-title": "Genetic transfer learning for optimizing and balancing of assembly lines",
+          "volume": "19",
+          "author": "Gao",
+          "year": "2023",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b63",
+          "doi-asserted-by": "crossref",
+          "first-page": "511",
+          "DOI": "10.1016/j.jmsy.2025.03.022",
+          "article-title": "IIoT-enabled digital twin for legacy and smart factory machines with LLM integration",
+          "volume": "80",
+          "author": "Gautam",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b64",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2020.103229",
+          "article-title": "A systematic design method of adaptive augmented reality work instruction for complex industrial operations",
+          "volume": "119",
+          "author": "Geng",
+          "year": "2020",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b65",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2019.106188",
+          "article-title": "A novel automata and neural network based fault diagnosis system for PLC controlled manufacturing systems",
+          "volume": "139",
+          "author": "Ghosh",
+          "year": "2020",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b66",
+          "doi-asserted-by": "crossref",
+          "first-page": "9",
+          "DOI": "10.1016/j.cirp.2024.04.002",
+          "article-title": "An LLM-based approach for enabling seamless human-robot collaboration in assembly",
+          "volume": "73",
+          "author": "Gkournelos",
+          "year": "2024",
+          "journal-title": "CIRP Ann"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b67",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2025.127212",
+          "article-title": "ME-WARD: A multimodal ergonomic analysis tool for musculoskeletal risk assessment from inertial and video data in working places",
+          "volume": "278",
+          "author": "Gonzalez-Alonso",
+          "year": "2025",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b68",
+          "doi-asserted-by": "crossref",
+          "first-page": "1723",
+          "DOI": "10.1109/TRO.2021.3111481",
+          "article-title": "Geometric task networks: Learning efficient and explainable skill coordination for object manipulation",
+          "volume": "38",
+          "author": "Guo",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Robot."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b69",
+          "doi-asserted-by": "crossref",
+          "first-page": "25",
+          "DOI": "10.1016/j.jmsy.2024.07.007",
+          "article-title": "Industrial metaverse towards industry 5.0: Connotation, architecture, enablers, and challenges",
+          "volume": "76",
+          "author": "Guo",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b70",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2024.104124",
+          "article-title": "An ontology-based method for knowledge reuse in the design for maintenance of complex products",
+          "volume": "161",
+          "author": "Guo",
+          "year": "2024",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b71",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compchemeng.2026.109608",
+          "article-title": "PlantGraphExpert: A knowledge graph-driven tool for chemical plant operator assistance",
+          "volume": "210",
+          "author": "Hamedi",
+          "year": "2026",
+          "journal-title": "Comput. Chem. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b72",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1109/TIM.2022.3200429",
+          "article-title": "Construction and evolution of fault diagnosis knowledge graph in industrial process",
+          "volume": "71",
+          "author": "Han",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Instrum. Meas."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b73",
+          "doi-asserted-by": "crossref",
+          "first-page": "184",
+          "DOI": "10.1016/j.jmapro.2023.05.016",
+          "article-title": "Explainable AI (XAI)-driven vibration sensing scheme for surface quality monitoring in a smart surface grinding process",
+          "volume": "99",
+          "author": "Hanchate",
+          "year": "2023",
+          "journal-title": "J. Manuf. Process."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b74",
+          "doi-asserted-by": "crossref",
+          "first-page": "55",
+          "DOI": "10.1007/s10796-022-10352-8",
+          "article-title": "The recursive theory of knowledge augmentation: Integrating human intuition and knowledge in artificial intelligence to augment organizational knowledge",
+          "volume": "25",
+          "author": "Harfouche",
+          "year": "2023",
+          "journal-title": "Inf. Syst. Front."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b75",
+          "doi-asserted-by": "crossref",
+          "first-page": "1629",
+          "DOI": "10.1007/s00170-025-17189-w",
+          "article-title": "Comparison of motion study and data science methods for proficiency in disassembly task movement via motion capture",
+          "volume": "146",
+          "author": "Hayashi",
+          "year": "2026",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b76",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2020.103373",
+          "article-title": "A deep reinforcement learning based multi-criteria decision support system for optimizing textile chemical process",
+          "volume": "125",
+          "author": "He",
+          "year": "2021",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "8",
+          "key": "10.1016/j.compind.2026.104571_b77",
+          "doi-asserted-by": "crossref",
+          "first-page": "5875",
+          "DOI": "10.1007/s10845-024-02491-3",
+          "article-title": "Unsupervised reward engineering for reinforcement learning controlled manufacturing",
+          "volume": "36",
+          "author": "Hirtz",
+          "year": "2025",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b78",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.knosys.2025.114192",
+          "article-title": "Dynamic scheduling for dual-resource constrained flexible job-shop via semantic-aware graph modelling and deep reinforcement learning",
+          "volume": "328",
+          "author": "Hu",
+          "year": "2025",
+          "journal-title": "Knowl.-Based Syst."
+        },
+        {
+          "issue": "11",
+          "key": "10.1016/j.compind.2026.104571_b79",
+          "doi-asserted-by": "crossref",
+          "first-page": "6019",
+          "DOI": "10.1007/s00170-025-15908-x",
+          "article-title": "Robot learning from demonstration for assembly with camera-supplemented optical motion capture sensors",
+          "volume": "138",
+          "author": "Hu",
+          "year": "2025",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b80",
+          "doi-asserted-by": "crossref",
+          "first-page": "2685",
+          "DOI": "10.1109/TMECH.2023.3336520",
+          "article-title": "Robot learning from demonstration for assembly with sequential assembly movement primitives",
+          "volume": "29",
+          "author": "Hu",
+          "year": "2024",
+          "journal-title": "IEEE/ASME Trans. Mechatronics"
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b81",
+          "doi-asserted-by": "crossref",
+          "first-page": "7022",
+          "DOI": "10.1109/TII.2022.3210215",
+          "article-title": "Semantic-consistent embedding for zero-shot fault diagnosis",
+          "volume": "19",
+          "author": "Hu",
+          "year": "2023",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b82",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.jmsy.2026.03.002",
+          "article-title": "An LLM-enhanced knowledge service methodology for manufacturing process planning based on task-guided multi-layer knowledge graph",
+          "volume": "86",
+          "author": "Huang",
+          "year": "2026",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b83",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2025.103266",
+          "article-title": "mKGMPP: A multi-layer knowledge graph integration framework and its inference method for manufacturing process planning",
+          "volume": "65",
+          "author": "Huang",
+          "year": "2025",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b84",
+          "doi-asserted-by": "crossref",
+          "first-page": "424",
+          "DOI": "10.1016/j.jmsy.2022.07.010",
+          "article-title": "Industry 5.0 and society 5.0—Comparison, complementation and co-evolution",
+          "volume": "64",
+          "author": "Huang",
+          "year": "2022",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b85",
+          "doi-asserted-by": "crossref",
+          "first-page": "1683",
+          "DOI": "10.1080/00207543.2022.2118892",
+          "article-title": "The industry 5.0 framework: viability-based integration of the resilience, sustainability, and human-centricity perspectives",
+          "volume": "61",
+          "author": "Ivanov",
+          "year": "2023",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "issue": "04",
+          "key": "10.1016/j.compind.2026.104571_b86",
+          "article-title": "Tacit knowledge management in engineering industries: systematic literature review and development of a conceptual model",
+          "volume": "22",
+          "author": "Jayaram",
+          "year": "2023",
+          "journal-title": "J. Inf. Knowl. Manag."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b87",
+          "doi-asserted-by": "crossref",
+          "first-page": "504",
+          "DOI": "10.1016/j.jmsy.2025.01.018",
+          "article-title": "ChatCNC: Conversational machine monitoring via large language model and real-time data retrieval augmented generation",
+          "volume": "79",
+          "author": "Jeon",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b88",
+          "doi-asserted-by": "crossref",
+          "first-page": "3236",
+          "DOI": "10.1109/TII.2024.3523572",
+          "article-title": "A contrastive representation domain adaptation method for industrial time-series cross-domain prediction",
+          "volume": "21",
+          "author": "Jia",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b89",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2021.101505",
+          "article-title": "An approach to capturing and reusing tacit design knowledge using relational learning for knowledge graphs",
+          "volume": "51",
+          "author": "Jia",
+          "year": "2022",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b90",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1145/3729236",
+          "article-title": "Integrating AI planning with natural language processing: A combination of explicit and tacit knowledge",
+          "volume": "16",
+          "author": "Jin",
+          "year": "2025",
+          "journal-title": "ACM Trans. Intell. Syst. Technol."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b91",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2024.102814",
+          "article-title": "Cloud-edge collaboration composition and scheduling for flexible manufacturing service with a multi-population co-evolutionary algorithm",
+          "volume": "90",
+          "author": "Jing",
+          "year": "2024",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b92",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104353",
+          "article-title": "Knowledge graph construction with meta-learning for continuously accumulated manufacturing knowledge",
+          "volume": "172",
+          "author": "Jing",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b93",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.apergo.2018.07.016",
+          "article-title": "How and why we need to capture tacit knowledge in manufacturing: Case studies of visual inspection",
+          "volume": "74",
+          "author": "Johnson",
+          "year": "2019",
+          "journal-title": "Appl. Ergon."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b94",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.ergon.2022.103337",
+          "article-title": "The impact of passive shoulder exoskeletons during simulated aircraft manufacturing sealing tasks",
+          "volume": "91",
+          "author": "Jorgensen",
+          "year": "2022",
+          "journal-title": "Int. J. Ind. Ergon."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b95",
+          "doi-asserted-by": "crossref",
+          "first-page": "3396",
+          "DOI": "10.1109/TII.2025.3526708",
+          "article-title": "Self-explanatory fault diagnosis framework for industrial processes using graph attention",
+          "volume": "21",
+          "author": "Kim",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b96",
+          "doi-asserted-by": "crossref",
+          "first-page": "2304",
+          "DOI": "10.1109/TVCG.2023.3247112",
+          "article-title": "Effects of collaborative training using virtual co-embodiment on motor skill learning",
+          "volume": "29",
+          "author": "Kodama",
+          "year": "2023",
+          "journal-title": "IEEE Trans. Vis. Comput. Graphics"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b97",
+          "article-title": "Tacit knowledge acquisition & sharing, and its influence on innovations: A polish/US cross-country study",
+          "volume": "71",
+          "author": "Kucharska",
+          "year": "2023",
+          "journal-title": "Int. J. Inf. Manage."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b98",
+          "doi-asserted-by": "crossref",
+          "first-page": "135",
+          "DOI": "10.1007/s11023-021-09588-1",
+          "article-title": "Explanations in AI as claims of tacit knowledge",
+          "volume": "32",
+          "author": "Lam",
+          "year": "2022",
+          "journal-title": "Minds Mach."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b99",
+          "doi-asserted-by": "crossref",
+          "first-page": "1769",
+          "DOI": "10.1007/s00170-021-08449-6",
+          "article-title": "Minimal AR: visual asset optimization for the authoring of augmented reality work instructions in manufacturing",
+          "volume": "119",
+          "author": "Laviola",
+          "year": "2022",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b100",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2023.104026",
+          "article-title": "The minimal AR authoring approach: Validation in a real assembly scenario",
+          "volume": "154",
+          "author": "Laviola",
+          "year": "2024",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b101",
+          "doi-asserted-by": "crossref",
+          "first-page": "839",
+          "DOI": "10.1016/j.jmsy.2025.11.007",
+          "article-title": "IM-chat: A multi-agent LLM framework integrating tool-calling and diffusion modeling for knowledge transfer in injection molding industry",
+          "volume": "83",
+          "author": "Lee",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b102",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2024.102917",
+          "article-title": "A self-imitation learning approach for scheduling evaporation and encapsulation stages of OLED display manufacturing systems",
+          "volume": "93",
+          "author": "Lee",
+          "year": "2025",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b103",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2023.102686",
+          "article-title": "Human-robot shared assembly taxonomy: A step toward seamless human-robot knowledge transfer",
+          "volume": "86",
+          "author": "Lee",
+          "year": "2024",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b104",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103076",
+          "article-title": "AIGC-empowered smart manufacturing: Prospects and challenges",
+          "volume": "97",
+          "author": "Leng",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "12",
+          "key": "10.1016/j.compind.2026.104571_b105",
+          "doi-asserted-by": "crossref",
+          "first-page": "4901",
+          "DOI": "10.1080/00207543.2025.2462657",
+          "article-title": "Human centric innovation at the heart of industry 5.0–exploring research challenges and opportunities",
+          "volume": "64",
+          "author": "Li",
+          "year": "2026",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b106",
+          "article-title": "Knowledge graph-driven fault diagnosis for aviation equipment: Integrating improved joint extraction with large language model",
+          "volume": "50",
+          "author": "Li",
+          "year": "2026",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b107",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2026.104445",
+          "article-title": "Anomaly detection for industrial time series in process industry using informed machine learning with graph attention networks",
+          "volume": "176",
+          "author": "Li",
+          "year": "2026",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "7",
+          "key": "10.1016/j.compind.2026.104571_b108",
+          "doi-asserted-by": "crossref",
+          "first-page": "9870",
+          "DOI": "10.1109/TII.2024.3384517",
+          "article-title": "Progressive complementary knowledge aggregation for CdZnTe defect segmentation",
+          "volume": "20",
+          "author": "Li",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b109",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2024.110855",
+          "article-title": "HGNP: A PCA-based heterogeneous graph neural network for a family distributed flexible job shop",
+          "volume": "200",
+          "author": "Li",
+          "year": "2025",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b110",
+          "doi-asserted-by": "crossref",
+          "first-page": "652",
+          "DOI": "10.1016/j.jmsy.2024.10.007",
+          "article-title": "Deep expert network: A unified method toward knowledge-informed fault diagnosis via fully interpretable neuro-symbolic AI",
+          "volume": "77",
+          "author": "Li",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b111",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2024.102968",
+          "article-title": "Integrating neurophysiological sensing and group-based multi-criteria decision-making for fourth-party logistics platform selection",
+          "volume": "64",
+          "author": "Li",
+          "year": "2025",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b112",
+          "doi-asserted-by": "crossref",
+          "first-page": "304",
+          "DOI": "10.1016/j.jmsy.2023.03.013",
+          "article-title": "Self-organising multiple human-robot collaboration: A temporal subgraph reasoning-based method",
+          "volume": "68",
+          "author": "Li",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b113",
+          "article-title": "Manufacturing resilience through disruption mitigation using attention-based consistently-attributed graph embedded decision support system",
+          "volume": "197",
+          "author": "Lim",
+          "year": "2024",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b114",
+          "doi-asserted-by": "crossref",
+          "first-page": "405",
+          "DOI": "10.1016/j.jmsy.2025.08.019",
+          "article-title": "AI-aided automated AR-assisted assembly instruction authoring and generation method",
+          "volume": "83",
+          "author": "Lin",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b115",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2022.103753",
+          "article-title": "A metrics-based meta-learning model with meta-pretraining for industrial knowledge graph construction",
+          "volume": "143",
+          "author": "Liu",
+          "year": "2022",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b116",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2022.102468",
+          "article-title": "Multiple source partial knowledge transfer for manufacturing system modelling",
+          "volume": "80",
+          "author": "Liu",
+          "year": "2023",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b117",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2021.101515",
+          "article-title": "A knowledge graph-based data representation approach for IIoT-enabled cognitive manufacturing",
+          "volume": "51",
+          "author": "Liu",
+          "year": "2022",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b118",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2025.110889",
+          "article-title": "A blockchain-based LLM-driven energy-efficient scheduling system towards distributed multi-agent manufacturing scenario of new energy vehicles within the circular economy",
+          "volume": "201",
+          "author": "Liu",
+          "year": "2025",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b119",
+          "doi-asserted-by": "crossref",
+          "first-page": "8160",
+          "DOI": "10.1109/TII.2024.3366977",
+          "article-title": "Joint knowledge graph and large language model for fault diagnosis and its application in aviation assembly",
+          "volume": "20",
+          "author": "Liu",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b120",
+          "doi-asserted-by": "crossref",
+          "first-page": "647",
+          "DOI": "10.1109/TMECH.2023.3303202",
+          "article-title": "Physics-informed scaling evolutionary transformer for in-situ tool condition monitoring",
+          "volume": "29",
+          "author": "Liu",
+          "year": "2024",
+          "journal-title": "IEEE/ASME Trans. Mechatronics"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b121",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2026.131343",
+          "article-title": "LLM-augmented causal-knowledge heterogeneous graph framework for interpretable reasoning and collaborative knowledge fusion in automotive chip production",
+          "volume": "311",
+          "author": "Liu",
+          "year": "2026",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b122",
+          "article-title": "From “prepare for the unknown” to “train for what’s coming”: A digital twin-driven and cognitive training approach for the workforce of the future in smart factories",
+          "volume": "32",
+          "author": "Longo",
+          "year": "2023",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b123",
+          "doi-asserted-by": "crossref",
+          "first-page": "1213",
+          "DOI": "10.1016/j.jmsy.2025.08.015",
+          "article-title": "Large language model-enabled cognitive agent for self-aware manufacturing",
+          "volume": "82",
+          "author": "Lou",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b124",
+          "doi-asserted-by": "crossref",
+          "first-page": "191",
+          "DOI": "10.1186/s10033-025-01348-x",
+          "article-title": "A novel gait identity recognition method for personalized human-robot collaboration in industry 5.0",
+          "volume": "38",
+          "author": "Lu",
+          "year": "2025",
+          "journal-title": "Chin. J. Mech. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b125",
+          "doi-asserted-by": "crossref",
+          "first-page": "1476",
+          "DOI": "10.1109/TRO.2024.3353075",
+          "article-title": "Multistage cable routing through hierarchical imitation learning",
+          "volume": "40",
+          "author": "Luo",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Robot."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b126",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2025.127226",
+          "article-title": "Refinement and revision in academic writing: Integrating multi-source knowledge and LLMs with delta feedback",
+          "volume": "277",
+          "author": "Ma",
+          "year": "2025",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b127",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103112",
+          "article-title": "Probing AR-assisted seamless HRC assembly for industry 5.0: Multi-modal mutual cognition and LLM-driven knowledge reasoning",
+          "volume": "97",
+          "author": "Ma",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "12",
+          "key": "10.1016/j.compind.2026.104571_b128",
+          "doi-asserted-by": "crossref",
+          "first-page": "5239",
+          "DOI": "10.1080/00207543.2025.2472298",
+          "article-title": "A knowledge-graph enhanced large language model-based fault diagnostic reasoning and maintenance decision support pipeline towards industry 5.0",
+          "volume": "64",
+          "author": "Ma",
+          "year": "2026",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b129",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.jmsy.2025.11.016",
+          "article-title": "Aircraft assembly process planning based on knowledge graph constructed by integrating LLMs and SLMs",
+          "volume": "84",
+          "author": "Ma",
+          "year": "2026",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "11–12",
+          "key": "10.1016/j.compind.2026.104571_b130",
+          "doi-asserted-by": "crossref",
+          "first-page": "5395",
+          "DOI": "10.1007/s00170-024-13691-9",
+          "article-title": "Evaluation of mental workload in haptic-enabled virtual assembly training operations",
+          "volume": "132",
+          "author": "Macias-Velasquez",
+          "year": "2024",
+          "journal-title": "Int. J. Adv. Manuf. Technol."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b131",
+          "doi-asserted-by": "crossref",
+          "first-page": "239",
+          "DOI": "10.3390/machines13030239",
+          "article-title": "VR co-lab: A virtual reality platform for human–robot disassembly training and synthetic data generation",
+          "volume": "13",
+          "author": "Maddipatla",
+          "year": "2025",
+          "journal-title": "Machines"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b132",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.knosys.2025.113032",
+          "article-title": "CompoCraft: An expert system for process selection in sustainable composites",
+          "volume": "310",
+          "author": "Mahajan",
+          "year": "2025",
+          "journal-title": "Knowl.-Based Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b133",
+          "article-title": "Enhancing industrial internet of things performance through deep transfer learning-based neural network digital twin modeling in data-scarce environments",
+          "volume": "48",
+          "author": "Mahmood",
+          "year": "2025",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b134",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2025.111363",
+          "article-title": "Augmented reality-enabled knowledge management in industrial maintenance: the DILEAF framework",
+          "volume": "208",
+          "author": "Mao",
+          "year": "2025",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b135",
+          "doi-asserted-by": "crossref",
+          "first-page": "7862",
+          "DOI": "10.1109/TII.2024.3367010",
+          "article-title": "Graph convolutional neural network for intelligent fault diagnosis of machines via knowledge graph",
+          "volume": "20",
+          "author": "Mao",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b136",
+          "doi-asserted-by": "crossref",
+          "first-page": "620",
+          "DOI": "10.1016/j.jmsy.2021.07.022",
+          "article-title": "Cross-evaluation of a parallel operating SVM – CNN classifier for reliable internal decision-making processes in composite inspection",
+          "volume": "60",
+          "author": "Meister",
+          "year": "2021",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b137",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1115/1.4071921",
+          "article-title": "Large language model and knowledge graph-based intelligent control framework for smart manufacturing",
+          "volume": "26",
+          "author": "Meng",
+          "year": "2026",
+          "journal-title": "J. Comput. Inf. Sci. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b138",
+          "article-title": "A network analysis of decision strategies of human experts in steel manufacturing",
+          "volume": "168",
+          "author": "Merten",
+          "year": "2022",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "issue": "22",
+          "key": "10.1016/j.compind.2026.104571_b139",
+          "doi-asserted-by": "crossref",
+          "first-page": "6659",
+          "DOI": "10.1080/00207543.2020.1821930",
+          "article-title": "A generic knowledge management approach towards the development of a decision support system",
+          "volume": "59",
+          "author": "Meski",
+          "year": "2021",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b140",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.knosys.2025.114855",
+          "article-title": "Graph RAG-based fault diagnosis for train bogies using knowledge graphs and large language model",
+          "volume": "331",
+          "author": "Miao",
+          "year": "2026",
+          "journal-title": "Knowl.-Based Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b141",
+          "doi-asserted-by": "crossref",
+          "first-page": "172",
+          "DOI": "10.1016/j.jmsy.2023.07.015",
+          "article-title": "PLC orchestration automation to enhance human–machine integration in adaptive manufacturing systems",
+          "volume": "71",
+          "author": "Mo",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b142",
+          "article-title": "Unlocking maintenance insights in industrial text through semantic search",
+          "volume": "157–158",
+          "author": "Naqvi",
+          "year": "2024",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b143",
+          "doi-asserted-by": "crossref",
+          "first-page": "3599",
+          "DOI": "10.1109/TSMC.2026.3664305",
+          "article-title": "Employing eye tracking to assess proficiency level in manufacturing tasks via machine learning",
+          "volume": "56",
+          "author": "Nguyen",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Syst. Man Cybern.: Syst."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b144",
+          "first-page": "1319",
+          "article-title": "Transformation paths and influencing factors of tacit knowledge into explicit knowledge in real estate companies: a qualitative study",
+          "volume": "29",
+          "author": "Ni",
+          "year": "2022",
+          "journal-title": "Eng. Constr. Archit. Manag."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b145",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2026.111879",
+          "article-title": "Industrial knowledge-enhanced fault diagnosis method: Integrating llm and knowledge graph for fault reasoning and maintenance recommendation in cnc machine tools",
+          "volume": "214",
+          "author": "Nie",
+          "year": "2026",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b146",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103111",
+          "article-title": "TS-RIL: A two-stage robot imitation learning framework with motion trajectory learning and obstacle avoidance in real-world operating scenarios",
+          "volume": "97",
+          "author": "Ning",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b147",
+          "doi-asserted-by": "crossref",
+          "first-page": "1561",
+          "DOI": "10.1080/00207543.2025.2568177",
+          "article-title": "Reciprocal learning in human–machine collaboration: a systematic literature review and implications for production and logistics",
+          "volume": "64",
+          "author": "Nixdorf",
+          "year": "2026",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "issue": "7/8",
+          "key": "10.1016/j.compind.2026.104571_b148",
+          "first-page": "162",
+          "article-title": "The knowledge-creating company",
+          "volume": "85",
+          "author": "Nonaka",
+          "year": "2007",
+          "journal-title": "Harv. Bus. Rev."
+        },
+        {
+          "issue": "7–8",
+          "key": "10.1016/j.compind.2026.104571_b149",
+          "first-page": "833",
+          "article-title": "A theory of organizational knowledge creation",
+          "volume": "11",
+          "author": "Nonaka",
+          "year": "1996",
+          "journal-title": "Int. J. Technol. Manage."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b150",
+          "doi-asserted-by": "crossref",
+          "first-page": "3387",
+          "DOI": "10.1109/LRA.2024.3366755",
+          "article-title": "Leveraging demonstrator-perceived precision for safe interactive imitation learning of clearance-limited tasks",
+          "volume": "9",
+          "author": "Oh",
+          "year": "2024",
+          "journal-title": "IEEE Robot. Autom. Lett."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b151",
+          "first-page": "295",
+          "article-title": "Exploring the performance of tacit knowledge: How to make ordinary people deliver extraordinary results in teams",
+          "volume": "43",
+          "author": "Olaisen",
+          "year": "2018",
+          "journal-title": "Int. J. Inf. Manage."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b152",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2022.103627",
+          "article-title": "OCRA - An ontology for collaborative robotics and adaptation",
+          "volume": "138",
+          "author": "Olivares-Alarcos",
+          "year": "2022",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b153",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104329",
+          "article-title": "From ontologies to knowledge augmented large language models for automation: A decision-making guidance for achieving human-robot collaboration in industry 5.0",
+          "volume": "171",
+          "author": "Oyekan",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b154",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2023.122331",
+          "article-title": "Self-training based augmented reality for robust 3D object registration and task assistance",
+          "volume": "238",
+          "author": "Park",
+          "year": "2024",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b155",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2019.101887",
+          "article-title": "Deep learning-based smart task assistance in wearable augmented reality",
+          "volume": "63",
+          "author": "Park",
+          "year": "2020",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b156",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.knosys.2026.116031",
+          "article-title": "Causal inference-based knowledge graph completion using multi-head attention for fault diagnosis",
+          "volume": "343",
+          "author": "Peng",
+          "year": "2026",
+          "journal-title": "Knowl.-Based Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b157",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2018.12.047",
+          "article-title": "Exploring the potential of operator 4.0 interface and monitoring",
+          "volume": "139",
+          "author": "Peruzzini",
+          "year": "2020",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b158",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2026.104328",
+          "article-title": "First things first: Effects of sequential AR/VR exposure on skill acquisition in industrial training",
+          "volume": "71",
+          "author": "Phadke",
+          "year": "2026",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b159",
+          "series-title": "Knowledge in Organisations",
+          "first-page": "135",
+          "article-title": "The tacit dimension",
+          "author": "Polanyi",
+          "year": "2009"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b160",
+          "series-title": "Personal Knowledge",
+          "author": "Polanyi",
+          "year": "2012"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b161",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2022.103832",
+          "article-title": "Zero defect manufacturing ontology: A preliminary version based on standardized terms",
+          "volume": "145",
+          "author": "Psarommatis",
+          "year": "2023",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b162",
+          "article-title": "A hybrid decision support system for automating decision making in the event of defects in the era of zero defect manufacturing",
+          "volume": "26",
+          "author": "Psarommatis",
+          "year": "2022",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b163",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2024.104194",
+          "article-title": "Maximum subspace transferability discriminant analysis: A new cross-domain similarity measure for wind-turbine fault transfer diagnosis",
+          "volume": "164",
+          "author": "Qian",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b164",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1109/LRA.2022.3196104",
+          "article-title": "From one hand to multiple hands: Imitation learning for dexterous manipulation from single-camera teleoperation",
+          "volume": "7",
+          "author": "Qin",
+          "year": "2022",
+          "journal-title": "IEEE Robot. Autom. Lett."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b165",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2026.104422",
+          "article-title": "RDF-based knowledge graph integration with deep learning for fault diagnosis",
+          "volume": "71",
+          "author": "Radtke",
+          "year": "2026",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b166",
+          "doi-asserted-by": "crossref",
+          "first-page": "107",
+          "DOI": "10.1007/s10845-022-01960-x",
+          "article-title": "From knowledge-based to big data analytic model: a novel IoT and machine learning based decision support system for predictive maintenance in industry 4.0",
+          "volume": "34",
+          "author": "Rosati",
+          "year": "2023",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b167",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2026.104465",
+          "article-title": "A material passport ontology for a circular economy",
+          "volume": "178",
+          "author": "Seddiqui",
+          "year": "2026",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b168",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.patcog.2026.113709",
+          "article-title": "SurfSyn: Domain foundation model for pixel-level surface defect detection driven by synthetic data",
+          "volume": "179",
+          "author": "Shen",
+          "year": "2026",
+          "journal-title": "Pattern Recognit."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b169",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104330",
+          "article-title": "Enhancing retrieval-augmented generation for interoperable industrial knowledge representation and inference toward cognitive digital twins",
+          "volume": "171",
+          "author": "Shi",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b170",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2022.103849",
+          "article-title": "Industrial safety management in the digital era: Constructing a knowledge graph from near misses",
+          "volume": "146",
+          "author": "Simone",
+          "year": "2023",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b171",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.isatra.2024.10.002",
+          "article-title": "Skill acquisition framework in multi-robot precision assembly based on cooperative compliant control",
+          "volume": "155",
+          "author": "Song",
+          "year": "2024",
+          "journal-title": "ISA Trans."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b172",
+          "article-title": "Knowledge-based digital twin system: Using a knowlege-driven approach for manufacturing process modeling",
+          "volume": "159–160",
+          "author": "Su",
+          "year": "2024",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b173",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2024.103098",
+          "article-title": "Knowledge graph-driven decision support for manufacturing process: A graph neural network-based knowledge reasoning approach",
+          "volume": "64",
+          "author": "Su",
+          "year": "2025",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b174",
+          "article-title": "Cognitive digital twin in manufacturing process: integrating the knowledge graph for enhanced human-centric industry 5.0",
+          "author": "Su",
+          "year": "2024",
+          "journal-title": "Int. J. Prod. Res."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b175",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compositesa.2024.108357",
+          "article-title": "Harvesting tacit knowledge for composites workforce development",
+          "volume": "185",
+          "author": "Summerscales",
+          "year": "2024",
+          "journal-title": "Compos. A"
+        },
+        {
+          "issue": "10",
+          "key": "10.1016/j.compind.2026.104571_b176",
+          "doi-asserted-by": "crossref",
+          "first-page": "1673",
+          "DOI": "10.1080/09544828.2023.2301232",
+          "article-title": "On tacit knowledge management in product design: status, challenges, and trends",
+          "volume": "36",
+          "author": "Sun",
+          "year": "2025",
+          "journal-title": "J. Eng. Des."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b177",
+          "doi-asserted-by": "crossref",
+          "first-page": "980",
+          "DOI": "10.1109/TII.2024.3470908",
+          "article-title": "A novel domain incremental learning method for bearing fault diagnosis based on f&k",
+          "volume": "21",
+          "author": "Sun",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b178",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.engappai.2024.108705",
+          "article-title": "Efficient human activity recognition: A deep convolutional transformer-based contrastive self-supervised approach using wearable sensors",
+          "volume": "135",
+          "author": "Sun",
+          "year": "2024",
+          "journal-title": "Eng. Appl. Artif. Intell."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b179",
+          "doi-asserted-by": "crossref",
+          "first-page": "555",
+          "DOI": "10.1109/TII.2025.3613372",
+          "article-title": "Curriculum engineering: Structured learning for large language models (LLMs) through curriculum based retrieval",
+          "volume": "22",
+          "author": "Sun",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b180",
+          "article-title": "Knowledge-based expert system to drive an informationally interoperable manufacturing system: An experimental application in the aerospace industry",
+          "volume": "41",
+          "author": "Szejka",
+          "year": "2024",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "issue": "5",
+          "key": "10.1016/j.compind.2026.104571_b181",
+          "doi-asserted-by": "crossref",
+          "first-page": "2724",
+          "DOI": "10.1109/LRA.2023.3260586",
+          "article-title": "Disturbance injection under partial automation: Robust imitation learning for long-horizon tasks",
+          "volume": "8",
+          "author": "Tahara",
+          "year": "2023",
+          "journal-title": "IEEE Robot. Autom. Lett."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b182",
+          "doi-asserted-by": "crossref",
+          "first-page": "1141",
+          "DOI": "10.1007/s10845-023-02097-1",
+          "article-title": "Hierarchical multi-scale network for cross-scale visual defect detection",
+          "volume": "35",
+          "author": "Tang",
+          "year": "2024",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b183",
+          "doi-asserted-by": "crossref",
+          "first-page": "3227",
+          "DOI": "10.1109/TII.2025.3645726",
+          "article-title": "IF4fd: Multiscale information fusion for zero-shot industrial fault diagnosis",
+          "volume": "22",
+          "author": "Tang",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b184",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.engappai.2020.103868",
+          "article-title": "Multi-modal recognition of worker activity for human-centered intelligent manufacturing",
+          "volume": "95",
+          "author": "Tao",
+          "year": "2020",
+          "journal-title": "Eng. Appl. Artif. Intell."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b185",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103154",
+          "article-title": "Human–robot collaborative visual inspection with large language models",
+          "volume": "98",
+          "author": "Tasneem",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b186",
+          "doi-asserted-by": "crossref",
+          "first-page": "57",
+          "DOI": "10.1109/TCDS.2023.3296166",
+          "article-title": "Learning skills from demonstrations: A trend from motion primitives to experience abstraction",
+          "volume": "16",
+          "author": "Tavassoli",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Cogn. Dev. Syst."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b187",
+          "doi-asserted-by": "crossref",
+          "first-page": "1014",
+          "DOI": "10.1108/JKM-01-2021-0026",
+          "article-title": "Tacit knowledge in organizations: bibliometrics and a framework-based systematic review of antecedents, outcomes, theories, methods and future directions",
+          "volume": "26",
+          "author": "Thomas",
+          "year": "2022",
+          "journal-title": "J. Knowl. Manag."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b188",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103169",
+          "article-title": "GNN-LLM hybrid cognitive architectures for generative task adaptation in multi-human multi-robot collaborative disassembly",
+          "volume": "98",
+          "author": "Tong",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b189",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.jmsy.2020.11.009",
+          "article-title": "Knowledge transfer methods for expressing product design information and organization",
+          "volume": "58",
+          "author": "Wang",
+          "year": "2021",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b190",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2023.103912",
+          "article-title": "Knowledge graph embedding learning system for defect diagnosis in additive manufacturing",
+          "volume": "149",
+          "author": "Wang",
+          "year": "2023",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b191",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.jmsy.2024.06.011",
+          "article-title": "Heterogeneous hypergraph learning for analyzing surface defects in additive manufacturing process",
+          "volume": "76",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b192",
+          "doi-asserted-by": "crossref",
+          "first-page": "299",
+          "DOI": "10.1016/j.jmsy.2024.04.020",
+          "article-title": "An LLM-based vision and language cobot navigation approach for human-centric smart manufacturing",
+          "volume": "75",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b193",
+          "doi-asserted-by": "crossref",
+          "first-page": "301",
+          "DOI": "10.1016/j.jmsy.2025.01.022",
+          "article-title": "A deep graph neural network-based link prediction model for proactive anomaly detection in discrete manufacturing workshop",
+          "volume": "79",
+          "author": "Wang",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b194",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2023.121136",
+          "article-title": "Data-driven and knowledge-based predictive maintenance method for industrial robots for the production stability of intelligent manufacturing",
+          "volume": "234",
+          "author": "Wang",
+          "year": "2023",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b195",
+          "doi-asserted-by": "crossref",
+          "first-page": "2738",
+          "DOI": "10.1109/TII.2023.3296919",
+          "article-title": "KMSA-net: A knowledge-mining-based semantic-aware network for cross-domain industrial process fault diagnosis",
+          "volume": "20",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b196",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.jmsy.2022.11.013",
+          "article-title": "A safety management approach for industry 5.0’s human-centered manufacturing based on digital twin",
+          "volume": "66",
+          "author": "Wang",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b197",
+          "doi-asserted-by": "crossref",
+          "first-page": "512",
+          "DOI": "10.1016/j.jmsy.2024.04.011",
+          "article-title": "A data and knowledge driven autonomous intelligent manufacturing system for intelligent factories",
+          "volume": "74",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b198",
+          "doi-asserted-by": "crossref",
+          "first-page": "242",
+          "DOI": "10.1016/j.eng.2024.03.022",
+          "article-title": "An intelligent quality control method for manufacturing processes based on a human-cyber-physical knowledge graph",
+          "volume": "41",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "Engineering"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b199",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.oceaneng.2024.117200",
+          "article-title": "Mission-oriented situation awareness information requirements of submariners: A goal directed task analysis",
+          "volume": "299",
+          "author": "Wang",
+          "year": "2024",
+          "journal-title": "Ocean Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b200",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2022.103647",
+          "article-title": "A novel knowledge graph development for industry design: A case study on indirect coal liquefaction process",
+          "volume": "139",
+          "author": "Wang",
+          "year": "2022",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "issue": "9",
+          "key": "10.1016/j.compind.2026.104571_b201",
+          "doi-asserted-by": "crossref",
+          "first-page": "7165",
+          "DOI": "10.1109/TII.2025.3574535",
+          "article-title": "A mechanism-aided bilevel knowledge transfer framework for pipeline corrosion condition quantitative assessment",
+          "volume": "21",
+          "author": "Wang",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b202",
+          "doi-asserted-by": "crossref",
+          "first-page": "471",
+          "DOI": "10.1016/j.jmsy.2022.05.005",
+          "article-title": "Toward human-centric smart manufacturing: A human-cyber-physical systems (HCPS) perspective",
+          "volume": "63",
+          "author": "Wang",
+          "year": "2022",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b203",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2026.104460",
+          "article-title": "SyntheITS: Synthetic industrial time-series data with prior knowledge and deep generative models for equipment anomaly detection under small samples",
+          "volume": "177",
+          "author": "Wang",
+          "year": "2026",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b204",
+          "article-title": "LLM-MTMP: A large language model-based multi-agent task and motion planning framework for power inspection robots",
+          "volume": "49",
+          "author": "Wang",
+          "year": "2026",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b205",
+          "article-title": "Analysis of causes of welding defects in bridge weathering steel based on large language models",
+          "volume": "48",
+          "author": "Wang",
+          "year": "2025",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b206",
+          "doi-asserted-by": "crossref",
+          "first-page": "366",
+          "DOI": "10.1016/j.jmsy.2026.02.001",
+          "article-title": "Explicating visual tacit knowledge in industrial welding inspection with context-aware cognitive pathway graph",
+          "volume": "85",
+          "author": "Wang",
+          "year": "2026",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b207",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104252",
+          "article-title": "A triple semantic-aware knowledge distillation network for industrial defect detection",
+          "volume": "166",
+          "author": "Wen",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b208",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2023.102172",
+          "article-title": "Systematic knowledge modeling and extraction methods for manufacturing process planning based on knowledge graph",
+          "volume": "58",
+          "author": "Wen",
+          "year": "2023",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b209",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.inffus.2025.103242",
+          "article-title": "Explainable knowledge graph embeddings for industrial process monitoring & control",
+          "volume": "123",
+          "author": "Weyns",
+          "year": "2025",
+          "journal-title": "Inf. Fusion"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b210",
+          "doi-asserted-by": "crossref",
+          "first-page": "731",
+          "DOI": "10.1007/s10796-021-10206-9",
+          "article-title": "Organizational learning for intelligence amplification adoption: Lessons from a clinical decision support system adoption project",
+          "volume": "24",
+          "author": "Wijnhoven",
+          "year": "2022",
+          "journal-title": "Inf. Syst. Front."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b211",
+          "doi-asserted-by": "crossref",
+          "first-page": "169",
+          "DOI": "10.3233/AO-230279",
+          "article-title": "An ontology for maintenance procedure documentation",
+          "volume": "18",
+          "author": "Woods",
+          "year": "2023",
+          "journal-title": "Appl. Ontol."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b212",
+          "doi-asserted-by": "crossref",
+          "first-page": "4316",
+          "DOI": "10.1109/TII.2024.3523562",
+          "article-title": "Concept-aware entity alignment network for industrial knowledge graph",
+          "volume": "21",
+          "author": "Wu",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b213",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2026.131601",
+          "article-title": "Knowledge graph augmented meta-learning with condition-sensitive pseudo-labeling for semi-supervised fault diagnosis under multiple working conditions",
+          "volume": "315",
+          "author": "Wu",
+          "year": "2026",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b214",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2025.103208",
+          "article-title": "A mixed reality-assisted human-to-robot skill transfer approach for contact-rich assembly via visuomotor primitives",
+          "volume": "99",
+          "author": "Wu",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "8",
+          "key": "10.1016/j.compind.2026.104571_b215",
+          "doi-asserted-by": "crossref",
+          "first-page": "17096",
+          "DOI": "10.1109/JIOT.2026.3661183",
+          "article-title": "BERTFD: A two-stage multimodal method for bearing fault diagnosis using pre-trained language models",
+          "volume": "13",
+          "author": "Xia",
+          "year": "2026",
+          "journal-title": "IEEE Internet Things J."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b216",
+          "doi-asserted-by": "crossref",
+          "first-page": "376",
+          "DOI": "10.1016/j.jmsy.2025.06.022",
+          "article-title": "Enhancing sustainability of human-robot collaboration in industry 5.0: Context- and interaction-aware human motion prediction for proactive robot control",
+          "volume": "82",
+          "author": "Xia",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b217",
+          "doi-asserted-by": "crossref",
+          "first-page": "3117",
+          "DOI": "10.1109/TII.2024.3523551",
+          "article-title": "Leveraging large language models to empower Bayesian networks for reliable human-robot collaborative disassembly sequence planning in remanufacturing",
+          "volume": "21",
+          "author": "Xia",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b218",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2024.102728",
+          "article-title": "Leveraging error-assisted fine-tuning large language models for manufacturing excellence",
+          "volume": "88",
+          "author": "Xia",
+          "year": "2024",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b219",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.eswa.2026.132094",
+          "article-title": "Sensor-to-sensor procedural co-learning for sensor-limited human action recognition",
+          "volume": "319",
+          "author": "Xie",
+          "year": "2026",
+          "journal-title": "Expert Syst. Appl."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b220",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2024.104171",
+          "article-title": "Learning 3D human-object interaction graphs from transferable context knowledge for construction monitoring",
+          "volume": "164",
+          "author": "Xie",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b221",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1109/TFUZZ.2026.3665172",
+          "article-title": "LLM-driven multimodal knowledge graph construction for industrial process with prompt optimization and fuzzy RAG",
+          "volume": "34",
+          "author": "Xie",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Fuzzy Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b222",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.engappai.2026.113858",
+          "article-title": "Group morphological adaptation via adversarial imitation learning",
+          "volume": "167",
+          "author": "Xin",
+          "year": "2026",
+          "journal-title": "Eng. Appl. Artif. Intell."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b223",
+          "doi-asserted-by": "crossref",
+          "first-page": "134",
+          "DOI": "10.1016/j.jmsy.2025.08.020",
+          "article-title": "Metallurgy-guided bidirectional generative framework for performance prediction and inverse process design in hot-rolled steel",
+          "volume": "83",
+          "author": "Xu",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b224",
+          "doi-asserted-by": "crossref",
+          "first-page": "530",
+          "DOI": "10.1016/j.jmsy.2021.10.006",
+          "article-title": "Industry 4.0 and industry 5.0—Inception, conception and perception",
+          "volume": "61",
+          "author": "Xu",
+          "year": "2021",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b225",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.ress.2025.111021",
+          "article-title": "Semi-supervised ISA: A novel industrial knowledge graph construction method enhanced by the fault log corpus analysis and semi-supervised learning",
+          "volume": "260",
+          "author": "Xu",
+          "year": "2025",
+          "journal-title": "Reliab. Eng. Syst. Saf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b226",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2026.103254",
+          "article-title": "Synergy of giants and specialists: A large-and-small model integration framework driven by generative AI for smart manufacturing",
+          "volume": "100",
+          "author": "Xu",
+          "year": "2026",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b227",
+          "article-title": "Human-centric artificial intelligence towards industry 5.0: retrospect and prospect",
+          "volume": "47",
+          "author": "Yan",
+          "year": "2025",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "issue": "7",
+          "key": "10.1016/j.compind.2026.104571_b228",
+          "doi-asserted-by": "crossref",
+          "first-page": "3039",
+          "DOI": "10.1007/s10845-022-01992-3",
+          "article-title": "A digital apprentice for chatter detection in machining via human–machine interaction",
+          "volume": "34",
+          "author": "Yan",
+          "year": "2023",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b229",
+          "doi-asserted-by": "crossref",
+          "first-page": "4493",
+          "DOI": "10.1109/TMECH.2024.3490733",
+          "article-title": "Few-shot class-incremental learning for system-level fault diagnosis of wind turbine",
+          "volume": "30",
+          "author": "Yan",
+          "year": "2025",
+          "journal-title": "IEEE/ASME Trans. Mechatronics"
+        },
+        {
+          "issue": "8",
+          "key": "10.1016/j.compind.2026.104571_b230",
+          "doi-asserted-by": "crossref",
+          "first-page": "5811",
+          "DOI": "10.1109/TII.2025.3547031",
+          "article-title": "Gaussian-based interval-aware transformer with interval embedding for data sequence modeling with irregular sampling frequency in industrial processes",
+          "volume": "21",
+          "author": "Yang",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b231",
+          "doi-asserted-by": "crossref",
+          "first-page": "619",
+          "DOI": "10.1007/s10111-024-00775-5",
+          "article-title": "Analyzing resilient attention management of expert operators using functional resonance analysis method",
+          "volume": "26",
+          "author": "Yasue",
+          "year": "2024",
+          "journal-title": "Cogn. Technol. Work."
+        },
+        {
+          "issue": "4",
+          "key": "10.1016/j.compind.2026.104571_b232",
+          "doi-asserted-by": "crossref",
+          "first-page": "771",
+          "DOI": "10.1109/TOH.2024.3432835",
+          "article-title": "Enhance kinesthetic experience in perceptual learning for welding motor skill acquisition with virtual reality and robot-based haptic guidance",
+          "volume": "17",
+          "author": "Ye",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Haptics"
+        },
+        {
+          "issue": "1",
+          "key": "10.1016/j.compind.2026.104571_b233",
+          "doi-asserted-by": "crossref",
+          "first-page": "1",
+          "DOI": "10.1016/j.cirp.2025.04.015",
+          "article-title": "An LLM-enabled human demonstration-assisted hybrid robot skill synthesis approach for human-robot collaborative assembly",
+          "volume": "74",
+          "author": "Yin",
+          "year": "2025",
+          "journal-title": "CIRP Ann"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b234",
+          "doi-asserted-by": "crossref",
+          "first-page": "140",
+          "DOI": "10.1016/j.jmapro.2023.12.008",
+          "article-title": "Robotizing double-electrode GMAW process through learning from human welders",
+          "volume": "109",
+          "author": "Yu",
+          "year": "2024",
+          "journal-title": "J. Manuf. Process."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b235",
+          "article-title": "Multimodal data-enabled large model for machine fault diagnosis towards intelligent operation and maintenance",
+          "volume": "50",
+          "author": "Yu",
+          "year": "2026",
+          "journal-title": "J. Ind. Inf. Integr."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b236",
+          "doi-asserted-by": "crossref",
+          "first-page": "1161",
+          "DOI": "10.1016/j.jmapro.2025.03.051",
+          "article-title": "Enhancing wire arc directed energy deposition for challenging printing tasks: A VR-based skill-learning approach",
+          "volume": "141",
+          "author": "Yuan",
+          "year": "2025",
+          "journal-title": "J. Manuf. Process."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b237",
+          "doi-asserted-by": "crossref",
+          "first-page": "3721",
+          "DOI": "10.1109/TII.2019.2938890",
+          "article-title": "Hierarchical quality-relevant feature representation for soft sensor modeling: A novel deep learning strategy",
+          "volume": "16",
+          "author": "Yuan",
+          "year": "2020",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b238",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.compind.2025.104376",
+          "article-title": "Transfer learning of state-based potential games for process optimization in decentralized manufacturing systems",
+          "volume": "173",
+          "author": "Yuwono",
+          "year": "2025",
+          "journal-title": "Comput. Ind."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b239",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2025.111466",
+          "article-title": "MAMHSAN: A multi-agent deep reinforcement learning framework based on multi-head self-attention network with heterogeneous graph embedding for flexible job shop scheduling",
+          "volume": "210",
+          "author": "Zhang",
+          "year": "2025",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b240",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2023.102691",
+          "article-title": "Enabling collaborative assembly between humans and robots using a digital twin system",
+          "volume": "86",
+          "author": "Zhang",
+          "year": "2024",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b241",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.robot.2023.104600",
+          "article-title": "A visual imitation learning algorithm for the selection of robots’ grasping points",
+          "volume": "172",
+          "author": "Zhang",
+          "year": "2024",
+          "journal-title": "Robot. Auton. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b242",
+          "doi-asserted-by": "crossref",
+          "first-page": "2771",
+          "DOI": "10.1109/COMST.2025.3563919",
+          "article-title": "Industrial metaverse: Enabling technologies, open problems, and future trends",
+          "volume": "28",
+          "author": "Zhang",
+          "year": "2026",
+          "journal-title": "IEEE Commun. Surv. Tutor."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b243",
+          "doi-asserted-by": "crossref",
+          "first-page": "1488",
+          "DOI": "10.1109/TMECH.2022.3227960",
+          "article-title": "Valve stiction detection using multitimescale feature consistent constraint for time-series data",
+          "volume": "28",
+          "author": "Zhang",
+          "year": "2023",
+          "journal-title": "IEEE/ASME Trans. Mechatronics"
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b244",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2021.102227",
+          "article-title": "A reinforcement learning method for human-robot collaboration in assembly tasks",
+          "volume": "73",
+          "author": "Zhang",
+          "year": "2022",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "2",
+          "key": "10.1016/j.compind.2026.104571_b245",
+          "doi-asserted-by": "crossref",
+          "first-page": "2225",
+          "DOI": "10.1109/LRA.2021.3061374",
+          "article-title": "Learning variable impedance control via inverse reinforcement learning for force-related tasks",
+          "volume": "6",
+          "author": "Zhang",
+          "year": "2021",
+          "journal-title": "IEEE Robot. Autom. Lett."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b246",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2023.102121",
+          "article-title": "Towards new-generation human-centric smart manufacturing in industry 5.0: A systematic review",
+          "volume": "57",
+          "author": "Zhang",
+          "year": "2023",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b247",
+          "doi-asserted-by": "crossref",
+          "first-page": "2517",
+          "DOI": "10.1109/TII.2025.3641258",
+          "article-title": "Transfer learning-enabled multiobjective optimization for adjustable aircraft assembly scheduling",
+          "volume": "22",
+          "author": "Zhang",
+          "year": "2026",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b248",
+          "doi-asserted-by": "crossref",
+          "first-page": "614",
+          "DOI": "10.1016/j.jmsy.2024.08.015",
+          "article-title": "A novel soft actor–critic framework with disjunctive graph embedding and autoencoder mechanism for job shop scheduling problems",
+          "volume": "76",
+          "author": "Zhang",
+          "year": "2024",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "12",
+          "key": "10.1016/j.compind.2026.104571_b249",
+          "doi-asserted-by": "crossref",
+          "first-page": "9047",
+          "DOI": "10.1109/TII.2022.3178414",
+          "article-title": "Relation and entropy weight-aware knowledge graph embedding for cloud manufacturing",
+          "volume": "18",
+          "author": "Zhao",
+          "year": "2022",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b250",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.jmsy.2026.04.020",
+          "article-title": "HAIL: Human-in-the-loop assembly imitation learning system",
+          "volume": "86",
+          "author": "Zhao",
+          "year": "2026",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b251",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.asoc.2025.113920",
+          "article-title": "Towards agentic smart design: An industrial large model-driven human-in-the-loop agentic workflow for geometric modelling",
+          "volume": "185",
+          "author": "Zheng",
+          "year": "2025",
+          "journal-title": "Appl. Soft Comput."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b252",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2021.102160",
+          "article-title": "A novel knowledge graph-based optimization approach for resource allocation in discrete manufacturing workshops",
+          "volume": "71",
+          "author": "Zhou",
+          "year": "2021",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b253",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.cie.2026.111805",
+          "article-title": "Towards trustworthy AI in industry 5.0: Ante-hoc interpretability with deep learning",
+          "volume": "213",
+          "author": "Zhou",
+          "year": "2026",
+          "journal-title": "Comput. Ind. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b254",
+          "doi-asserted-by": "crossref",
+          "first-page": "9117",
+          "DOI": "10.1109/TASE.2024.3498064",
+          "article-title": "Knowledge transfer enabled diverse task scheduling for individualized requirements in industrial cloud platform",
+          "volume": "22",
+          "author": "Zhou",
+          "year": "2025",
+          "journal-title": "IEEE Trans. Autom. Sci. Eng."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b255",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2022.102472",
+          "article-title": "Towards multi-task transfer optimization of cloud service collaboration in industrial internet platform",
+          "volume": "80",
+          "author": "Zhou",
+          "year": "2023",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "issue": "3",
+          "key": "10.1016/j.compind.2026.104571_b256",
+          "doi-asserted-by": "crossref",
+          "first-page": "1761",
+          "DOI": "10.1007/s10845-024-02339-w",
+          "article-title": "Collaborative optimization of manufacturing service allocation via multi-task transfer learning evolutionary approach",
+          "volume": "36",
+          "author": "Zhou",
+          "year": "2025",
+          "journal-title": "J. Intell. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b257",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.aei.2022.101799",
+          "article-title": "Leveraging on causal knowledge for enhancing the root cause analysis of equipment spot inspection failures",
+          "volume": "54",
+          "author": "Zhou",
+          "year": "2022",
+          "journal-title": "Adv. Eng. Inform."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b258",
+          "doi-asserted-by": "crossref",
+          "first-page": "97",
+          "DOI": "10.1016/j.jmsy.2023.01.007",
+          "article-title": "An attention-based deep learning approach for inertial motion recognition and estimation in human-robot collaboration",
+          "volume": "67",
+          "author": "Zhou",
+          "year": "2023",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b259",
+          "doi-asserted-by": "crossref",
+          "DOI": "10.1016/j.rcim.2024.102896",
+          "article-title": "Variable impedance control on contact-rich manipulation of a collaborative industrial mobile manipulator: An imitation learning approach",
+          "volume": "92",
+          "author": "Zhou",
+          "year": "2025",
+          "journal-title": "Robot. Comput.-Integr. Manuf."
+        },
+        {
+          "key": "10.1016/j.compind.2026.104571_b260",
+          "doi-asserted-by": "crossref",
+          "first-page": "239",
+          "DOI": "10.1016/j.jmsy.2025.06.005",
+          "article-title": "Matrix manufacturing system layout and scheduling via graph neural network and multi-action deep reinforcement learning",
+          "volume": "82",
+          "author": "Zhu",
+          "year": "2025",
+          "journal-title": "J. Manuf. Syst."
+        },
+        {
+          "issue": "6",
+          "key": "10.1016/j.compind.2026.104571_b261",
+          "doi-asserted-by": "crossref",
+          "first-page": "8488",
+          "DOI": "10.1109/TII.2024.3369240",
+          "article-title": "PhysiCausalNet: A causal- and physics-driven domain generalization network for cross-machine fault diagnosis of unseen domain",
+          "volume": "20",
+          "author": "Zhu",
+          "year": "2024",
+          "journal-title": "IEEE Trans. Ind. Inform."
+        }
+      ],
+      "container-title": [
+        "Computers in Industry"
+      ],
+      "original-title": [],
+      "language": "en",
+      "link": [
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0166361526001387?httpAccept=text/xml",
+          "content-type": "text/xml",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        },
+        {
+          "URL": "https://api.elsevier.com/content/article/PII:S0166361526001387?httpAccept=text/plain",
+          "content-type": "text/plain",
+          "content-version": "vor",
+          "intended-application": "text-mining"
+        }
+      ],
+      "deposited": {
+        "date-parts": [
+          [
+            2026,
+            11,
+            15
+          ]
+        ],
+        "date-time": "2026-11-15T22:40:45Z",
+        "timestamp": 1794782445000
+      },
+      "score": 1,
+      "resource": {
+        "primary": {
+          "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0166361526001387"
+        }
+      },
+      "subtitle": [],
+      "short-title": [],
+      "issued": {
+        "date-parts": [
+          [
+            2027,
+            1
+          ]
+        ]
+      },
+      "references-count": 261,
+      "alternative-id": [
+        "S0166361526001387"
+      ],
+      "URL": "https://doi.org/10.1016/j.compind.2026.104571",
+      "relation": {},
+      "ISSN": [
+        "0166-3615"
+      ],
+      "issn-type": [
+        {
+          "value": "0166-3615",
+          "type": "print"
+        }
+      ],
+      "subject": [],
+      "published": {
+        "date-parts": [
+          [
+            2027,
+            1
+          ]
+        ]
+      },
+      "assertion": [
+        {
+          "value": "Elsevier",
+          "name": "publisher",
+          "label": "This article is maintained by"
+        },
+        {
+          "value": "Transformation of tacit knowledge in Human-Centric Smart Manufacturing: A systematic review, key technologies, critical challenges, and future directions",
+          "name": "articletitle",
+          "label": "Article Title"
+        },
+        {
+          "value": "Computers in Industry",
+          "name": "journaltitle",
+          "label": "Journal Title"
+        },
+        {
+          "value": "https://doi.org/10.1016/j.compind.2026.104571",
+          "name": "articlelink",
+          "label": "CrossRef DOI link to publisher maintained version"
+        },
+        {
+          "value": "article",
+          "name": "content_type",
+          "label": "Content Type"
+        },
+        {
+          "value": "© 2026 Elsevier B.V. All rights are reserved, including those for text and data mining, AI training, and similar technologies.",
+          "name": "copyright",
+          "label": "Copyright"
+        }
+      ],
+      "article-number": "104571"
+    },
+    "verification": "verified",
+    "matchScore": 1
+  },
+  {
     "number": 1,
     "title": "A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions",
     "authorsText": "Jiang, C., Yao, J., Xiao, W., Zhuang, W., Wang, J., Bao, J., & Li, X.*",
@@ -257,7 +3454,7 @@
       "article-number": "105281"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -548,7 +3745,7 @@
       },
       "article-number": "134629"
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -732,7 +3929,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -904,7 +4101,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -1205,7 +4402,7 @@
       "article-number": "104695"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -1496,7 +4693,7 @@
       },
       "article-number": "111878"
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -1713,7 +4910,7 @@
       },
       "article-number": "115433"
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -1899,7 +5096,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "With the increasing prevalence of age-related diseases among the elderly, escalating disability rates resulting from chronic illnesses, and heightened public health awareness, there is a growing demand for personalised design of rehabilitation assistive devices (RADs). Conventional product design methods have shown significant limitations in addressing the diversity and individuality of user needs. Therefore, leveraging large language models (LLM) to self-organise multi-agents, an innovative method for designing personalised RADs, called LLM-PDAgents, is proposed in this manuscript. Initially, a knowledge graph (KG) was constructed with the relationship among ‘phenomenon-symptom-function-behaviour-structure', establishing a chain-of-thought for product design knowledge within multi-agents. Subsequently, a thinking mechanism for task planning in the self-organised process of multi-agents was developed, which emulates the processes of planning, execution, and monitoring in product design. Ultimately, a multi-tiered progressive reflection strategy was devised to iteratively refine the product design, fostering a continuous optimization on the design solution until user satisfaction is achieved. Taking the real-world design of knee joint RADs as an example, LLM-PDAgents significantly improved the procedure and quality of the whole design process, and its outcomes showed merits on economic viability, manufacturing feasibility, user pertinence, and generated costs, indicating an efficient and reliable approach for the personalised design of RADs.",
       "pdfUrl": null,
@@ -2140,7 +5337,7 @@
       },
       "article-number": "100954"
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -2393,7 +5590,7 @@
       "article-number": "103422"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -2656,7 +5853,7 @@
       "article-number": "103235"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -2840,7 +6037,7 @@
         ]
       }
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -3013,7 +6210,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "Reliable anomaly detection in 3D printing is critical for ensuring part quality and process stability, yet conventional data-driven methods often fail under cold-start conditions and long-range dependencies. To overcome these challenges, this paper proposes a layer-wise anomaly prediction framework that combines large language model (LLM) reasoning with multimodal physical sensing. A stage-adaptive Prompt adjustment mechanism is introduced, which dynamically integrates material properties, process parameters, sensor states, and task semantics with time-series data as a unified input. This enables the model to capture both global semantics and local temporal variations across print layers. The proposed method consists of three key modules: (1) prompt design tailored to layered printing characteristics, including static and dynamic Prompts; (2) multimodal time-series alignment using sliding window encoding and semantic prototype matching; and (3) a unified inference framework for anomaly classification based on prompt cues and sensor embeddings. Experiments on four representative 3D-printed parts – rectangular beam, L-shaped bracket, spiral component, and internal-cavity cube – with controlled anomaly scenarios demonstrate that our approach outperforms LSTM, Anomaly Transformer, and frozen LLM baselines, offering superior accuracy and interpretability in complex printing environments.",
       "pdfUrl": null,
@@ -3186,7 +6383,7 @@
         ]
       }
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "With the rapid development of the renewable energy industry, the demand for on-site assembly of wind turbines has been increasing. However, the assembly process of wind turbines involves complex process knowledge and high contextual constraints, and traditional knowledge recommendation methods have certain limitations in addressing these challenges. To improve the efficiency and accuracy of workers in acquiring specialised knowledge at the assembly site, this paper proposes a context-driven multi-agent collaborative solution generation method. This method considers contextual constraints and interdisciplinary collaboration issues by constructing a multi-agent system that combines specialised knowledge of wind turbine assembly with situational information, thereby recommending task-specific knowledge. We constructed a context-oriented knowledge graph for wind turbine assembly, structurally modelling key processes, procedures, steps, and situational constraints. We propose a multi-strategy knowledge recommendation mechanism, which selects appropriate query strategy based on different task scenarios. We introduce expertise degree and agent memory mechanism, adjusting the agent's memory structure and decision-making approach to ensure the accuracy and consistency of information transmission. Experimental results show that the proposed method demonstrates high accuracy and effectiveness in knowledge recommendation for wind turbine assembly, providing intelligent and customised solutions for assembly personnel.",
       "pdfUrl": null,
@@ -3415,7 +6612,7 @@
       "article-number": "103611"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -3580,7 +6777,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "With the support of advanced information and communication technologies and open innovative design platforms, the emerging and blooming paradigm of mass personalization drives the process of engineering design to include knowledge with higher heterogeneity and more complex modalities. To this end, Multi-Modal Knowledge Graphs (MMKG), evolved from semantic networks and knowledge graphs, provide a powerful technology system for more effectively organizing and utilizing this knowledge. To understand the state-of-the-art of key aspects that enables MMKG, and recognize the potential challenges for forefront applications in engineering design, a literature review of MMKG-related publications is conducted. With selected 131 representative papers together with other 32 supplementary studies (up to 11/11/2023), this article summarizes the technical and practical efforts of multi-modal knowledge extraction, fusion technology, and specific applications in the engineering design process. Meantime, the challenges that MMKG faces and its foreseeable development potentials are discussed, which is hoped to provide a basis for the futuristic explorations and implementations of MMKG-enhanced availability and productivity in engineering design.",
       "pdfUrl": null,
@@ -3745,7 +6942,7 @@
         ]
       }
     },
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "In the field of wind power generation, wind turbines serve as the foundation for harnessing electrical energy. However, the assembly process information for wind turbines is typically dispersed among various modalities such as 3D models, natural text, and images in the form of process documents. The difficulty in effectively utilising historical process knowledge hampers the efficiency of assembly process design and subsequently affects production efficiency. To address this issue, this paper constructs a Multi-modal Process Knowledge Graph for Wind Turbines, named MPKG-WT. Additionally, a wind turbine assembly process question-answering system combining multi-modal knowledge graphs with large language models (LLMs) is proposed to enable efficient utilisation of historical assembly process knowledge. The proposed approach achieves outstanding results when compared with other state-of-the-art KBQA methods and recent LLMs using a wind turbine assembly process dataset. The effectiveness of the approach is further validated through a visualised assembly process question-answering system. The research findings demonstrate a significant improvement in assembly process design efficiency.",
       "pdfUrl": null,
@@ -3947,7 +7144,7 @@
       }
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "Based on advanced information and communication infrastructures and enabled with the cutting-edge information processing of cognitive computing, existing smart manufacturing systems have foreseen a prevailing tendency that approaches a higher automation level, i.e., Self-X (e.g., Self-configuration/optimization/adaptation). However, the readiness of ‘Self-X’ levels is still far to reach, encountering the practical challenges of semantics-based networking and human-machine untrust in the manufacturing scenario. To mind these gaps, the authors envision an industrial knowledge graph (IKG) and graph embedding (GE) enabled pathway, to flourish today’s smart manufacturing paradigms towards cognitive mass personalization. To pave it, three promising IKG and GE enabling techniques in the ‘Self-X’ cognitive manufacturing network are described. Potential opportunities and challenges are also pointed out to invite more opinions to refine and innovate the exploitation of IKG and GE for the future of smart manufacturing.",
       "pdfUrl": "https://www.sciencedirect.com/science/article/pii/S2095809921004252/pdf",
@@ -4188,7 +7385,7 @@
       "article-number": "102084"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -4431,7 +7628,7 @@
       "article-number": "102489"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,
@@ -4670,7 +7867,7 @@
       "article-number": "101880"
     },
     "verification": "verified",
-    "matchScore": 1.0,
+    "matchScore": 1,
     "enrichment": {
       "abstract": "",
       "pdfUrl": null,

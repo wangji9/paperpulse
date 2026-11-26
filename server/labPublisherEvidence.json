@@ -1,5 +1,21 @@
 [
   {
+    "url": "https://doi.org/10.1016/j.compind.2026.104571",
+    "title": "Transformation of tacit knowledge in Human-Centric Smart Manufacturing: A systematic review, key technologies, critical challenges, and future directions",
+    "doi": "10.1016/j.compind.2026.104571",
+    "abstract": "",
+    "keywords": [
+      "Tacit knowledge",
+      "Human-Centric Smart Manufacturing",
+      "Industry 5.0",
+      "Knowledge transformation",
+      "Knowledge externalization",
+      "Human-machine collaboration",
+      "Human-machine symbiosis"
+    ],
+    "number": 0
+  },
+  {
     "url": "https://www.sciencedirect.com/science/article/pii/S1474034626009730",
     "title": "A human-AI agents collaborative disassembly depth reasoning method for end-of-life automotive batteries under uncertain operating conditions",
     "doi": "10.1016/j.aei.2026.105281",
@@ -201,5 +217,18 @@
       "Task decomposition",
       "Prompt engineering"
     ]
+  },
+  {
+    "url": "https://www.researchgate.net/publication/378772550",
+    "title": "基于超图嵌入的行车故障多元关系知识表示方法",
+    "abstract": "常规的知识图谱仅能够处理二元关系，而故障知识包含大量“多现象-多原因-多方法”的多元耦合关系，如果强制转化将会破坏关系的完整性，造成严重的信息失真。对此，本文拟采用知识超图处理此类复杂多元关系以保证数据的完整性，并设计了一种基于超图嵌入的行车故障多元关系知识表示方法。该方法首先通过梳理行车故障单中现象、原因、方法等数据之间的多元关联，构建适用于表征多元耦合关系的行车故障本体模型，并以该本体模型为知识超图的模式层，建立行车故障知识超图。然后，基于 BERT 模型以及超图卷积网络，获取故障知识的嵌入向量表示，并实现相似故障的检索。最后，以上海某钢铁公司收集的行车故障调查单为实例，验证了本方法的有效性。",
+    "keywords": [
+      "知识超图",
+      "多元耦合关系",
+      "知识表示",
+      "图嵌入算法",
+      "行车故障"
+    ],
+    "number": 20
   }
 ]

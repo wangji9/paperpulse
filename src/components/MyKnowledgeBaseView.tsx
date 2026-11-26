@@ -8,7 +8,9 @@ import {
   Kanban,
   LayoutList,
   Lightbulb,
+  Network,
   Plus,
+  Sparkles,
   Table2,
   Tag,
   Trash2,
@@ -45,7 +47,7 @@ interface MyKnowledgeBaseViewProps {
   onBrowsePublicPool: () => void;
 }
 
-type KbLayoutMode = 'kanban' | 'matrix' | 'cards';
+type KbLayoutMode = 'kanban' | 'matrix' | 'cards' | 'recommend';
 
 export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
   pool,
@@ -68,6 +70,7 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
 }) => {
   const [layoutMode, setLayoutMode] = useState<KbLayoutMode>('matrix');
   const [selectedPersonalTag, setSelectedPersonalTag] = useState<string>('all');
+  const [focusSeedId, setFocusSeedId] = useState<string>('all');
   const [copiedMd, setCopiedMd] = useState(false);
 
   // Collect all personal tags used by this user across their KB
@@ -193,6 +196,16 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
               >
                 <LayoutList className="h-4 w-4" />
                 图文卡片流
+              </button>
+              <button
+                type="button"
+                onClick={() => setLayoutMode('recommend')}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  layoutMode === 'recommend' ? 'bg-[#0072BD] text-white' : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                <Network className="h-4 w-4" />
+                关联推荐与图谱
               </button>
             </div>
 
@@ -414,6 +427,17 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
                             >
                               <BookOpenCheck className="h-3.5 w-3.5" />
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFocusSeedId(p.id);
+                                setLayoutMode('recommend');
+                              }}
+                              title="分析该单篇文献的动态关联知识图谱"
+                              className="rounded-lg border border-sky-200 bg-sky-50 p-1.5 text-[#0072BD] hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300"
+                            >
+                              <Network className="h-3.5 w-3.5" />
+                            </button>
                             {resolvePaperOriginalUrl(p) && (
                               <a
                                 href={resolvePaperOriginalUrl(p)}
@@ -532,6 +556,72 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
             );
           })}
         </div>
+      ) : layoutMode === 'recommend' ? (
+        /* 4. Knowledge Base Recommendations & Single-Paper Dynamic Knowledge Graph Analysis */
+        <div className="space-y-4">
+          <div
+            className={`rounded-2xl border p-4 ${
+              darkMode ? 'border-slate-800 bg-slate-900' : 'border-sky-200/80 bg-white shadow-xs'
+            }`}
+          >
+            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#0072BD]" />
+                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                  选择分析视角：整体收藏推荐 或 单篇文献动态关联知识图谱
+                </span>
+              </div>
+              <span className="text-xs text-slate-500">点击任意一篇收藏文献，即刻构建以该文献为中心的力导向相似文献知识图谱</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFocusSeedId('all')}
+                className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                  focusSeedId === 'all'
+                    ? 'border-[#0072BD] bg-[#0072BD] text-white'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-[#0072BD] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                }`}
+              >
+                全部收藏文献综合推荐 ({filteredPapers.length} 篇)
+              </button>
+              {filteredPapers.map((p, idx) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setFocusSeedId(p.id)}
+                  className={`max-w-[280px] truncate rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+                    focusSeedId === p.id
+                      ? 'border-[#D95319] bg-[#D95319] text-white'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-[#D95319] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                  }`}
+                  title={p.titleZh || p.title}
+                >
+                  [{idx + 1}] {(p.titleZh || p.title).slice(0, 22)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(() => {
+            const picked = focusSeedId === 'all' ? null : filteredPapers.find((p) => p.id === focusSeedId) || null;
+            return (
+              <RelatedPapers
+                seeds={picked ? [picked] : filteredPapers}
+                pool={pool}
+                darkMode={darkMode}
+                onOpen={onOpenDetail}
+                onCollect={onToggleMyKb}
+                graph={true}
+                title={
+                  picked
+                    ? `单篇文献动态关联知识图谱：${picked.titleZh || picked.title}`
+                    : '基于我的知识库收藏的动态关联推荐与知识图谱'
+                }
+              />
+            );
+          })()}
+        </div>
       ) : (
         /* 3. Detailed Cards View */
         <div className="space-y-4">
@@ -555,6 +645,17 @@ export const MyKnowledgeBaseView: React.FC<MyKnowledgeBaseViewProps> = ({
             />
           ))}
         </div>
+      )}
+
+      {/* Always-available Recommendations Section below Matrix/Kanban/Cards */}
+      {filteredPapers.length > 0 && layoutMode !== 'recommend' && (
+        <RelatedPapers
+          seeds={filteredPapers}
+          pool={pool}
+          darkMode={darkMode}
+          onOpen={onOpenDetail}
+          onCollect={onToggleMyKb}
+        />
       )}
     </div>
   );

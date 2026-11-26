@@ -1,5 +1,5 @@
 import { localizePaper } from './localizePaper.js';
-import { addLabPaper, changeLabEntry, listLabEntries } from './labLibrary.js';
+import { addLabPaper, attachLabPaperPdf, changeLabEntry, createManualLabPaper, listLabEntries } from './labLibrary.js';
 import { startLocalizationQueue } from './localizationQueue.js';
 import { enqueuePdf, getPdfImportJob, listPdfImportJobs, PdfUploadError, startPdfImportQueue } from './pdfImportQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
@@ -221,9 +221,35 @@ app.use('/api/auto-sync', requireAuth);
 app.use('/api/lab', requireAuth);
 app.get('/api/lab', (req,res)=>res.json({entries:listLabEntries(extractUser(req)!)}));
 app.post('/api/lab', (req,res)=>{
-  try {if(typeof req.body.paperId!=='string'||!getPaperById(req.body.paperId)){res.status(404).json({error:'请先上传PDF或选择公共池内的文献'});return;}
-    addLabPaper(req.body.paperId,extractUser(req)!);res.status(201).json({entries:listLabEntries(extractUser(req)!)});
-  }catch(e){res.status(400).json({error:e instanceof Error?e.message:'归档失败'});}
+  try {
+    const actor = extractUser(req)!;
+    if (typeof req.body?.paperId === 'string' && req.body.paperId.trim()) {
+      if (!getPaperById(req.body.paperId)) {
+        res.status(404).json({ error: '请先上传PDF或选择公共池内的文献' });
+        return;
+      }
+      addLabPaper(req.body.paperId, actor);
+      res.status(201).json({ entries: listLabEntries(actor) });
+      return;
+    }
+    if (typeof req.body?.title === 'string' && req.body.title.trim()) {
+      const entries = createManualLabPaper(actor, req.body);
+      res.status(201).json({ entries });
+      return;
+    }
+    res.status(404).json({ error: '请先上传PDF、选择公共池内的文献或填写标题与作者信息' });
+  } catch(e) {
+    res.status((e as {status?:number}).status || 400).json({ error: e instanceof Error ? e.message : '归档失败' });
+  }
+});
+app.post('/api/lab/:id/pdf', express.raw({ type: 'application/pdf', limit: '33mb' }), (req, res) => {
+  try {
+    const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const entries = attachLabPaperPdf(String(req.params.id), extractUser(req)!, buf);
+    res.json({ entries });
+  } catch (e) {
+    res.status((e as { status?: number }).status || 400).json({ error: e instanceof Error ? e.message : 'PDF 补充失败' });
+  }
 });
 app.put('/api/lab/:id', (req,res)=>{
   try {changeLabEntry(String(req.params.id),extractUser(req)!,req.body);res.json({entries:listLabEntries(extractUser(req)!)});}

@@ -469,3 +469,13 @@ export async function compactLibrary(): Promise<LibraryInventory> {
   const res = await apiFetch('/api/admin/library/compact', { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error('压缩数据库失败'); return res.json();
 }
+export async function uploadLabPaperPdf(paperId: string, file: File): Promise<LabEntry[]> {
+  const res = await apiFetch(`/api/lab/${encodeURIComponent(paperId)}/pdf`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/pdf' }),
+    body: file,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'PDF 补充失败');
+  return data.entries as LabEntry[];
+}
