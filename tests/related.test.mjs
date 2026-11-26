@@ -16,15 +16,20 @@ test('content recommendations exclude collected duplicates, merge bilingual conc
     import { analyzeLab } from './src/lib/labAnalysis.ts';
     import { canonicalizeAuthor, canonicalizeKeyword } from './src/lib/canonicalize.ts';
 
-    // 1. Bilingual author deduplication
+    // 1. Bilingual author deduplication & official lab roster names
     assert.equal(canonicalizeAuthor('李心雨*').id, canonicalizeAuthor('Xinyu Li').id);
     assert.equal(canonicalizeAuthor('Li, X.*').id, canonicalizeAuthor('Xin-Yu Li').id);
     assert.equal(canonicalizeAuthor('鲍劲松').id, canonicalizeAuthor('Bao, J.').id);
+    assert.equal(canonicalizeAuthor('Weibin Zhuang').shortName, '庄炜斌');
+    assert.equal(canonicalizeAuthor('Cong Jiang').shortName, '蒋聪');
+    assert.equal(canonicalizeAuthor('Congmao Chen').shortName, '陈丛茂');
+    assert.equal(canonicalizeAuthor('Hongji Yi').cohort, '2026级 博士');
     assert.notEqual(canonicalizeAuthor('Xinyu Li').id, canonicalizeAuthor('Xinyu Pan').id);
 
     // 2. Bilingual keyword deduplication
     assert.equal(canonicalizeKeyword('知识图谱')?.id, canonicalizeKeyword('Knowledge Graph')?.id);
     assert.equal(canonicalizeKeyword('Large Language Models')?.id, canonicalizeKeyword('大语言模型')?.id);
+    assert.equal(canonicalizeKeyword('大型语言模型')?.id, canonicalizeKeyword('大语言模型')?.id);
     assert.equal(canonicalizeKeyword('Agentic AI')?.id, canonicalizeKeyword('多智能体')?.id);
 
     // 3. Related papers ranking & cross-language matching

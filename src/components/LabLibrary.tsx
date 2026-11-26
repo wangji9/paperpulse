@@ -14,6 +14,7 @@ import {
   Hash,
   Heart,
   Library,
+  Loader2,
   MessageSquare,
   Plus,
   Repeat2,
@@ -333,13 +334,24 @@ const LabWeiboCard: React.FC<{
           </button>
 
           {paper.localPdfUrl ? (
-            <button
-              type="button"
-              onClick={() => onOpenPdf(paper)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-            >
-              <FileText className="h-3.5 w-3.5" /> 在线全文 PDF
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => onOpenPdf(paper)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+              >
+                <FileText className="h-3.5 w-3.5" /> 在线全文 PDF
+              </button>
+              <button
+                type="button"
+                disabled={attachingPdf}
+                onClick={() => onAttachPdf(entry.paperId)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] disabled:opacity-60 dark:border-slate-700 dark:text-slate-300"
+              >
+                {attachingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin text-[#0072BD]" /> : <FileUp className="h-3.5 w-3.5" />}
+                {attachingPdf ? '自动解析PDF中…' : '替换并重析 PDF'}
+              </button>
+            </>
           ) : (
             <>
               {paper.pdfUrl && (
@@ -352,16 +364,15 @@ const LabWeiboCard: React.FC<{
                   <FileText className="h-3.5 w-3.5" /> 公开 PDF
                 </a>
               )}
-              {entry.canEdit && (
-                <button
-                  type="button"
-                  disabled={attachingPdf}
-                  onClick={() => onAttachPdf(entry.paperId)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 font-medium text-slate-600 hover:border-[#0072BD] hover:text-[#0072BD] dark:border-slate-700 dark:text-slate-300"
-                >
-                  <FileUp className="h-3.5 w-3.5" /> {attachingPdf ? '上传中…' : '关联 PDF'}
-                </button>
-              )}
+              <button
+                type="button"
+                disabled={attachingPdf}
+                onClick={() => onAttachPdf(entry.paperId)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300"
+              >
+                {attachingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileUp className="h-3.5 w-3.5" />}
+                {attachingPdf ? '自动解析PDF中…' : '上传并解析 PDF'}
+              </button>
             </>
           )}
 
@@ -795,14 +806,17 @@ export function LabLibrary({
     if (!file || !targetId) return;
     setAttachingPaperId(targetId);
     setError('');
+    setNotice('正在上传并自动解析 PDF 正文、摘要与原文图表，请稍候…');
     try {
-      const next = await uploadLabPaperPdf(targetId, file);
+      const { entries: next, paper } = await uploadLabPaperPdf(targetId, file);
       setEntries(next);
-      setNotice('原文 PDF 已关联，可直接在线全文阅读');
-      setTimeout(() => setNotice(''), 3500);
+      onSocialUpdate(paper);
+      setNotice('PDF 上传并自动解析完成，已更新全文内容、图表与在线阅读器');
+      setTimeout(() => setNotice(''), 4500);
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'PDF 补充失败');
+      setNotice('');
+      setError(err instanceof Error ? err.message : 'PDF 上传与解析失败');
     } finally {
       setAttachingPaperId(null);
     }
@@ -1225,10 +1239,11 @@ export function LabLibrary({
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {analysis.canonicalAuthors.slice(0, 10).map((a) => (
+                  {analysis.canonicalAuthors.slice(0, 12).map((a) => (
                     <button
                       key={a.info.id}
                       type="button"
+                      title={a.info.honors ? `${a.info.displayName} · ${a.info.cohort || ''} · ${a.info.honors}` : `${a.info.displayName} · ${a.info.cohort || a.socialRole}`}
                       onClick={() => setQuery(a.info.shortName)}
                       className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-2 text-left hover:border-[#0072BD] dark:border-slate-800 dark:bg-slate-800/50"
                     >
@@ -1243,7 +1258,7 @@ export function LabLibrary({
                           {a.info.shortName}
                         </div>
                         <div className="truncate text-[10px] text-slate-500">
-                          {a.socialRole} · {a.count}篇
+                          {a.info.cohort || a.socialRole} · {a.count}篇
                         </div>
                       </div>
                     </button>

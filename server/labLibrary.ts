@@ -4,10 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AcademicPaper, LabEntry, UserProfile } from '../src/types/paper.js';
 import { getPaperById, listPapers, upsertPaper } from './db.js';
-import { buildStructuredAnatomy, detectDomain, detectTopics, resolveJournalShort, type RawExternalPaper } from './liveFetcher.js';
+import { buildStructuredAnatomy, detectDataset, detectDomain, detectTopics, resolveJournalShort, type RawExternalPaper } from './liveFetcher.js';
 import { extractKeywords } from './keywords.js';
 import { applySourceText } from './sourceText.js';
 import { localizeStoredPaper } from './localizationQueue.js';
+import { extractUploadedPdf } from './uploadedPdf.js';
+import { extractOriginalPaperMedia } from './paperMediaExtractor.js';
+import { localizePaper } from './localizePaper.js';
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || 'data');
 const PAPER_ASSETS_DIR = path.join(DATA_DIR, 'paper-assets');
@@ -73,21 +76,136 @@ export function createManualLabPaper(user:UserProfile,body:Record<string,unknown
   if(notes)changeLabEntry(id,user,{notes});
   return listLabEntries(user);
 }
-export function attachLabPaperPdf(id:string,user:UserProfile,pdfBuffer:Buffer):LabEntry[] {
-  const row=db.prepare('SELECT * FROM lab_papers WHERE paper_id=?').get(id) as Row|undefined;
-  if(!row)throw Object.assign(new Error('课题组文献不存在'),{status:404});
-  if(user.role!=='admin'&&row.owner_id!==user.id)throw Object.assign(new Error('只能为自己归档的课题组条目补充PDF，或联系管理员'),{status:403});
-  if(pdfBuffer.length<100||!pdfBuffer.subarray(0,5).toString('ascii').startsWith('%PDF-'))throw Object.assign(new Error('请上传有效的 PDF 文件'),{status:400});
-  const paper=getPaperById(id,user.id);
-  if(!paper)throw Object.assign(new Error('底层文献记录不存在'),{status:404});
-  const dir=path.join(PAPER_ASSETS_DIR,id);
-  fs.mkdirSync(dir,{recursive:true});
-  const target=path.join(dir,'source.pdf');
-  fs.writeFileSync(target,pdfBuffer);
-  const localPdfUrl=`/paper-assets/${id}/source.pdf`;
-  upsertPaper({...paper,localPdfUrl},user.id);
-  db.prepare('UPDATE lab_papers SET updated_at=? WHERE paper_id=?').run(new Date().toISOString(),id);
-  return listLabEntries(user);
+export async function attachPaperPdfAndParse(
+  id: string,
+  user: UserProfile,
+  pdfBuffer: Buffer,
+  fileName = 'paper.pdf'
+): Promise<AcademicPaper> {
+  if (!pdfBuffer.length || pdfBuffer.length > 32 * 1024 * 1024) {
+    throw Object.assign(new Error('PDF 文件大小需在 1 字节至 32MB 之间'), { status: 413 });
+  }
+  if (pdfBuffer.subarray(0, 1024).indexOf('%PDF-') < 0) {
+    throw Object.assign(new Error('请上传有效的 PDF 文件'), { status: 400 });
+  }
+  const existing = getPaperById(id, user.id);
+  if (!existing) throw Object.assign(new Error('文献记录不存在'), { status: 404 });
+
+  const dir = path.join(PAPER_ASSETS_DIR, id);
+  fs.mkdirSync(dir, { recursive: true });
+  const target = path.join(dir, 'source.pdf');
+  fs.writeFileSync(target, pdfBuffer);
+  const localPdfUrl = `/paper-assets/${id}/source.pdf`;
+
+  let nextPaper: AcademicPaper = {
+    ...existing,
+    localPdfUrl,
+    upload: {
+      userId: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      fileName: fileName.replace(/[\\/\u0000-\u001f]/g, '_').slice(0, 200) || 'paper.pdf',
+      uploadedAt: new Date().toISOString(),
+      sha256: createHash('sha256').update(pdfBuffer).digest('hex'),
+    },
+  };
+
+  try {
+    const evidence = await extractUploadedPdf(target);
+    const extractedAbstract = (evidence.sections.abstract || '')
+      .replace(/-\n(?=[a-z])/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 7000);
+    const abstractOriginal =
+      extractedAbstract.length > (existing.abstractOriginal || '').trim().length
+        ? extractedAbstract
+        : existing.abstractOriginal || extractedAbstract;
+
+    const bodySections = Object.entries(evidence.sections)
+      .filter(([k]) => !/reference|acknowledg|appendix/.test(k))
+      .map(([, v]) => v);
+    const context = [
+      existing.title,
+      abstractOriginal,
+      ...(bodySections.length ? bodySections : [evidence.text.slice(0, 20000)]),
+    ]
+      .join(' ')
+      .slice(0, 35000);
+
+    nextPaper = applySourceText(
+      {
+        ...nextPaper,
+        abstractOriginal,
+        digestSummary: existing.digestSummary || abstractOriginal.slice(0, 1200),
+        keywords:
+          existing.keywords && existing.keywords.length >= 3
+            ? existing.keywords
+            : extractKeywords(existing.title, abstractOriginal || context, evidence.keywords),
+        topics: existing.topics?.length ? existing.topics : detectTopics(context, false),
+        domain: existing.domain || detectDomain(context, existing.journal),
+      },
+      evidence.text,
+      evidence.sections
+    );
+
+    const ds = detectDataset(context);
+    if (nextPaper.anatomy.dataset.sourceType === 'unspecified' && ds.type !== 'unspecified') {
+      nextPaper.anatomy.dataset = {
+        ...nextPaper.anatomy.dataset,
+        sourceType: ds.type,
+        names: ds.names.length ? ds.names : nextPaper.anatomy.dataset.names,
+        summary: ds.summary || nextPaper.anatomy.dataset.summary,
+      };
+    }
+
+    const readable = evidence.text.trim().length >= 100;
+    nextPaper.parsing = {
+      status: readable ? 'full_text' : 'metadata',
+      updatedAt: new Date().toISOString(),
+      sourceUrl: localPdfUrl,
+      pages: evidence.pages,
+      sections: Object.keys(evidence.sections),
+      warnings: evidence.warnings || [],
+    };
+  } catch (err) {
+    console.error('[单篇PDF正文解析]', id, err);
+    nextPaper.parsing = {
+      ...(nextPaper.parsing || { status: 'metadata', sections: [], warnings: [] }),
+      updatedAt: new Date().toISOString(),
+      sourceUrl: localPdfUrl,
+      warnings: [...(nextPaper.parsing?.warnings || []), '已保存原文 PDF，正文文本提取受限，可直接在线阅读全文。'],
+    };
+  }
+
+  try {
+    const media = await extractOriginalPaperMedia(nextPaper);
+    if (media.paperFigures.length) nextPaper.anatomy.paperFigures = media.paperFigures;
+    if (media.paperTables.length) nextPaper.anatomy.paperTables = media.paperTables;
+  } catch (err) {
+    console.error('[单篇PDF图表提取]', id, err);
+  }
+
+  try {
+    nextPaper = await localizePaper(nextPaper);
+  } catch (err) {
+    console.error('[单篇PDF中文翻译]', id, err);
+  }
+
+  return upsertPaper(nextPaper, user.id);
+}
+
+export async function attachLabPaperPdf(
+  id: string,
+  user: UserProfile,
+  pdfBuffer: Buffer,
+  fileName?: string
+): Promise<{ entries: LabEntry[]; paper: AcademicPaper }> {
+  const row = db.prepare('SELECT * FROM lab_papers WHERE paper_id=?').get(id) as Row | undefined;
+  if (!row) throw Object.assign(new Error('课题组文献不存在'), { status: 404 });
+  const paper = await attachPaperPdfAndParse(id, user, pdfBuffer, fileName);
+  db.prepare('UPDATE lab_papers SET updated_at=? WHERE paper_id=?').run(new Date().toISOString(), id);
+  return { entries: listLabEntries(user), paper };
 }
 export function changeLabEntry(id:string,user:UserProfile,body:Record<string,unknown>,remove=false):void {
   const row=db.prepare('SELECT * FROM lab_papers WHERE paper_id=?').get(id) as Row|undefined;

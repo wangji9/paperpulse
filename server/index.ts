@@ -1,5 +1,5 @@
 import { localizePaper } from './localizePaper.js';
-import { addLabPaper, attachLabPaperPdf, changeLabEntry, createManualLabPaper, listLabEntries } from './labLibrary.js';
+import { addLabPaper, attachLabPaperPdf, attachPaperPdfAndParse, changeLabEntry, createManualLabPaper, listLabEntries } from './labLibrary.js';
 import { startLocalizationQueue } from './localizationQueue.js';
 import { enqueuePdf, getPdfImportJob, listPdfImportJobs, PdfUploadError, startPdfImportQueue } from './pdfImportQueue.js';
 import { parsePaperEvidence } from './paperParsing.js';
@@ -244,13 +244,24 @@ app.post('/api/lab', (req,res)=>{
     res.status((e as {status?:number}).status || 400).json({ error: e instanceof Error ? e.message : '归档失败' });
   }
 });
-app.post('/api/lab/:id/pdf', express.raw({ type: 'application/pdf', limit: '33mb' }), (req, res) => {
+app.post('/api/lab/:id/pdf', express.raw({ type: 'application/pdf', limit: '33mb' }), async (req, res) => {
   try {
     const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
-    const entries = attachLabPaperPdf(String(req.params.id), extractUser(req)!, buf);
-    res.json({ entries });
+    const rawName = typeof req.headers['x-file-name'] === 'string' ? decodeURIComponent(req.headers['x-file-name']) : 'paper.pdf';
+    const result = await attachLabPaperPdf(String(req.params.id), extractUser(req)!, buf, rawName);
+    res.json(result);
   } catch (e) {
-    res.status((e as { status?: number }).status || 400).json({ error: e instanceof Error ? e.message : 'PDF 补充失败' });
+    res.status((e as { status?: number }).status || 400).json({ error: e instanceof Error ? e.message : 'PDF 上传与解析失败' });
+  }
+});
+app.post('/api/papers/:id/pdf', express.raw({ type: 'application/pdf', limit: '33mb' }), async (req, res) => {
+  try {
+    const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const rawName = typeof req.headers['x-file-name'] === 'string' ? decodeURIComponent(req.headers['x-file-name']) : 'paper.pdf';
+    const paper = await attachPaperPdfAndParse(String(req.params.id), extractUser(req)!, buf, rawName);
+    res.json({ paper });
+  } catch (e) {
+    res.status((e as { status?: number }).status || 400).json({ error: e instanceof Error ? e.message : 'PDF 上传与解析失败' });
   }
 });
 app.put('/api/lab/:id', (req,res)=>{

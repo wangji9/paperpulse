@@ -490,13 +490,30 @@ export async function compactLibrary(): Promise<LibraryInventory> {
   const res = await apiFetch('/api/admin/library/compact', { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error('压缩数据库失败'); return res.json();
 }
-export async function uploadLabPaperPdf(paperId: string, file: File): Promise<LabEntry[]> {
+export async function uploadLabPaperPdf(paperId: string, file: File): Promise<{ entries: LabEntry[]; paper: AcademicPaper }> {
   const res = await apiFetch(`/api/lab/${encodeURIComponent(paperId)}/pdf`, {
     method: 'POST',
-    headers: authHeaders({ 'Content-Type': 'application/pdf' }),
+    headers: authHeaders({
+      'Content-Type': 'application/pdf',
+      'X-File-Name': encodeURIComponent(file.name),
+    }),
     body: file,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'PDF 补充失败');
-  return data.entries as LabEntry[];
+  if (!res.ok) throw new Error(data.error || 'PDF 上传与解析失败');
+  return data as { entries: LabEntry[]; paper: AcademicPaper };
+}
+
+export async function uploadAndParsePaperPdf(paperId: string, file: File): Promise<AcademicPaper> {
+  const res = await apiFetch(`/api/papers/${encodeURIComponent(paperId)}/pdf`, {
+    method: 'POST',
+    headers: authHeaders({
+      'Content-Type': 'application/pdf',
+      'X-File-Name': encodeURIComponent(file.name),
+    }),
+    body: file,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'PDF 上传与解析失败');
+  return data.paper as AcademicPaper;
 }

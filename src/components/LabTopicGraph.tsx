@@ -441,9 +441,21 @@ export const LabTopicGraph: React.FC<{
           return (
             <div className="space-y-3">
               <div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white">{stat.info.displayName}</h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">{stat.info.displayName}</h4>
+                  {stat.info.cohort && (
+                    <span className="rounded bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-[#0072BD] dark:bg-sky-950/60 dark:text-sky-300">
+                      {stat.info.cohort}
+                    </span>
+                  )}
+                </div>
+                {stat.info.honors && (
+                  <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                    荣誉：{stat.info.honors}
+                  </p>
+                )}
                 <p className="mt-0.5 text-xs text-slate-500">
-                  已合并署名变体：{stat.rawVariants.join(' / ') || stat.info.displayName}
+                  角色：{stat.socialRole} · 合作者 {stat.coauthorDegree} 人
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">

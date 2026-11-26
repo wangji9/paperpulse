@@ -1,5 +1,5 @@
 import { chineseText } from '../lib/chinese';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Heart,
@@ -10,12 +10,15 @@ import {
   Copy,
   Edit3,
   ExternalLink,
+  FileText,
+  FileUp,
   Loader2,
   Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
 import type { AcademicPaper, EntryType, UserProfile } from '../types/paper';
+import { uploadAndParsePaperPdf } from '../lib/api';
 import { DOMAIN_META, TOPIC_META, generateBibtex, resolveDoiUrl, resolvePaperOriginalUrl } from '../lib/constants';
 import {
   DatasetProvenanceVisual,
@@ -101,7 +104,29 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
   const [activeStep, setActiveStep] = useState('sec-bg');
   const [copiedBib, setCopiedBib] = useState(false);
   const [reparsing, setReparsing] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState('');
+  const [showPdfReader, setShowPdfReader] = useState(false);
+  const pdfFileRef = useRef<HTMLInputElement | null>(null);
   const { anatomy } = paper;
+
+  const handleModalPdfUpload = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0];
+    ev.target.value = '';
+    if (!file) return;
+    setUploadingPdf(true);
+    setPdfNotice('正在上传并自动解析 PDF 正文、摘要与图表…');
+    try {
+      const updated = await uploadAndParsePaperPdf(paper.id, file);
+      onSocialUpdate(updated);
+      setPdfNotice('PDF 已上传并自动完成解析');
+      setTimeout(() => setPdfNotice(''), 4000);
+    } catch (err) {
+      setPdfNotice(err instanceof Error ? `解析失败：${err.message}` : 'PDF 上传失败');
+    } finally {
+      setUploadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -234,6 +259,34 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
+              <input
+                ref={pdfFileRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => void handleModalPdfUpload(e)}
+              />
+              {paper.localPdfUrl && (
+                <button
+                  type="button"
+                  onClick={() => setShowPdfReader((v) => !v)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+                >
+                  <FileText className="h-4 w-4" />
+                  {showPdfReader ? '返回精读视图' : '在线全文 PDF'}
+                </button>
+              )}
+              {currentUser && (
+                <button
+                  type="button"
+                  disabled={uploadingPdf}
+                  onClick={() => pdfFileRef.current?.click()}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-medium text-[#0072BD] hover:bg-sky-100 disabled:opacity-60 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300"
+                >
+                  {uploadingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
+                  {uploadingPdf ? '解析PDF中…' : paper.localPdfUrl ? '重传/重析PDF' : '上传并解析PDF'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => void onToggleMyKb(paper)}
@@ -300,6 +353,16 @@ export const DeepAnatomyModal: React.FC<DeepAnatomyModalProps> = ({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+          {pdfNotice && (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-semibold text-[#0072BD] dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300">
+              {pdfNotice}
+            </div>
+          )}
+          {showPdfReader && paper.localPdfUrl && /^\/paper-assets\/[\w-]+\/source\.pdf$/.test(paper.localPdfUrl) && (
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700">
+              <iframe title="论文全文PDF阅读器" src={paper.localPdfUrl} className="h-[72vh] w-full border-0" />
+            </div>
+          )}
           <PaperKeywords paper={paper} />
           <PaperAbstract paper={paper} />
           <RelatedPapers seeds={[paper]} pool={libraryPapers} darkMode={darkMode} onOpen={onSelectOtherPaper} onCollect={onToggleMyKb} graph />

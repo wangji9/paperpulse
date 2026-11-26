@@ -10,6 +10,8 @@ export interface CanonicalAuthorInfo {
   shortName: string;     // e.g. "李心雨"
   englishName?: string;  // e.g. "Xinyu Li"
   chineseName?: string;  // e.g. "李心雨"
+  cohort?: string;       // e.g. "2023级 博士" / "2025届 学硕" / "课题组导师"
+  honors?: string;       // e.g. "获国家奖学金"
   aliases: string[];
 }
 
@@ -24,24 +26,40 @@ const KNOWN_AUTHORS: Array<{
   id: string;
   zh: string;
   en: string;
+  cohort?: string;
+  honors?: string;
   aliases: string[];
 }> = [
-  { id: 'li_xinyu', zh: '李心雨', en: 'Xinyu Li', aliases: ['李心雨', 'xinyu li', 'xin-yu li', 'li xinyu', 'li x', 'x li'] },
-  { id: 'bao_jinsong', zh: '鲍劲松', en: 'Jinsong Bao', aliases: ['鲍劲松', 'jinsong bao', 'jin-song bao', 'bao jinsong', 'bao j', 'j bao'] },
-  { id: 'wang_ji', zh: '王骥', en: 'Ji Wang', aliases: ['王骥', 'ji wang', 'wang ji', 'wang j', 'j wang'] },
-  { id: 'zhuang_weibin', zh: '庄伟彬', en: 'Weibin Zhuang', aliases: ['庄伟彬', 'weibin zhuang', 'wei-bin zhuang', 'zhuang weibin', 'zhuang w', 'w zhuang'] },
-  { id: 'yao_jie', zh: '姚杰', en: 'Jie Yao', aliases: ['姚杰', 'jie yao', 'yao jie', 'yao j', 'j yao'] },
-  { id: 'jiang_cong', zh: '姜聪', en: 'Cong Jiang', aliases: ['姜聪', 'cong jiang', 'jiang cong', 'jiang c', 'c jiang'] },
-  { id: 'xiao_wenjie', zh: '肖文杰', en: 'Wenjie Xiao', aliases: ['肖文杰', 'wenjie xiao', 'wen-jie xiao', 'xiao wenjie', 'xiao w', 'w xiao'] },
-  { id: 'chen_congmao', zh: '陈聪茂', en: 'Congmao Chen', aliases: ['陈聪茂', 'congmao chen', 'cong-mao chen', 'chen congmao', 'chen c', 'c chen'] },
-  { id: 'wu_xing', zh: '吴兴', en: 'Xing Wu', aliases: ['吴兴', 'xing wu', 'wu xing', 'wu x', 'x wu'] },
-  { id: 'lv_xingchen', zh: '吕星辰', en: 'Xingchen Lv', aliases: ['吕星辰', 'xingchen lv', 'xing-chen lv', 'xingchen lu', 'lv xingchen', 'lv x', 'x lv'] },
-  { id: 'pan_xinyu', zh: '潘鑫瑜', en: 'Xinyu Pan', aliases: ['潘鑫瑜', 'xinyu pan', 'xin-yu pan', 'pan xinyu', 'pan x', 'x pan'] },
-  { id: 'wen_sijie', zh: '文思捷', en: 'Sijie Wen', aliases: ['文思捷', 'sijie wen', 'si-jie wen', 'wen sijie', 'wen s', 's wen'] },
-  { id: 'yu_weigang', zh: '喻惟刚', en: 'Weigang Yu', aliases: ['喻惟刚', 'weigang yu', 'wei-gang yu', 'yu weigang', 'yu w', 'w yu'] },
-  { id: 'hu_zhiqiang', zh: '胡志强', en: 'Zhiqiang Hu', aliases: ['胡志强', 'zhiqiang hu', 'zhi-qiang hu', 'hu zhiqiang', 'hu z', 'z hu'] },
-  { id: 'zhang_fei', zh: '张飞', en: 'Fei Zhang', aliases: ['张飞', 'fei zhang', 'zhang fei', 'zhang f', 'f zhang'] },
-  { id: 'li_qi', zh: '李琦', en: 'Qi Li', aliases: ['李琦', 'qi li', 'li qi', 'li q', 'q li'] },
+  // 课题组导师
+  { id: 'li_xinyu', zh: '李心雨', en: 'Xinyu Li', cohort: '课题组导师', aliases: ['李心雨', 'xinyu li', 'xin-yu li', 'li xinyu', 'li x', 'x li'] },
+  { id: 'bao_jinsong', zh: '鲍劲松', en: 'Jinsong Bao', cohort: '课题组导师', aliases: ['鲍劲松', 'jinsong bao', 'jin-song bao', 'bao jinsong', 'bao j', 'j bao'] },
+
+  // 在读研究生（2023级 — 2026级）
+  { id: 'zhuang_weibin', zh: '庄炜斌', en: 'Weibin Zhuang', cohort: '2023级 博士', aliases: ['庄炜斌', '庄伟彬', 'weibin zhuang', 'wei-bin zhuang', 'zhuang weibin', 'zhuang w', 'w zhuang'] },
+  { id: 'wang_ji', zh: '王骥', en: 'Ji Wang', cohort: '2024级 博士', aliases: ['王骥', 'ji wang', 'wang ji', 'wang j', 'j wang'] },
+  { id: 'xiao_wenjie', zh: '肖文杰', en: 'Wenjie Xiao', cohort: '2024级 学硕', aliases: ['肖文杰', 'wenjie xiao', 'wen-jie xiao', 'xiao wenjie', 'xiao w', 'w xiao'] },
+  { id: 'yao_jie', zh: '姚杰', en: 'Jie Yao', cohort: '2024级 专硕', honors: '获国家奖学金', aliases: ['姚杰', 'jie yao', 'yao jie', 'yao j', 'j yao'] },
+  { id: 'jiang_cong', zh: '蒋聪', en: 'Cong Jiang', cohort: '2024级 专硕', honors: '获国家奖学金', aliases: ['蒋聪', '姜聪', 'cong jiang', 'jiang cong', 'jiang c', 'c jiang'] },
+  { id: 'lv_xingchen', zh: '吕星辰', en: 'Xingchen Lv', cohort: '2025级 硕博连读', aliases: ['吕星辰', 'xingchen lv', 'xing-chen lv', 'xingchen lu', 'lv xingchen', 'lv x', 'x lv'] },
+  { id: 'yi_hongji', zh: '伊宏基', en: 'Hongji Yi', cohort: '2026级 博士', aliases: ['伊宏基', 'hongji yi', 'hong-ji yi', 'yi hongji', 'yi h', 'h yi'] },
+  { id: 'yu_xiaoqian', zh: '喻晓倩', en: 'Xiaoqian Yu', cohort: '2026级 学硕', aliases: ['喻晓倩', 'xiaoqian yu', 'xiao-qian yu', 'yu xiaoqian', 'yu x', 'x yu'] },
+  { id: 'qiu_shiyi', zh: '邱实益', en: 'Shiyi Qiu', cohort: '2026级 学硕', aliases: ['邱实益', 'shiyi qiu', 'shi-yi qiu', 'qiu shiyi', 'qiu s', 's qiu'] },
+  { id: 'feng_yu', zh: '冯瑜', en: 'Yu Feng', cohort: '2026级 专硕', aliases: ['冯瑜', 'yu feng', 'feng yu', 'feng y', 'y feng'] },
+  { id: 'liu_haojie', zh: '刘豪杰', en: 'Haojie Liu', cohort: '2026级 专硕', aliases: ['刘豪杰', 'haojie liu', 'hao-jie liu', 'liu haojie', 'liu h', 'h liu'] },
+  { id: 'zhang_xinyu', zh: '张欣雨', en: 'Xinyu Zhang', cohort: '2026级 专硕', aliases: ['张欣雨', 'xinyu zhang', 'xin-yu zhang', 'zhang xinyu', 'zhang x', 'x zhang'] },
+
+  // 毕业研究生（2023届 — 2026届）
+  { id: 'wu_xing', zh: '吴兴', en: 'Xing Wu', cohort: '2026届 学硕', honors: '获国家奖学金、校优秀学生', aliases: ['吴兴', 'xing wu', 'wu xing', 'wu x', 'x wu'] },
+  { id: 'chen_congmao', zh: '陈丛茂', en: 'Congmao Chen', cohort: '2026届 学硕', aliases: ['陈丛茂', '陈聪茂', 'congmao chen', 'cong-mao chen', 'chen congmao', 'chen c', 'c chen'] },
+  { id: 'pan_xinyu', zh: '潘鑫瑜', en: 'Xinyu Pan', cohort: '2025届 学硕', honors: '获国家奖学金、校优秀毕业生、校优秀研究生学位论文', aliases: ['潘鑫瑜', 'xinyu pan', 'xin-yu pan', 'pan xinyu', 'pan x', 'x pan'] },
+  { id: 'yu_weigang', zh: '喻惟刚', en: 'Weigang Yu', cohort: '2025届 学硕', aliases: ['喻惟刚', 'weigang yu', 'wei-gang yu', 'yu weigang', 'yu w', 'w yu'] },
+  { id: 'wen_sijie', zh: '文思捷', en: 'Sijie Wen', cohort: '2025届 专硕', aliases: ['文思捷', 'sijie wen', 'si-jie wen', 'wen sijie', 'wen s', 's wen'] },
+  { id: 'hu_zhiqiang', zh: '胡志强', en: 'Zhiqiang Hu', cohort: '2024届 学硕', aliases: ['胡志强', 'zhiqiang hu', 'zhi-qiang hu', 'hu zhiqiang', 'hu z', 'z hu'] },
+  { id: 'zhang_fei', zh: '张飞', en: 'Fei Zhang', cohort: '2023届 专硕', aliases: ['张飞', 'fei zhang', 'zhang fei', 'zhang f', 'f zhang'] },
+  { id: 'li_qi', zh: '李琦', en: 'Qi Li', cohort: '2023届 专硕', aliases: ['李琦', 'qi li', 'li qi', 'li q', 'q li'] },
+  { id: 'chen_tao', zh: '陈涛', en: 'Tao Chen', cohort: '2023届 专硕', aliases: ['陈涛', 'tao chen', 'chen tao', 'chen t', 't chen'] },
+
+  // 其他合作学者
   { id: 'zhou_bin', zh: '周彬', en: 'Bin Zhou', aliases: ['周彬', 'bin zhou', 'zhou bin', 'zhou b', 'b zhou'] },
   { id: 'li_feng', zh: '李峰', en: 'Feng Li', aliases: ['李峰', 'feng li', 'li feng', 'li f', 'f li'] },
   { id: 'lv_jie', zh: '吕捷', en: 'Jie Lv', aliases: ['吕捷', 'jie lv', 'jie lu', 'lv jie', 'lv j', 'j lv'] },
@@ -49,7 +67,7 @@ const KNOWN_AUTHORS: Array<{
   { id: 'zheng_pai', zh: '郑湃', en: 'Pai Zheng', aliases: ['郑湃', 'pai zheng', 'zheng pai', 'zheng p', 'p zheng'] },
   { id: 'gao_liang', zh: '高亮', en: 'Liang Gao', aliases: ['高亮', 'liang gao', 'gao liang', 'gao l', 'l gao'] },
   { id: 'xu_xun', zh: '徐洵', en: 'Xun Xu', aliases: ['徐洵', 'xun xu', 'xu xun', 'xu x', 'x xu'] },
-  { id: 'deng_wei', zh: '邓伟', en: 'Wei Deng', aliases: ['邓伟', 'wei deng', 'deng wei', 'deng w', 'w deng'] },
+  { id: 'deng_weijia', zh: '邓伟嘉', en: 'Weijia Deng', aliases: ['邓伟嘉', '邓伟', 'weijia deng', 'wei deng', 'deng weijia', 'deng w', 'w deng'] },
   { id: 'liu_tao', zh: '刘涛', en: 'Tao Liu', aliases: ['刘涛', 'tao liu', 'liu tao', 'liu t', 't liu'] },
   { id: 'liu_mingfei', zh: '刘鸣飞', en: 'Mingfei Liu', aliases: ['刘鸣飞', 'mingfei liu', 'liu mingfei'] },
   { id: 'li_jianjun', zh: '李建军', en: 'Jianjun Li', aliases: ['李建军', 'jianjun li', 'li jianjun'] },
@@ -117,6 +135,8 @@ export function canonicalizeAuthor(
       shortName: hit.zh,
       chineseName: hit.zh,
       englishName: hit.en,
+      cohort: hit.cohort,
+      honors: hit.honors,
       aliases: hit.aliases,
     };
   }
@@ -131,6 +151,8 @@ export function canonicalizeAuthor(
         shortName: revHit.zh,
         chineseName: revHit.zh,
         englishName: revHit.en,
+        cohort: revHit.cohort,
+        honors: revHit.honors,
         aliases: revHit.aliases,
       };
     }
@@ -224,7 +246,7 @@ const CONCEPT_RULES: ConceptRule[] = [
     patterns: [
       /^llms?$/i,
       /large\s+language\s+models?/i,
-      /^大语言模型$|^大模型$|大语言模型.*llm|llm.*大语言模型/i,
+      /^大(?:型)?语言模型$|^大模型$|大(?:型)?语言模型.*llm|llm.*大(?:型)?语言模型/i,
     ],
   },
   {
@@ -310,7 +332,7 @@ const CONCEPT_RULES: ConceptRule[] = [
       /(?:visual\s+)?tacit\s+knowledge/i,
       /meta-?knowledge/i,
       /knowledge\s+(?:explicitation|externalization|transformation)/i,
-      /隐性知识|元知识|知识显性化|知识转化/,
+      /隐性知识|元知识|知识显性化|知识转化|知识外化/,
     ],
   },
   {
@@ -320,7 +342,7 @@ const CONCEPT_RULES: ConceptRule[] = [
     category: 'paradigm',
     patterns: [
       /human-?(?:robot|machine|ai)\s+(?:collaboration|teaming|symbiosis|interaction)/i,
-      /人机协作|人智协作|人机协同|人-ai/i,
+      /人机协作|人智协作|人机协同|人机共生|人-ai/i,
     ],
   },
   {
@@ -333,7 +355,7 @@ const CONCEPT_RULES: ConceptRule[] = [
       /industry\s*5\.0/i,
       /cognitive\s+manufacturing/i,
       /cognitive\s+mass\s+personalization/i,
-      /人本(?:智能)?制造|工业5\.0|认知制造/,
+      /人本(?:智能)?制造|以人为中心的智能制造|人在回路智能制造|工业5\.0|认知制造/,
     ],
   },
   {
@@ -523,6 +545,9 @@ const NOISY_KEYWORDS = new Set([
   'recursive',
   'enhancing',
   'based on',
+  'knowledge',
+  'agentic',
+  'rehabilitatio',
   '基于',
   '方法',
   '研究',
@@ -531,6 +556,9 @@ const NOISY_KEYWORDS = new Set([
   '设计',
   '技术',
   '分析',
+  '知识',
+  '康复',
+  '配置',
 ]);
 
 export function canonicalizeKeyword(raw: string): CanonicalKeywordInfo | null {
